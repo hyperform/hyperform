@@ -1,0 +1,54 @@
+{
+  "name": "hyperform",
+  "version": "0.1.0",
+  "description": "HTML 5 form validation that is actually useful",
+  "main": "src/hyperform.js",
+  "scripts": {
+    "test": "ava test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Port8000/hyperform.git"
+  },
+  "keywords": [
+    "html5",
+    "form",
+    "validation"
+  ],
+  "author": "Port 8000 UG (haftungsbeschränkt)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Port8000/hyperform/issues"
+  },
+  "homepage": "https://github.com/Port8000/hyperform#readme",
+  "devDependencies": {
+    "jshint": "^2.9.1",
+    "jspm": "^0.17.0-beta.13",
+    "uglify-js": "^2.6.2"
+  },
+  "jshintConfig": {
+    "esversion": 6,
+    "strict": "global",
+    "laxbreak": true,
+    "globals": {
+      "window": true,
+      "document": true
+    }
+  },
+  "jspm": {
+    "dependencies": {},
+    "devDependencies": {
+      "plugin-babel": "npm:systemjs-plugin-babel@^0.0.9"
+    },
+    "buildConfig": {
+      "transpileES6": true,
+      "minify": true
+    },
+    "peerDependencies": {
+      "core-js": "npm:core-js@^1.2.0",
+      "fs": "github:jspm/nodelibs-fs@^0.2.0-alpha",
+      "path": "github:jspm/nodelibs-path@^0.2.0-alpha",
+      "process": "github:jspm/nodelibs-process@^0.2.0-alpha"
+    }
+  }
+}
