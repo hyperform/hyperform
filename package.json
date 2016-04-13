@@ -22,6 +22,8 @@
   },
   "homepage": "https://github.com/Port8000/hyperform#readme",
   "devDependencies": {
+    "ava": "^0.14.0",
+    "babel-register": "^6.7.2",
     "jshint": "^2.9.1",
     "jspm": "^0.17.0-beta.13",
     "uglify-js": "^2.6.2"
@@ -34,6 +36,16 @@
       "window": true,
       "document": true
     }
+  },
+  "ava": {
+    "require": "babel-register",
+    "babel": "inherit"
+  },
+  "babel": {
+    "presets": [
+      "es2015",
+      "stage-2"
+    ]
   },
   "jspm": {
     "dependencies": {},
