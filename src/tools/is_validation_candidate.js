@@ -12,7 +12,7 @@ const validation_candidate_types = [ 'checkbox', 'color', 'date', 'datetime',
  *
  * @see https://html.spec.whatwg.org/multipage/forms.html#barred-from-constraint-validation
  */
-export function is_validation_candidate(element) {
+export default function(element) {
   /* it must be any of those elements */
   if (element instanceof window.HTMLSelectElement
       ||
