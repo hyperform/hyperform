@@ -3,6 +3,7 @@
 /**
  * validation messages are from Firefox source,
  * http://mxr.mozilla.org/mozilla-central/source/dom/locales/en-US/chrome/dom/dom.properties
+ * released under MPL license, http://mozilla.org/MPL/2.0/.
  */
 
 
@@ -57,7 +58,22 @@ const validity_state_checkers = {
     const invalid = ! test_max(element);
 
     if (invalid) {
-      message_store.set(element, /*TODO*/_('Please fill out this field.'));
+      let msg;
+      switch (element.type) {
+        case 'date':
+        case 'datetime':
+        case 'datetime-local':
+        case 'time':
+          msg = sprintf(_('Please select a value that is no later than %s.'),
+              element.value);
+          break;
+        case 'number':
+        default:
+          msg = sprintf(_('Please select a value that is no more than %s.'),
+              element.value);
+          break;
+      }
+      message_store.set(element, msg);
     }
 
     return invalid;
@@ -67,7 +83,22 @@ const validity_state_checkers = {
     const invalid = ! test_min(element);
 
     if (invalid) {
-      message_store.set(element, /*TODO*/_('Please fill out this field.'));
+      let msg;
+      switch (element.type) {
+        case 'date':
+        case 'datetime':
+        case 'datetime-local':
+        case 'time':
+          msg = sprintf(_('Please select a value that is no earlier than %s.'),
+              element.value);
+          break;
+        case 'number':
+        default:
+          msg = sprintf(_('Please select a value that is no less than %s.'),
+              element.value);
+          break;
+      }
+      message_store.set(element, msg);
     }
 
     return invalid;
@@ -80,9 +111,9 @@ const validity_state_checkers = {
       let [min, max] = get_next_valid(element);
       let sole = false;
 
-      if (min === undefined) {
+      if (min === null) {
         sole = max;
-      } else if (max === undefined) {
+      } else if (max === null) {
         sole = min;
       }
 
@@ -154,7 +185,11 @@ const validity_state_checkers = {
       } else if (element.type === 'radio') {
         msg = _('Please select one of these options.');
       } else if (element.type === 'file') {
-        msg = _('Please select a file.');
+        if (element.hasAttribute('multiple')) {
+          msg = _('Please select one or more files.');
+        } else {
+          msg = _('Please select a file.');
+        }
       } else if (element instanceof window.HTMLSelectElement) {
         msg = _('Please select an item in the list.');
       }

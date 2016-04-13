@@ -30,7 +30,7 @@ define(function () { 'use strict';
      *
      * @see https://html.spec.whatwg.org/multipage/forms.html#barred-from-constraint-validation
      */
-    function is_validation_candidate(element) {
+    function is_validation_candidate (element) {
       /* it must be any of those elements */
       if (element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement) {
 
@@ -50,20 +50,91 @@ define(function () { 'use strict';
       return false;
     }
 
+    function sliceIterator(arr, i) {
+      var _arr = [];
+      var _n = true;
+      var _d = false;
+      var _e = undefined;
+
+      try {
+        for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+          _arr.push(_s.value);
+
+          if (i && _arr.length === i) break;
+        }
+      } catch (err) {
+        _d = true;
+        _e = err;
+      } finally {
+        try {
+          if (!_n && _i["return"]) _i["return"]();
+        } finally {
+          if (_d) throw _e;
+        }
+      }
+
+      return _arr;
+    }
+
+    function _slicedToArray (arr, i) {
+      if (Array.isArray(arr)) {
+        return arr;
+      } else if (Symbol.iterator in Object(arr)) {
+        return sliceIterator(arr, i);
+      } else {
+        throw new TypeError("Invalid attempt to destructure non-iterable instance");
+      }
+    };
+
     function sprintf (str) {
       for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
         args[_key - 1] = arguments[_key];
       }
 
       var args_length = args.length;
+
       for (var i = 0; i < args_length; i++) {
         var arg = args[i];
         if (arg instanceof Date || typeof arg === 'number' || arg instanceof Number) {
+          /* try getting a localized representation of dates and numbers, if the
+           * browser supports this */
           arg = (arg.toLocaleString || arg.toString).call(arg);
         }
         str = str.replace('%s', args[i]);
-        str = str.replace(new RegExp('%' + i + '\\$s', 'g'), args[i]);
+        str = str.replace(new RegExp('%' + (i + 1) + '\\$s', 'g'), args[i]);
       }
+
+      return str;
+    }
+
+    /**
+     * get previous and next valid values for a stepped input element
+     *
+     * TODO add support for date, time, ...
+     */
+
+    function get_next_valid (element) {
+      var min = Number(element.getAttribute('min') || 0);
+      var max = Number(element.getAttribute('max') || 100);
+      var step = Number(element.getAttribute('step') || 1);
+      var value = Number(element.value || 0);
+
+      var prev = min + Math.floor((value - min) / step) * step;
+      var next = min + (Math.floor((value - min) / step) + 1) * step;
+
+      if (prev < min) {
+        prev = null;
+      } else if (prev > max) {
+        prev = max;
+      }
+
+      if (next > max) {
+        next = null;
+      } else if (next < min) {
+        next = min;
+      }
+
+      return [prev, next];
     }
 
     var message_store = new WeakMap();
@@ -214,12 +285,14 @@ define(function () { 'use strict';
         // TODO
         return false;
       },
+
       customError: function customError(element) {
         var msg = message_store.get(element);
         var invalid = msg && 'is_custom' in msg;
         /* no need for message_store.set, because the message is already there. */
         return invalid;
       },
+
       patternMismatch: function patternMismatch(element) {
         var invalid = !test_pattern(element);
         if (invalid) {
@@ -227,45 +300,105 @@ define(function () { 'use strict';
         }
         return invalid;
       },
+
       rangeOverflow: function rangeOverflow(element) {
         var invalid = !test_max(element);
+
         if (invalid) {
-          message_store.set(element, /*TODO*/_('Please fill out this field.'));
+          var msg = void 0;
+          switch (element.type) {
+            case 'date':
+            case 'datetime':
+            case 'datetime-local':
+            case 'time':
+              msg = sprintf(_('Please select a value that is no later than %s.'), element.value);
+              break;
+            case 'number':
+            default:
+              msg = sprintf(_('Please select a value that is no more than %s.'), element.value);
+              break;
+          }
+          message_store.set(element, msg);
         }
+
         return invalid;
       },
+
       rangeUnderflow: function rangeUnderflow(element) {
         var invalid = !test_min(element);
+
         if (invalid) {
-          message_store.set(element, /*TODO*/_('Please fill out this field.'));
+          var msg = void 0;
+          switch (element.type) {
+            case 'date':
+            case 'datetime':
+            case 'datetime-local':
+            case 'time':
+              msg = sprintf(_('Please select a value that is no earlier than %s.'), element.value);
+              break;
+            case 'number':
+            default:
+              msg = sprintf(_('Please select a value that is no less than %s.'), element.value);
+              break;
+          }
+          message_store.set(element, msg);
         }
+
         return invalid;
       },
+
       stepMismatch: function stepMismatch(element) {
         var invalid = !test_step(element);
+
         if (invalid) {
-          message_store.set(element, sprintf(_('Please select a valid value. The two nearest valid values are %s and %s.'),
-          //TODO: use real values!
-          0, 100));
+          var _get_next_valid = get_next_valid(element);
+
+          var _get_next_valid2 = _slicedToArray(_get_next_valid, 2);
+
+          var min = _get_next_valid2[0];
+          var max = _get_next_valid2[1];
+
+          var sole = false;
+
+          if (min === null) {
+            sole = max;
+          } else if (max === null) {
+            sole = min;
+          }
+
+          if (sole !== false) {
+            message_store.set(element, sprintf(_('Please select a valid value. The nearest valid value is %s.'), sole));
+          } else {
+            message_store.set(element, sprintf(_('Please select a valid value. The two nearest valid values are %s and %s.'), min, max));
+          }
         }
+
         return invalid;
       },
+
       tooLong: function tooLong(element) {
         var invalid = !test_maxlength(element);
+
         if (invalid) {
           message_store.set(element, sprintf(_('Please shorten this text to %s characters or less (you are currently using %s characters).'), element.getAttribute('maxlength'), element.value.length));
         }
+
         return invalid;
       },
+
       tooShort: function tooShort(element) {
         var invalid = !test_minlength(element);
+
         if (invalid) {
           message_store.set(element, sprintf(_('Please lengthen this text to %s characters or more (you are currently using %s characters).'), element.getAttribute('maxlength'), element.value.length));
         }
+
         return invalid;
       },
+
       typeMismatch: function typeMismatch(element) {
         var invalid = !test_type(element);
+
         if (invalid) {
           var msg = _('Please use the appropriate format.');
           if (element.type === 'email') {
@@ -279,10 +412,13 @@ define(function () { 'use strict';
           }
           message_store.set(element, msg);
         }
+
         return invalid;
       },
+
       valueMissing: function valueMissing(element) {
         var invalid = !test_required(element);
+
         if (invalid) {
           var msg = _('Please fill out this field.');
           if (element.type === 'checkbox') {
@@ -290,16 +426,25 @@ define(function () { 'use strict';
           } else if (element.type === 'radio') {
             msg = _('Please select one of these options.');
           } else if (element.type === 'file') {
-            msg = _('Please select a file.');
+            if (element.hasAttribute('multiple')) {
+              msg = _('Please select one or more files.');
+            } else {
+              msg = _('Please select a file.');
+            }
           } else if (element instanceof window.HTMLSelectElement) {
             msg = _('Please select an item in the list.');
           }
           message_store.set(element, msg);
         }
+
         return invalid;
       }
+
     };
 
+    /**
+     * TODO allow HTMLFieldSetElement, too
+     */
     var ValidityState = function ValidityState(element) {
       var cached = ValidityState.cache.get(element);
       if (cached) {
@@ -367,11 +512,20 @@ define(function () { 'use strict';
       writable: false
     });
 
+    /**
+     * check an element's validity with respect to it's form
+     */
     function checkValidity() {
+      /* jshint -W040 */
+
+      /* if this is a <form>, check validity of all child inputs */
+      if (this instanceof window.HTMLFormElement) {
+        return Array.prototype.every.call(this.elements, checkValidity);
+      }
+
       /* default is true, also for elements that are no validation candidates */
       var valid = true;
 
-      /* jshint -W040 */
       if (is_validation_candidate(this)) {
         valid = ValidityState(this).valid;
         if (!valid) {
@@ -393,6 +547,9 @@ define(function () { 'use strict';
       writable: true
     });
 
+    /**
+     * TODO allow HTMLFieldSetElement, too
+     */
     function setCustomValidity(msg) {
       msg.is_custom = true;
       /* jshint -W040 */
@@ -410,6 +567,9 @@ define(function () { 'use strict';
       set: undefined
     });
 
+    /**
+     * TODO allow HTMLFieldSetElement, too
+     */
     function validationMessage() {
       /* jshint -W040 */
       var msg = message_store.get(this);
@@ -430,6 +590,9 @@ define(function () { 'use strict';
       set: undefined
     });
 
+    /**
+     * TODO allow HTMLFieldSetElement, too
+     */
     function willValidate() {
       /* jshint -W040 */
       return is_validation_candidate(this);

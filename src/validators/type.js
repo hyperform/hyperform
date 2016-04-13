@@ -1,7 +1,7 @@
 'use strict';
 
 
-import is_validation_candidate from './tools/is_validation_candidate';
+import is_validation_candidate from '../tools/is_validation_candidate';
 
 
 /* the spec says to only check those. ¯\_(ツ)_/¯ */

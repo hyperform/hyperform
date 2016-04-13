@@ -2,7 +2,7 @@
 
 
 import installer from '../tools/property_installer';
-import { is_validation_candidate } from '../validators/common';
+import is_validation_candidate from '../tools/is_validation_candidate';
 
 
 /**

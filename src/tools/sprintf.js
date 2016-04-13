@@ -3,6 +3,7 @@
 
 export default function(str, ...args) {
   var args_length = args.length;
+
   for (let i = 0; i < args_length; i++) {
     let arg = args[i];
     if (arg instanceof Date ||
@@ -13,6 +14,8 @@ export default function(str, ...args) {
       arg = (arg.toLocaleString || arg.toString).call(arg);
     }
     str = str.replace('%s', args[i]);
-    str = str.replace(new RegExp('%'+i+'\\$s', 'g'), args[i]);
+    str = str.replace(new RegExp('%'+(i+1)+'\\$s', 'g'), args[i]);
   }
+
+  return str;
 }

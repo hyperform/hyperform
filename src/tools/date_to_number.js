@@ -8,7 +8,7 @@
  */
 export default function(date) {
   if (! (date instanceof Date)) {
-    date = Date.parse(date);
+    return Date.parse(date);
   }
 
   return date.getTime();
