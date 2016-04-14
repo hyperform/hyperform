@@ -4,12 +4,12 @@ import test from 'ava';
 import get_next_valid from '../../src/tools/get_next_valid';
 
 function get_dummy(value, step=1, min=0, max=100) {
-  var dummy = { value };
+  var dummy = { value: ''+value };
   dummy.getAttribute = function(attr) {
     switch (attr) {
-      case 'min': return min;
-      case 'max': return max;
-      case 'step': return step;
+      case 'min': return ''+min;
+      case 'max': return ''+max;
+      case 'step': return ''+step;
       default: throw 'Unknown attribute ' + attr;
     }
   };
