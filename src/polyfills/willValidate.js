@@ -6,7 +6,7 @@ import is_validation_candidate from '../tools/is_validation_candidate';
 
 
 /**
- * TODO allow HTMLFieldSetElement, too
+ * check, if an element will be subject to HTML5 validation
  */
 function willValidate() {
   /* jshint -W040 */

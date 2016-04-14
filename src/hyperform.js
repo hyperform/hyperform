@@ -2,10 +2,12 @@
 
 
 import checkValidity from './polyfills/checkValidity';
+import reportValidity from './polyfills/reportValidity';
 import setCustomValidity from './polyfills/setCustomValidity';
 import validationMessage from './polyfills/validationMessage';
 import ValidityState from './polyfills/validityState';
 import willValidate from './polyfills/willValidate';
+import version from './version';
 
 
 /**
@@ -13,7 +15,11 @@ import willValidate from './polyfills/willValidate';
  */
 const hyperform = {
 
+  version,
+
   checkValidity,
+
+  reportValidity,
 
   setCustomValidity,
 
@@ -34,6 +40,7 @@ const hyperform = {
       willValidate.install(els[i]);
     }
   },
+
 };
 
 window.hyperform = hyperform;
