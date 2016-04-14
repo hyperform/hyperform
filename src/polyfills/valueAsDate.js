@@ -50,7 +50,7 @@ function valueAsDate(value=undefined) {
 }
 
 
-valueAsDate.install('valueAsDate', {
+valueAsDate.install = installer('valueAsDate', {
   configurable: true,
   enumerable: true,
   get: valueAsDate,
