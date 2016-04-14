@@ -314,7 +314,7 @@
             case 'time':
               msg = sprintf(_('Please select a value that is no later than %s.'), element.value);
               break;
-            case 'number':
+            // case 'number':
             default:
               msg = sprintf(_('Please select a value that is no more than %s.'), element.value);
               break;
@@ -337,7 +337,7 @@
             case 'time':
               msg = sprintf(_('Please select a value that is no earlier than %s.'), element.value);
               break;
-            case 'number':
+            // case 'number':
             default:
               msg = sprintf(_('Please select a value that is no less than %s.'), element.value);
               break;
@@ -548,6 +548,51 @@
       writable: true
     });
 
+    var Renderer = {
+
+      show_warning: function show_warning(element) {
+        var msg = message_store.get(element);
+        if (msg) {
+          window.alert(msg);
+        }
+      },
+
+      set: function set(renderer, action) {
+        Renderer[renderer] = action;
+      }
+
+    };
+
+    /**
+     * check element's validity and report an error back to the user
+     */
+    function reportValidity() {
+      /* jshint -W040 */
+
+      /* if this is a <form>, check validity of all child inputs */
+      if (this instanceof window.HTMLFormElement) {
+        return Array.prototype.every.call(this.elements, reportValidity);
+      }
+
+      var valid = checkValidity.call(this);
+      if (!valid) {
+        /* TODO suppress warning, if checkValidity's invalid event is canceled. */
+        Renderer.show_warning(this);
+      }
+      /* jshint +W040 */
+      return valid;
+    }
+
+    /**
+     * publish a convenience function to replace the native element.reportValidity
+     */
+    reportValidity.install = installer('reportValidity', {
+      configurable: true,
+      enumerable: true,
+      value: reportValidity,
+      writable: true
+    });
+
     /**
      * TODO allow HTMLFieldSetElement, too
      */
@@ -592,7 +637,226 @@
     });
 
     /**
-     * TODO allow HTMLFieldSetElement, too
+     * calculate a date from a string according to HTML5
+     */
+
+    function string_to_date (string, element_type) {
+      var date = new Date(0);
+      switch (element_type) {
+        case 'date':
+          if (!/^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/.test(string)) {
+            return null;
+          }
+          date.setFullYear(Number(RegExp.$1));
+          date.setUTCMonth(Number(RegExp.$2) - 1, Number(RegExp.$3));
+          return date;
+
+        case 'month':
+          if (!/^([0-9]{4,})-(0[1-9]|1[012])$/.test(string)) {
+            return null;
+          }
+          date.setFullYear(Number(RegExp.$1));
+          date.setUTCMonth(Number(RegExp.$2) - 1, 1);
+          return date;
+
+        case 'week':
+          if (!/^([0-9]{4,})-W(0[1-9]|[1234][0-9]|5[0-3])$/.test(string)) {
+            return null;
+          }
+          date.setFullYear(Number(RegExp.$1));
+          var weekday = (date.getUTCDay() || 7) - 1;
+          /* get the monday of the week by subtracting current weekday from number
+           * of days to set */
+          date.setUTCDate(Number(RegExp.$2) * 7 - weekday);
+          return date;
+
+        case 'time':
+          if (!/^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
+            return null;
+          }
+          date.setUTCHours(Number(RegExp.$1), Number(RegExp.$2), Number(RegExp.$3 || 0), Number(RegExp.$4 || 0));
+          return date;
+      }
+
+      return null;
+    }
+
+    /* For a given date, get the ISO week number
+     *
+     * Source: http://stackoverflow.com/a/6117889/113195
+     *
+     * Based on information at:
+     *
+     *    http://www.merlyn.demon.co.uk/weekcalc.htm#WNR
+     *
+     * Algorithm is to find nearest thursday, it's year
+     * is the year of the week number. Then get weeks
+     * between that date and the first day of that year.
+     *
+     * Note that dates in one year can be weeks of previous
+     * or next year, overlap is up to 3 days.
+     *
+     * e.g. 2014/12/29 is Monday in week  1 of 2015
+     *      2012/1/1   is Sunday in week 52 of 2011
+     */
+
+    function get_week_of_year (d) {
+      /* Copy date so don't modify original */
+      d = new Date(+d);
+      d.setHours(0, 0, 0);
+      /* Set to nearest Thursday: current date + 4 - current day number
+       * Make Sunday's day number 7 */
+      d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+      /* Get first day of year */
+      var yearStart = new Date(d.getFullYear(), 0, 1);
+      /* Calculate full weeks to nearest Thursday */
+      var weekNo = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+      /* Return array of year and week number */
+      return [d.getFullYear(), weekNo];
+    }
+
+    function pad(num) {
+      var size = arguments.length <= 1 || arguments[1] === undefined ? 2 : arguments[1];
+
+      var s = num + '';
+      while (s.length < size) {
+        s = '0' + s;
+      }
+      return s;
+    }
+
+    /**
+     * calculate a string from a date according to HTML5
+     */
+    function date_to_string (date, element_type) {
+      switch (element_type) {
+        case 'date':
+          return sprintf('%s-%s-%s', date.getFullYear(), pad(date.getUTCMonth() + 1), pad(date.getUTCDate()));
+
+        case 'month':
+          return sprintf('%s-%s', date.getFullYear(), pad(date.getUTCMonth() + 1));
+
+        case 'week':
+          var params = get_week_of_year(date);
+          return sprintf.call(null, '%s-W%s', params[0], pad(params[1]));
+
+        case 'time':
+          return sprintf('%s:%s:%s.%s', pad(date.getUTCHours()), pad(date.getUTCMinutes()), pad(date.getUTCSeconds()), pad(date.getUTCMilliseconds(), 3)).replace(/(:00)?\.000$/, '');
+      }
+
+      return null;
+    }
+
+    /* and datetime-local? Spec says “Nah!” */
+    var applicable_types = ['date', 'month', 'week', 'time'];
+
+    /**
+     * implement the valueAsDate functionality
+     *
+     * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasdate
+     */
+    function valueAsDate() {
+      var value = arguments.length <= 0 || arguments[0] === undefined ? undefined : arguments[0];
+
+      /* jshint -W040 */
+      if (this.type in applicable_types) {
+        if (value !== undefined) {
+          /* setter: value must be null or a Date() */
+          if (value === null) {
+            this.value = '';
+          } else if (value instanceof Date) {
+            if (isNaN(value.getTime())) {
+              this.value = '';
+            } else {
+              this.value = date_to_string(value, this.type);
+            }
+          } else {
+            throw new window.DOMException('valueAsDate setter encountered invalid value', 'TypeError');
+          }
+          return;
+        }
+
+        var value_date = string_to_date(this.value, this.type);
+        return value_date instanceof Date ? value_date : null;
+      } else if (value !== undefined) {
+        /* trying to set a date on a not-date input fails */
+        throw new window.DOMException('valueAsDate setter cannot set date on this element', 'InvalidStateError');
+      }
+      /* jshint +W040 */
+
+      return null;
+    }
+
+    valueAsDate.install = installer('valueAsDate', {
+      configurable: true,
+      enumerable: true,
+      get: valueAsDate,
+      set: valueAsDate
+    });
+
+    var applicable_types$1 = ['date', 'month', 'week', 'time', 'datetime', 'datetime-local', 'number', 'range'];
+
+    /**
+     * implement the valueAsNumber functionality
+     *
+     * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasnumber
+     */
+    function valueAsNumber() {
+      var value = arguments.length <= 0 || arguments[0] === undefined ? undefined : arguments[0];
+
+      /* jshint -W040 */
+      if (this.type in applicable_types$1) {
+        if (this.type === 'range' && this.hasAttribute('multiple')) {
+          /* @see https://html.spec.whatwg.org/multipage/forms.html#do-not-apply */
+          return NaN;
+        }
+
+        if (value !== undefined) {
+          /* setter: value must be NaN or a finite number */
+          if (isNaN(value)) {
+            this.value = '';
+          } else if (typeof value === 'number' && window.isFinite(value)) {
+            try {
+              /* try setting as a date, but... */
+              valueAsDate.call(this, new Date(value));
+            } catch (e) {
+              /* ... when valueAsDate is not responsible, ... */
+              if (!(e instanceof window.DOMException)) {
+                throw e;
+              }
+              /* ... set it via Number.toString(). */
+              this.value = value.toString();
+            }
+          } else {
+            throw new window.DOMException('valueAsNumber setter encountered invalid value', 'TypeError');
+          }
+          return;
+        }
+
+        var rval = valueAsDate.call(this);
+        if (rval !== null) {
+          return +rval;
+        }
+        /* not parseFloat, because we want NaN for invalid values like "1.2xxy" */
+        return Number(this.value);
+      } else if (value !== undefined) {
+        /* trying to set a number on a not-number input fails */
+        throw new window.DOMException('valueAsNumber setter cannot set number on this element', 'InvalidStateError');
+      }
+      /* jshint +W040 */
+
+      return NaN;
+    }
+
+    valueAsNumber.install = installer('valueAsNumber', {
+      configurable: true,
+      enumerable: true,
+      get: valueAsNumber,
+      set: valueAsNumber
+    });
+
+    /**
+     * check, if an element will be subject to HTML5 validation
      */
     function willValidate() {
       /* jshint -W040 */
@@ -610,18 +874,28 @@
       set: undefined
     });
 
+    var version = '0.1.0';
+
     /**
      * public hyperform interface:
      */
     var hyperform = {
 
+      version: version,
+
       checkValidity: checkValidity,
+
+      reportValidity: reportValidity,
 
       setCustomValidity: setCustomValidity,
 
       validationMessage: validationMessage,
 
       ValidityState: ValidityState,
+
+      valueAsDate: valueAsDate,
+
+      valueAsNumber: valueAsNumber,
 
       willValidate: willValidate,
 
@@ -630,9 +904,12 @@
         var els_length = els.length;
         for (var i = 0; i < els_length; i++) {
           checkValidity.install(els[i]);
+          reportValidity.install(els[i]);
           setCustomValidity.install(els[i]);
           validationMessage.install(els[i]);
           ValidityState.install(els[i]);
+          valueAsDate.install(els[i]);
+          valueAsNumber.install(els[i]);
           willValidate.install(els[i]);
         }
       }

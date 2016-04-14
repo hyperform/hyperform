@@ -20,16 +20,18 @@ function pad(num, size=2) {
 export default function(date, element_type) {
   switch (element_type) {
     case 'date':
-      return sprintf('%s-%s-%s', date.getFullYear(), date.getUTCMonth() + 1,
-          date.getUTCDate());
+      return sprintf('%s-%s-%s',
+                     date.getFullYear(),
+                     pad(date.getUTCMonth() + 1),
+                     pad(date.getUTCDate()));
 
     case 'month':
-      return sprintf('%s-%s', date.getFullYear(), date.getUTCMonth() + 1);
+      return sprintf('%s-%s', date.getFullYear(),
+                     pad(date.getUTCMonth() + 1));
 
     case 'week':
       let params = get_week_of_year(date);
-      params.unshift('%s-W%s');
-      return sprintf.apply(null, params);
+      return sprintf.call(null, '%s-W%s', params[0], pad(params[1]));
 
     case 'time':
       return sprintf('%s:%s:%s.%s',
