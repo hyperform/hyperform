@@ -67,7 +67,7 @@ const validity_state_checkers = {
           msg = sprintf(_('Please select a value that is no later than %s.'),
               element.value);
           break;
-        case 'number':
+        // case 'number':
         default:
           msg = sprintf(_('Please select a value that is no more than %s.'),
               element.value);
@@ -92,7 +92,7 @@ const validity_state_checkers = {
           msg = sprintf(_('Please select a value that is no earlier than %s.'),
               element.value);
           break;
-        case 'number':
+        // case 'number':
         default:
           msg = sprintf(_('Please select a value that is no less than %s.'),
               element.value);
