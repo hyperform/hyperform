@@ -17,7 +17,7 @@ const applicable_types = [ 'date', 'month', 'week', 'time', ];
  */
 function valueAsDate(value=undefined) {
   /* jshint -W040 */
-  if (this.type in applicable_types) {
+  if (applicable_types.indexOf(this.type) > -1) {
     if (value !== undefined) {
       /* setter: value must be null or a Date() */
       if (value === null) {

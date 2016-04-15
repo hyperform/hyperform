@@ -16,7 +16,7 @@ const applicable_types = [ 'date', 'month', 'week', 'time', 'datetime',
  */
 function valueAsNumber(value=undefined) {
   /* jshint -W040 */
-  if (this.type in applicable_types) {
+  if (applicable_types.indexOf(this.type) > -1) {
     if (this.type === 'range' && this.hasAttribute('multiple')) {
       /* @see https://html.spec.whatwg.org/multipage/forms.html#do-not-apply */
       return NaN;

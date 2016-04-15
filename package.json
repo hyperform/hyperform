@@ -24,6 +24,7 @@
   "devDependencies": {
     "ava": "^0.14.0",
     "babel-register": "^6.7.2",
+    "jsdom": "^8.3.1",
     "jshint": "^2.9.1",
     "jspm": "^0.17.0-beta.13",
     "uglify-js": "^2.6.2"
@@ -38,7 +39,10 @@
     }
   },
   "ava": {
-    "require": "babel-register",
+    "require": [
+      "babel-register",
+      "./test/helpers/setup-browser-env.js"
+    ],
     "babel": "inherit"
   },
   "babel": {
