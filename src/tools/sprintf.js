@@ -3,19 +3,32 @@
 
 export default function(str, ...args) {
   var args_length = args.length;
+  var global_index = 0;
 
-  for (let i = 0; i < args_length; i++) {
-    let arg = args[i];
+  return str.replace(/%([0-9]+\$)?([sl])/g, (match, position, type) => {
+    var local_index = global_index;
+    if (position) {
+      local_index = Number(position.replace(/\$$/, '')) - 1;
+    }
+    global_index += 1;
+
+    var arg = '';
+    if (args_length > local_index) {
+      arg = args[local_index];
+    }
+
     if (arg instanceof Date ||
         typeof arg === 'number' ||
         arg instanceof Number) {
       /* try getting a localized representation of dates and numbers, if the
        * browser supports this */
-      arg = (arg.toLocaleString || arg.toString).call(arg);
+      if (type === 'l') {
+        arg = (arg.toLocaleString || arg.toString).call(arg);
+      } else {
+        arg = arg.toString();
+      }
     }
-    str = str.replace('%s', args[i]);
-    str = str.replace(new RegExp('%'+(i+1)+'\\$s', 'g'), args[i]);
-  }
 
-  return str;
+    return arg;
+  });
 }

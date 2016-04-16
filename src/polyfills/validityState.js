@@ -64,12 +64,12 @@ const validity_state_checkers = {
         case 'datetime':
         case 'datetime-local':
         case 'time':
-          msg = sprintf(_('Please select a value that is no later than %s.'),
+          msg = sprintf(_('Please select a value that is no later than %l.'),
               element.value);
           break;
         // case 'number':
         default:
-          msg = sprintf(_('Please select a value that is no more than %s.'),
+          msg = sprintf(_('Please select a value that is no more than %l.'),
               element.value);
           break;
       }
@@ -89,12 +89,12 @@ const validity_state_checkers = {
         case 'datetime':
         case 'datetime-local':
         case 'time':
-          msg = sprintf(_('Please select a value that is no earlier than %s.'),
+          msg = sprintf(_('Please select a value that is no earlier than %l.'),
               element.value);
           break;
         // case 'number':
         default:
-          msg = sprintf(_('Please select a value that is no less than %s.'),
+          msg = sprintf(_('Please select a value that is no less than %l.'),
               element.value);
           break;
       }
@@ -119,11 +119,11 @@ const validity_state_checkers = {
 
       if (sole !== false) {
         message_store.set(element,
-          sprintf(_('Please select a valid value. The nearest valid value is %s.'),
+          sprintf(_('Please select a valid value. The nearest valid value is %l.'),
                   sole));
       } else {
         message_store.set(element,
-          sprintf(_('Please select a valid value. The two nearest valid values are %s and %s.'),
+          sprintf(_('Please select a valid value. The two nearest valid values are %l and %l.'),
                   min, max));
       }
     }
@@ -136,7 +136,7 @@ const validity_state_checkers = {
 
     if (invalid) {
       message_store.set(element,
-        sprintf(_('Please shorten this text to %s characters or less (you are currently using %s characters).'),
+        sprintf(_('Please shorten this text to %l characters or less (you are currently using %l characters).'),
                 element.getAttribute('maxlength'), element.value.length));
     }
 
@@ -148,7 +148,7 @@ const validity_state_checkers = {
 
     if (invalid) {
       message_store.set(element,
-        sprintf(_('Please lengthen this text to %s characters or more (you are currently using %s characters).'),
+        sprintf(_('Please lengthen this text to %l characters or more (you are currently using %l characters).'),
                 element.getAttribute('maxlength'), element.value.length));
     }
 

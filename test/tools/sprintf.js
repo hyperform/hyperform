@@ -15,12 +15,12 @@ test('sprintf replace two arguments', t => {
 
 test('sprintf replace number', t => {
   var num = 12.34;
-  var snum = (num.toLocaleString || num.toString).call(num);
-  t.is(sprintf('a%sb', num), 'a'+snum+'b');
+  t.is(sprintf('a%sb', num), 'a'+num.toString()+'b');
+  t.is(sprintf('a%lb', num), 'a'+num.toLocaleString()+'b');
 });
 
-test.skip('sprintf replace date', t => {
+test('sprintf replace date', t => {
   var date = new Date();
-  var sdate = (date.toLocaleString || date.toString).call(date);
-  t.is(sprintf('a%sb', date), 'a'+sdate+'b');
+  t.is(sprintf('a%sb', date), 'a'+date+'b');
+  t.is(sprintf('a%lb', date), 'a'+date.toLocaleString()+'b');
 });
