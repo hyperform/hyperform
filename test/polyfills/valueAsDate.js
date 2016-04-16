@@ -35,6 +35,13 @@ test('valueAsDate setter (week)', t => {
   t.is(+valueAsDate.call(el), +(new Date(Date.UTC(2015, 11, 14))));
 });
 
+test('valueAsDate setter with wrong type', t => {
+  t.throws(() => valueAsDate.call({
+    type: 'date',
+    value: '',
+  }, '2015-01-01'), window.DOMException);
+});
+
 test('valueAsDate getter for non-applicable type', t => {
   t.is(valueAsDate.call({
     type: 'text',
