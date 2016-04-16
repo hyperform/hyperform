@@ -636,9 +636,26 @@ define(function () { 'use strict';
     });
 
     /**
-     * calculate a date from a string according to HTML5
+     * return a new Date() representing the ISO date for a week number
+     *
+     * @see http://stackoverflow.com/a/16591175/113195
      */
 
+    function get_date_from_week (week, year) {
+      var date = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
+
+      if (date.getDay() <= 4 /* thursday */) {
+          date.setDate(date.getDate() - date.getDay() + 1);
+        } else {
+        date.setDate(date.getDate() + 8 - date.getDay());
+      }
+
+      return date;
+    }
+
+    /**
+     * calculate a date from a string according to HTML5
+     */
     function string_to_date (string, element_type) {
       var date = new Date(0);
       switch (element_type) {
@@ -662,12 +679,7 @@ define(function () { 'use strict';
           if (!/^([0-9]{4,})-W(0[1-9]|[1234][0-9]|5[0-3])$/.test(string)) {
             return null;
           }
-          date.setFullYear(Number(RegExp.$1));
-          var weekday = (date.getUTCDay() || 7) - 1;
-          /* get the monday of the week by subtracting current weekday from number
-           * of days to set */
-          date.setUTCDate(Number(RegExp.$2) * 7 - weekday);
-          return date;
+          return get_date_from_week(Number(RegExp.$2), Number(RegExp.$1));
 
         case 'time':
           if (!/^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
@@ -758,7 +770,7 @@ define(function () { 'use strict';
       var value = arguments.length <= 0 || arguments[0] === undefined ? undefined : arguments[0];
 
       /* jshint -W040 */
-      if (this.type in applicable_types) {
+      if (applicable_types.indexOf(this.type) > -1) {
         if (value !== undefined) {
           /* setter: value must be null or a Date() */
           if (value === null) {
@@ -804,7 +816,7 @@ define(function () { 'use strict';
       var value = arguments.length <= 0 || arguments[0] === undefined ? undefined : arguments[0];
 
       /* jshint -W040 */
-      if (this.type in applicable_types$1) {
+      if (applicable_types$1.indexOf(this.type) > -1) {
         if (this.type === 'range' && this.hasAttribute('multiple')) {
           /* @see https://html.spec.whatwg.org/multipage/forms.html#do-not-apply */
           return NaN;

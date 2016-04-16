@@ -19,6 +19,22 @@ test('valueAsDate setter (month)', t => {
   t.is(+valueAsDate.call(el), +(new Date(Date.UTC(2015, 0, 1))));
 });
 
+test('valueAsDate getter (week)', t => {
+  t.is(+valueAsDate.call({
+    type: 'week',
+    value: '2015-W51',
+  }), +(new Date(Date.UTC(2015, 11, 14))));
+});
+
+test('valueAsDate setter (week)', t => {
+  let el = {
+    type: 'week',
+    value: '',
+  };
+  valueAsDate.call(el, new Date(Date.UTC(2015, 11, 14)));
+  t.is(+valueAsDate.call(el), +(new Date(Date.UTC(2015, 11, 14))));
+});
+
 test('valueAsDate getter for non-applicable type', t => {
   t.is(valueAsDate.call({
     type: 'text',

@@ -1,6 +1,9 @@
 'use strict';
 
 
+import get_date_from_week from './get_date_from_week';
+
+
 /**
  * calculate a date from a string according to HTML5
  */
@@ -28,12 +31,7 @@ export default function(string, element_type) {
       if (! /^([0-9]{4,})-W(0[1-9]|[1234][0-9]|5[0-3])$/.test(string)) {
         return null;
       }
-      date.setFullYear(Number(RegExp.$1));
-      let weekday = (date.getUTCDay() || 7) - 1;
-      /* get the monday of the week by subtracting current weekday from number
-       * of days to set */
-      date.setUTCDate(Number(RegExp.$2) * 7 - weekday);
-      return date;
+      return get_date_from_week(Number(RegExp.$2), Number(RegExp.$1));
 
     case 'time':
       if (! /^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
