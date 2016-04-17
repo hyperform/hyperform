@@ -24,7 +24,7 @@ export default function(element) {
 
     /* it's type must be in the whitelist or missing (select, textarea) */
     if (! element.type ||
-        validation_candidate_types.includes(element.type)) {
+        validation_candidate_types.indexOf(element.type) > -1) {
 
       /* it mustn't be disabled or readonly */
       if (! element.disabled && ! element.readonly) {

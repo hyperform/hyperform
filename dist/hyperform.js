@@ -36,7 +36,7 @@
       if (element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement) {
 
         /* it's type must be in the whitelist or missing (select, textarea) */
-        if (!element.type || validation_candidate_types.includes(element.type)) {
+        if (!element.type || validation_candidate_types.indexOf(element.type) > -1) {
 
           /* it mustn't be disabled or readonly */
           if (!element.disabled && !element.readonly) {
@@ -93,19 +93,32 @@
       }
 
       var args_length = args.length;
+      var global_index = 0;
 
-      for (var i = 0; i < args_length; i++) {
-        var arg = args[i];
+      return str.replace(/%([0-9]+\$)?([sl])/g, function (match, position, type) {
+        var local_index = global_index;
+        if (position) {
+          local_index = Number(position.replace(/\$$/, '')) - 1;
+        }
+        global_index += 1;
+
+        var arg = '';
+        if (args_length > local_index) {
+          arg = args[local_index];
+        }
+
         if (arg instanceof Date || typeof arg === 'number' || arg instanceof Number) {
           /* try getting a localized representation of dates and numbers, if the
            * browser supports this */
-          arg = (arg.toLocaleString || arg.toString).call(arg);
+          if (type === 'l') {
+            arg = (arg.toLocaleString || arg.toString).call(arg);
+          } else {
+            arg = arg.toString();
+          }
         }
-        str = str.replace('%s', args[i]);
-        str = str.replace(new RegExp('%' + (i + 1) + '\\$s', 'g'), args[i]);
-      }
 
-      return str;
+        return arg;
+      });
     }
 
     /**
@@ -312,11 +325,11 @@
             case 'datetime':
             case 'datetime-local':
             case 'time':
-              msg = sprintf(_('Please select a value that is no later than %s.'), element.value);
+              msg = sprintf(_('Please select a value that is no later than %l.'), element.value);
               break;
             // case 'number':
             default:
-              msg = sprintf(_('Please select a value that is no more than %s.'), element.value);
+              msg = sprintf(_('Please select a value that is no more than %l.'), element.value);
               break;
           }
           message_store.set(element, msg);
@@ -335,11 +348,11 @@
             case 'datetime':
             case 'datetime-local':
             case 'time':
-              msg = sprintf(_('Please select a value that is no earlier than %s.'), element.value);
+              msg = sprintf(_('Please select a value that is no earlier than %l.'), element.value);
               break;
             // case 'number':
             default:
-              msg = sprintf(_('Please select a value that is no less than %s.'), element.value);
+              msg = sprintf(_('Please select a value that is no less than %l.'), element.value);
               break;
           }
           message_store.set(element, msg);
@@ -368,9 +381,9 @@
           }
 
           if (sole !== false) {
-            message_store.set(element, sprintf(_('Please select a valid value. The nearest valid value is %s.'), sole));
+            message_store.set(element, sprintf(_('Please select a valid value. The nearest valid value is %l.'), sole));
           } else {
-            message_store.set(element, sprintf(_('Please select a valid value. The two nearest valid values are %s and %s.'), min, max));
+            message_store.set(element, sprintf(_('Please select a valid value. The two nearest valid values are %l and %l.'), min, max));
           }
         }
 
@@ -381,7 +394,7 @@
         var invalid = !test_maxlength(element);
 
         if (invalid) {
-          message_store.set(element, sprintf(_('Please shorten this text to %s characters or less (you are currently using %s characters).'), element.getAttribute('maxlength'), element.value.length));
+          message_store.set(element, sprintf(_('Please shorten this text to %l characters or less (you are currently using %l characters).'), element.getAttribute('maxlength'), element.value.length));
         }
 
         return invalid;
@@ -391,7 +404,7 @@
         var invalid = !test_minlength(element);
 
         if (invalid) {
-          message_store.set(element, sprintf(_('Please lengthen this text to %s characters or more (you are currently using %s characters).'), element.getAttribute('maxlength'), element.value.length));
+          message_store.set(element, sprintf(_('Please lengthen this text to %l characters or more (you are currently using %l characters).'), element.getAttribute('maxlength'), element.value.length));
         }
 
         return invalid;
