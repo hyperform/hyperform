@@ -1,10 +1,7 @@
 'use strict';
 
 
-/* missing from this set are: button, hidden, menu (from <button>), reset */
-const validation_candidate_types = [ 'checkbox', 'color', 'date', 'datetime',
-  'datetime-local', 'email', 'file', 'image', 'month', 'number', 'password',
-  'radio', 'range', 'search', 'submit', 'tel', 'text', 'time', 'url', 'week', ];
+import { validation_candidates } from './types';
 
 
 /**
@@ -24,7 +21,7 @@ export default function(element) {
 
     /* it's type must be in the whitelist or missing (select, textarea) */
     if (! element.type ||
-        validation_candidate_types.indexOf(element.type) > -1) {
+        validation_candidates.indexOf(element.type) > -1) {
 
       /* it mustn't be disabled or readonly */
       if (! element.disabled && ! element.readonly) {

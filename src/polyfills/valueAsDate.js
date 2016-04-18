@@ -5,10 +5,7 @@ import mark from '../tools/mark';
 import installer from '../tools/property_installer';
 import string_to_date from '../tools/string_to_date';
 import date_to_string from '../tools/date_to_string';
-
-
-/* and datetime-local? Spec says “Nah!” */
-const applicable_types = [ 'date', 'month', 'week', 'time', ];
+import { dates } from '../components/types';
 
 
 /**
@@ -18,7 +15,7 @@ const applicable_types = [ 'date', 'month', 'week', 'time', ];
  */
 function valueAsDate(value=undefined) {
   /* jshint -W040 */
-  if (applicable_types.indexOf(this.type) > -1) {
+  if (dates.indexOf(this.type) > -1) {
     if (value !== undefined) {
       /* setter: value must be null or a Date() */
       if (value === null) {

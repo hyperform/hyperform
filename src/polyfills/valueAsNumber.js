@@ -3,11 +3,8 @@
 
 import mark from '../tools/mark';
 import installer from '../tools/property_installer';
+import { numbers } from '../components/types';
 import valueAsDate from './valueAsDate';
-
-
-const applicable_types = [ 'date', 'month', 'week', 'time', 'datetime',
-  'datetime-local', 'number', 'range', ];
 
 
 /**
@@ -17,7 +14,7 @@ const applicable_types = [ 'date', 'month', 'week', 'time', 'datetime',
  */
 function valueAsNumber(value=undefined) {
   /* jshint -W040 */
-  if (applicable_types.indexOf(this.type) > -1) {
+  if (numbers.indexOf(this.type) > -1) {
     if (this.type === 'range' && this.hasAttribute('multiple')) {
       /* @see https://html.spec.whatwg.org/multipage/forms.html#do-not-apply */
       return NaN;
