@@ -17,8 +17,23 @@ function pad(num, size=2) {
 /**
  * calculate a string from a date according to HTML5
  */
-export default function(date, element_type) {
+export default function date_to_string(date, element_type) {
   switch (element_type) {
+    case 'datetime':
+      return date_to_string(date, 'date') + 'T' +
+             date_to_string(date, 'time');
+
+    case 'datetime-local':
+      return sprintf('%s-%s-%sT%s:%s:%s.%s',
+                     date.getFullYear(),
+                     pad(date.getMonth() + 1),
+                     pad(date.getDate()),
+                     pad(date.getHours()),
+                     pad(date.getMinutes()),
+                     pad(date.getSeconds()),
+                     pad(date.getMilliseconds(), 3)
+                   ).replace(/(:00)?\.000$/, '');
+
     case 'date':
       return sprintf('%s-%s-%s',
                      date.getUTCFullYear(),
