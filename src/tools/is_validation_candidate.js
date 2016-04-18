@@ -1,7 +1,7 @@
 'use strict';
 
 
-import { validation_candidates } from './types';
+import { validation_candidates } from '../components/types';
 
 
 /**

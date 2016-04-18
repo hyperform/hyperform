@@ -1,8 +1,17 @@
 define(function () { 'use strict';
 
-    /* missing from this set are: button, hidden, menu (from <button>), reset */
+    /* and datetime-local? Spec says “Nah!” */
 
-    var validation_candidate_types = ['checkbox', 'color', 'date', 'datetime', 'datetime-local', 'email', 'file', 'image', 'month', 'number', 'password', 'radio', 'range', 'search', 'submit', 'tel', 'text', 'time', 'url', 'week'];
+    var dates = ['datetime', 'date', 'month', 'week', 'time'];
+
+    var plain_numbers = ['number', 'range'];
+
+    var numbers = dates.concat(plain_numbers, 'datetime-local');
+
+    var text = ['text', 'search', 'url', 'tel', 'email', 'password'];
+
+    /* missing from this set are: button, hidden, menu (from <button>), reset */
+    var validation_candidates = ['checkbox', 'color', 'file', 'image', 'radio', 'submit'].concat(numbers, text);
 
     /**
      * check if an element is a candidate for constraint validation
@@ -14,7 +23,7 @@ define(function () { 'use strict';
       if (element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement) {
 
         /* it's type must be in the whitelist or missing (select, textarea) */
-        if (!element.type || validation_candidate_types.indexOf(element.type) > -1) {
+        if (!element.type || validation_candidates.indexOf(element.type) > -1) {
 
           /* it mustn't be disabled or readonly */
           if (!element.disabled && !element.readonly) {
@@ -479,7 +488,7 @@ define(function () { 'use strict';
      * TODO allow HTMLFieldSetElement, too
      */
     var ValidityState = function ValidityState(element) {
-      if (!(element instanceof HTMLElement)) {
+      if (!(element instanceof window.HTMLElement)) {
         throw new Error('cannot create a ValidityState for a non-element');
       }
 
@@ -690,10 +699,10 @@ define(function () { 'use strict';
     function get_date_from_week (week, year) {
       var date = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
 
-      if (date.getDay() <= 4 /* thursday */) {
-          date.setDate(date.getDate() - date.getDay() + 1);
+      if (date.getUTCDay() <= 4 /* thursday */) {
+          date.setUTCDate(date.getUTCDate() - date.getUTCDay() + 1);
         } else {
-        date.setDate(date.getDate() + 8 - date.getDay());
+        date.setUTCDate(date.getUTCDate() + 8 - date.getUTCDay());
       }
 
       return date;
@@ -705,11 +714,24 @@ define(function () { 'use strict';
     function string_to_date (string, element_type) {
       var date = new Date(0);
       switch (element_type) {
+        case 'datetime':
+          if (!/^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3})))?$/.test(string)) {
+            return null;
+          }
+          var ms = RegExp.$7;
+          while (ms.length < 3) {
+            ms += '0';
+          }
+          date.setUTCFullYear(Number(RegExp.$1));
+          date.setUTCMonth(Number(RegExp.$2) - 1, Number(RegExp.$3));
+          date.setUTCHours(Number(RegExp.$4), Number(RegExp.$5), Number(RegExp.$6 || 0), Number(ms));
+          return date;
+
         case 'date':
           if (!/^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/.test(string)) {
             return null;
           }
-          date.setFullYear(Number(RegExp.$1));
+          date.setUTCFullYear(Number(RegExp.$1));
           date.setUTCMonth(Number(RegExp.$2) - 1, Number(RegExp.$3));
           return date;
 
@@ -717,7 +739,7 @@ define(function () { 'use strict';
           if (!/^([0-9]{4,})-(0[1-9]|1[012])$/.test(string)) {
             return null;
           }
-          date.setFullYear(Number(RegExp.$1));
+          date.setUTCFullYear(Number(RegExp.$1));
           date.setUTCMonth(Number(RegExp.$2) - 1, 1);
           return date;
 
@@ -760,16 +782,16 @@ define(function () { 'use strict';
     function get_week_of_year (d) {
       /* Copy date so don't modify original */
       d = new Date(+d);
-      d.setHours(0, 0, 0);
+      d.setUTCHours(0, 0, 0);
       /* Set to nearest Thursday: current date + 4 - current day number
        * Make Sunday's day number 7 */
-      d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
       /* Get first day of year */
-      var yearStart = new Date(d.getFullYear(), 0, 1);
+      var yearStart = new Date(d.getUTCFullYear(), 0, 1);
       /* Calculate full weeks to nearest Thursday */
       var weekNo = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
       /* Return array of year and week number */
-      return [d.getFullYear(), weekNo];
+      return [d.getUTCFullYear(), weekNo];
     }
 
     function pad(num) {
@@ -785,13 +807,19 @@ define(function () { 'use strict';
     /**
      * calculate a string from a date according to HTML5
      */
-    function date_to_string (date, element_type) {
+    function date_to_string(date, element_type) {
       switch (element_type) {
+        case 'datetime':
+          return date_to_string(date, 'date') + 'T' + date_to_string(date, 'time');
+
+        case 'datetime-local':
+          return sprintf('%s-%s-%sT%s:%s:%s.%s', date.getFullYear(), pad(date.getMonth() + 1), pad(date.getDate()), pad(date.getHours()), pad(date.getMinutes()), pad(date.getSeconds()), pad(date.getMilliseconds(), 3)).replace(/(:00)?\.000$/, '');
+
         case 'date':
-          return sprintf('%s-%s-%s', date.getFullYear(), pad(date.getUTCMonth() + 1), pad(date.getUTCDate()));
+          return sprintf('%s-%s-%s', date.getUTCFullYear(), pad(date.getUTCMonth() + 1), pad(date.getUTCDate()));
 
         case 'month':
-          return sprintf('%s-%s', date.getFullYear(), pad(date.getUTCMonth() + 1));
+          return sprintf('%s-%s', date.getUTCFullYear(), pad(date.getUTCMonth() + 1));
 
         case 'week':
           var params = get_week_of_year(date);
@@ -804,9 +832,6 @@ define(function () { 'use strict';
       return null;
     }
 
-    /* and datetime-local? Spec says “Nah!” */
-    var applicable_types = ['date', 'month', 'week', 'time'];
-
     /**
      * implement the valueAsDate functionality
      *
@@ -816,7 +841,7 @@ define(function () { 'use strict';
       var value = arguments.length <= 0 || arguments[0] === undefined ? undefined : arguments[0];
 
       /* jshint -W040 */
-      if (applicable_types.indexOf(this.type) > -1) {
+      if (dates.indexOf(this.type) > -1) {
         if (value !== undefined) {
           /* setter: value must be null or a Date() */
           if (value === null) {
@@ -853,8 +878,6 @@ define(function () { 'use strict';
 
     mark(valueAsDate);
 
-    var applicable_types$1 = ['date', 'month', 'week', 'time', 'datetime', 'datetime-local', 'number', 'range'];
-
     /**
      * implement the valueAsNumber functionality
      *
@@ -864,7 +887,7 @@ define(function () { 'use strict';
       var value = arguments.length <= 0 || arguments[0] === undefined ? undefined : arguments[0];
 
       /* jshint -W040 */
-      if (applicable_types$1.indexOf(this.type) > -1) {
+      if (numbers.indexOf(this.type) > -1) {
         if (this.type === 'range' && this.hasAttribute('multiple')) {
           /* @see https://html.spec.whatwg.org/multipage/forms.html#do-not-apply */
           return NaN;
@@ -964,10 +987,10 @@ define(function () { 'use strict';
 
       capture: function capture(form) {
         var els;
-        if (form === window || form instanceof HTMLDocument) {
+        if (form === window || form instanceof window.HTMLDocument) {
           /* install on the prototypes, when called for the document */
-          els = [HTMLInputElement.prototype, HTMLSelectElement.prototype, HTMLTextAreaElement.prototype];
-        } else if (form instanceof HTMLFormElement || form instanceof HTMLFieldSetElement) {
+          els = [window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype];
+        } else if (form instanceof window.HTMLFormElement || form instanceof window.HTMLFieldSetElement) {
           els = form.elements;
         }
 
