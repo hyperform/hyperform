@@ -1,6 +1,7 @@
 'use strict';
 
 
+import mark from '../tools/mark';
 import installer from '../tools/property_installer';
 import message_store from '../components/message_store';
 
@@ -26,5 +27,6 @@ setCustomValidity.install = installer('setCustomValidity', {
   set: undefined,
 });
 
+mark(setCustomValidity);
 
 export default setCustomValidity;

@@ -1,6 +1,7 @@
 'use strict';
 
 
+import mark from '../tools/mark';
 import installer from '../tools/property_installer';
 import is_validation_candidate from '../tools/is_validation_candidate';
 
@@ -25,5 +26,6 @@ willValidate.install = installer('willValidate', {
   set: undefined,
 });
 
+mark(willValidate);
 
 export default willValidate;

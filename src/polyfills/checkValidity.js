@@ -1,9 +1,10 @@
 'use strict';
 
 
-import trigger_event from '../tools/trigger_event';
-import installer from '../tools/property_installer';
 import is_validation_candidate from '../tools/is_validation_candidate';
+import mark from '../tools/mark';
+import installer from '../tools/property_installer';
+import trigger_event from '../tools/trigger_event';
 import ValidityState from './validityState';
 
 
@@ -43,5 +44,6 @@ checkValidity.install = installer('checkValidity', {
   writable: true,
 });
 
+mark(checkValidity);
 
 export default checkValidity;

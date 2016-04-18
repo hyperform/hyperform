@@ -1,26 +1,5 @@
 define(function () { 'use strict';
 
-    function trigger_event (element, event, _ref) {
-        var _ref$bubbles = _ref.bubbles;
-        var bubbles = _ref$bubbles === undefined ? true : _ref$bubbles;
-        var _ref$cancelable = _ref.cancelable;
-        var cancelable = _ref$cancelable === undefined ? false : _ref$cancelable;
-
-        if (!(event instanceof window.Event)) {
-            var _event = document.createEvent('Event');
-            _event.initEvent(event, bubbles, cancelable);
-            event = _event;
-        }
-        element.dispatchEvent(event);
-    }
-
-    function installer (property, descriptor) {
-      return function (element) {
-        delete element[property];
-        Object.defineProperty(element, property, descriptor);
-      };
-    }
-
     /* missing from this set are: button, hidden, menu (from <button>), reset */
 
     var validation_candidate_types = ['checkbox', 'color', 'date', 'datetime', 'datetime-local', 'email', 'file', 'image', 'month', 'number', 'password', 'radio', 'range', 'search', 'submit', 'tel', 'text', 'time', 'url', 'week'];
@@ -48,6 +27,47 @@ define(function () { 'use strict';
 
       /* this is no HTML5 validation candidate... */
       return false;
+    }
+
+    /**
+     * mark an object with a 'hyperform=true' property
+     *
+     * We use this to distinguish our properties from the native ones. Usage:
+     * js> obj.hyperform === true
+     */
+
+    function mark (obj) {
+      if (typeof obj !== 'object') {
+        /* do it old style for primitive values */
+        obj.hyperform = true;
+      } else {
+        Object.defineProperty(obj, 'hyperform', {
+          value: true
+        });
+      }
+
+      return obj;
+    }
+
+    function installer (property, descriptor) {
+      return function (element) {
+        delete element[property];
+        Object.defineProperty(element, property, descriptor);
+      };
+    }
+
+    function trigger_event (element, event, _ref) {
+        var _ref$bubbles = _ref.bubbles;
+        var bubbles = _ref$bubbles === undefined ? true : _ref$bubbles;
+        var _ref$cancelable = _ref.cancelable;
+        var cancelable = _ref$cancelable === undefined ? false : _ref$cancelable;
+
+        if (!(event instanceof window.Event)) {
+            var _event = document.createEvent('Event');
+            _event.initEvent(event, bubbles, cancelable);
+            event = _event;
+        }
+        element.dispatchEvent(event);
     }
 
     function sliceIterator(arr, i) {
@@ -86,6 +106,36 @@ define(function () { 'use strict';
       }
     };
 
+    /**
+     * get previous and next valid values for a stepped input element
+     *
+     * TODO add support for date, time, ...
+     */
+
+    function get_next_valid (element) {
+      var min = Number(element.getAttribute('min') || 0);
+      var max = Number(element.getAttribute('max') || 100);
+      var step = Number(element.getAttribute('step') || 1);
+      var value = Number(element.value || 0);
+
+      var prev = min + Math.floor((value - min) / step) * step;
+      var next = min + (Math.floor((value - min) / step) + 1) * step;
+
+      if (prev < min) {
+        prev = null;
+      } else if (prev > max) {
+        prev = max;
+      }
+
+      if (next > max) {
+        next = null;
+      } else if (next < min) {
+        next = min;
+      }
+
+      return [prev, next];
+    }
+
     function sprintf (str) {
       for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
         args[_key - 1] = arguments[_key];
@@ -120,38 +170,6 @@ define(function () { 'use strict';
       });
     }
 
-    /**
-     * get previous and next valid values for a stepped input element
-     *
-     * TODO add support for date, time, ...
-     */
-
-    function get_next_valid (element) {
-      var min = Number(element.getAttribute('min') || 0);
-      var max = Number(element.getAttribute('max') || 100);
-      var step = Number(element.getAttribute('step') || 1);
-      var value = Number(element.value || 0);
-
-      var prev = min + Math.floor((value - min) / step) * step;
-      var next = min + (Math.floor((value - min) / step) + 1) * step;
-
-      if (prev < min) {
-        prev = null;
-      } else if (prev > max) {
-        prev = max;
-      }
-
-      if (next > max) {
-        next = null;
-      } else if (next < min) {
-        next = min;
-      }
-
-      return [prev, next];
-    }
-
-    var message_store = new WeakMap();
-
     var catalog = {};
 
     function _ (s) {
@@ -160,6 +178,8 @@ define(function () { 'use strict';
       }
       return s;
     }
+
+    var message_store = new WeakMap();
 
     /**
      * test the max attribute
@@ -517,14 +537,7 @@ define(function () { 'use strict';
       set: undefined
     });
 
-    /**
-     * whether we deal with this or the native ValidityState:
-     *
-     * js> element.validity.hyperform === true
-     */
-    Object.defineProperty(ValidityStatePrototype, 'hyperform', {
-      value: true
-    });
+    mark(ValidityStatePrototype);
 
     /**
      * publish a convenience function to replace the native element.validity
@@ -572,6 +585,8 @@ define(function () { 'use strict';
       writable: true
     });
 
+    mark(checkValidity);
+
     var Renderer = {
 
       show_warning: function show_warning(element) {
@@ -617,6 +632,8 @@ define(function () { 'use strict';
       writable: true
     });
 
+    mark(reportValidity);
+
     /**
      * TODO allow HTMLFieldSetElement, too
      */
@@ -636,6 +653,8 @@ define(function () { 'use strict';
       get: setCustomValidity,
       set: undefined
     });
+
+    mark(setCustomValidity);
 
     /**
      * TODO allow HTMLFieldSetElement, too
@@ -659,6 +678,8 @@ define(function () { 'use strict';
       get: validationMessage,
       set: undefined
     });
+
+    mark(validationMessage);
 
     /**
      * return a new Date() representing the ISO date for a week number
@@ -830,6 +851,8 @@ define(function () { 'use strict';
       set: valueAsDate
     });
 
+    mark(valueAsDate);
+
     var applicable_types$1 = ['date', 'month', 'week', 'time', 'datetime', 'datetime-local', 'number', 'range'];
 
     /**
@@ -891,6 +914,8 @@ define(function () { 'use strict';
       set: valueAsNumber
     });
 
+    mark(valueAsNumber);
+
     /**
      * check, if an element will be subject to HTML5 validation
      */
@@ -909,6 +934,8 @@ define(function () { 'use strict';
       get: willValidate,
       set: undefined
     });
+
+    mark(willValidate);
 
     var version = '0.1.0';
 

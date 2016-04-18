@@ -7,11 +7,12 @@
  */
 
 
-import installer from '../tools/property_installer';
-import sprintf from '../tools/sprintf';
 import get_next_valid from '../tools/get_next_valid';
-import message_store from '../components/message_store';
+import installer from '../tools/property_installer';
+import mark from '../tools/mark';
+import sprintf from '../tools/sprintf';
 import _ from '../components/localization';
+import message_store from '../components/message_store';
 import test_max from '../validators/max';
 import test_maxlength from '../validators/maxlength';
 import test_min from '../validators/min';
@@ -262,14 +263,7 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
   set: undefined,
 });
 
-/**
- * whether we deal with this or the native ValidityState:
- *
- * js> element.validity.hyperform === true
- */
-Object.defineProperty(ValidityStatePrototype, 'hyperform', {
-  value: true,
-});
+mark(ValidityStatePrototype);
 
 
 /**

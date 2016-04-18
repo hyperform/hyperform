@@ -1,6 +1,7 @@
 'use strict';
 
 
+import mark from '../tools/mark';
 import installer from '../tools/property_installer';
 import string_to_date from '../tools/string_to_date';
 import date_to_string from '../tools/date_to_string';
@@ -57,5 +58,6 @@ valueAsDate.install = installer('valueAsDate', {
   set: valueAsDate,
 });
 
+mark(valueAsDate);
 
 export default valueAsDate;

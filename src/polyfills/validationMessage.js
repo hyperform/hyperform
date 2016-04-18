@@ -1,6 +1,7 @@
 'use strict';
 
 
+import mark from '../tools/mark';
 import installer from '../tools/property_installer';
 import message_store from '../components/message_store';
 
@@ -29,5 +30,6 @@ validationMessage.install = installer('validationMessage', {
   set: undefined,
 });
 
+mark(validationMessage);
 
 export default validationMessage;

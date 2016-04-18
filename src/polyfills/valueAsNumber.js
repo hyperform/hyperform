@@ -1,6 +1,7 @@
 'use strict';
 
 
+import mark from '../tools/mark';
 import installer from '../tools/property_installer';
 import valueAsDate from './valueAsDate';
 
@@ -71,5 +72,6 @@ valueAsNumber.install = installer('valueAsNumber', {
   set: valueAsNumber,
 });
 
+mark(valueAsNumber);
 
 export default valueAsNumber;

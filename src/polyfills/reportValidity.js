@@ -1,6 +1,7 @@
 'use strict';
 
 
+import mark from '../tools/mark';
 import installer from '../tools/property_installer';
 import renderer from '../components/renderer';
 import checkValidity from './checkValidity';
@@ -37,5 +38,6 @@ reportValidity.install = installer('reportValidity', {
   writable: true,
 });
 
+mark(reportValidity);
 
 export default reportValidity;
