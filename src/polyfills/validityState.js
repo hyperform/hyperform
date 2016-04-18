@@ -262,6 +262,15 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
   set: undefined,
 });
 
+/**
+ * whether we deal with this or the native ValidityState:
+ *
+ * js> element.validity.hyperform === true
+ */
+Object.defineProperty(ValidityStatePrototype, 'hyperform', {
+  value: true,
+});
+
 
 /**
  * publish a convenience function to replace the native element.validity
@@ -269,8 +278,7 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
 ValidityState.install = installer('validity', {
   configurable: true,
   enumerable: true,
-  value: function() { return new ValidityState(this); },
-  writable: false,
+  get: function() { return ValidityState(this); },
 });
 
 
