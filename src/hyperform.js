@@ -35,8 +35,20 @@ const hyperform = {
 
   willValidate,
 
-  update_form(form) {
-    const els = form.elements;
+  capture(form) {
+    var els;
+    if (form === window || form instanceof HTMLDocument) {
+      /* install on the prototypes, when called for the document */
+      els = [
+        HTMLInputElement.prototype,
+        HTMLSelectElement.prototype,
+        HTMLTextAreaElement.prototype,
+      ];
+    } else if (form instanceof HTMLFormElement ||
+               form instanceof HTMLFieldSetElement) {
+      els = form.elements;
+    }
+
     const els_length = els.length;
     for (let i = 0; i < els_length; i++) {
       checkValidity.install(els[i]);

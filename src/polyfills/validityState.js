@@ -206,6 +206,10 @@ const validity_state_checkers = {
  * TODO allow HTMLFieldSetElement, too
  */
 var ValidityState = function(element) {
+  if (! (element instanceof HTMLElement)) {
+    throw new Error('cannot create a ValidityState for a non-element');
+  }
+
   const cached = ValidityState.cache.get(element);
   if (cached) {
     return cached;
