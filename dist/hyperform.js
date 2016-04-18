@@ -460,6 +460,10 @@
      * TODO allow HTMLFieldSetElement, too
      */
     var ValidityState = function ValidityState(element) {
+      if (!(element instanceof HTMLElement)) {
+        throw new Error('cannot create a ValidityState for a non-element');
+      }
+
       var cached = ValidityState.cache.get(element);
       if (cached) {
         return cached;
@@ -515,15 +519,23 @@
     });
 
     /**
+     * whether we deal with this or the native ValidityState:
+     *
+     * js> element.validity.hyperform === true
+     */
+    Object.defineProperty(ValidityStatePrototype, 'hyperform', {
+      value: true
+    });
+
+    /**
      * publish a convenience function to replace the native element.validity
      */
     ValidityState.install = installer('validity', {
       configurable: true,
       enumerable: true,
-      value: function value() {
-        return new ValidityState(this);
-      },
-      writable: false
+      get: function get() {
+        return ValidityState(this);
+      }
     });
 
     /**
@@ -924,8 +936,15 @@
 
       willValidate: willValidate,
 
-      update_form: function update_form(form) {
-        var els = form.elements;
+      capture: function capture(form) {
+        var els;
+        if (form === window || form instanceof HTMLDocument) {
+          /* install on the prototypes, when called for the document */
+          els = [HTMLInputElement.prototype, HTMLSelectElement.prototype, HTMLTextAreaElement.prototype];
+        } else if (form instanceof HTMLFormElement || form instanceof HTMLFieldSetElement) {
+          els = form.elements;
+        }
+
         var els_length = els.length;
         for (var i = 0; i < els_length; i++) {
           checkValidity.install(els[i]);
