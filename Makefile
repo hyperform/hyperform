@@ -34,3 +34,11 @@ test:
 	@$(JSHINT) $(JSHINT_ARGS) src
 	@npm test
 .PHONY: test
+
+version:
+	@# needs a VERSION= variable on the command line!
+	@if [ ! -z '$(VERSION)' ]; then \
+		sed -i '/^  "version": "[0-9.]\+",$$/c\  "version": "$(VERSION)",' package.json; \
+		sed -i '/^export default '"'"'[0-9.]\+'"'"';$$/c\export default '"'"'$(VERSION)'"'"';' src/version.js; \
+	fi
+.PHONY: version
