@@ -14,7 +14,7 @@ export default function(string, element_type) {
       if (! /^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/.test(string)) {
         return null;
       }
-      date.setFullYear(Number(RegExp.$1));
+      date.setUTCFullYear(Number(RegExp.$1));
       date.setUTCMonth(Number(RegExp.$2) - 1,
                        Number(RegExp.$3));
       return date;
@@ -23,7 +23,7 @@ export default function(string, element_type) {
       if (! /^([0-9]{4,})-(0[1-9]|1[012])$/.test(string)) {
         return null;
       }
-      date.setFullYear(Number(RegExp.$1));
+      date.setUTCFullYear(Number(RegExp.$1));
       date.setUTCMonth(Number(RegExp.$2) - 1, 1);
       return date;
 

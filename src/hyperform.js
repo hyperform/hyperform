@@ -37,15 +37,15 @@ const hyperform = {
 
   capture(form) {
     var els;
-    if (form === window || form instanceof HTMLDocument) {
+    if (form === window || form instanceof window.HTMLDocument) {
       /* install on the prototypes, when called for the document */
       els = [
-        HTMLInputElement.prototype,
-        HTMLSelectElement.prototype,
-        HTMLTextAreaElement.prototype,
+        window.HTMLInputElement.prototype,
+        window.HTMLSelectElement.prototype,
+        window.HTMLTextAreaElement.prototype,
       ];
-    } else if (form instanceof HTMLFormElement ||
-               form instanceof HTMLFieldSetElement) {
+    } else if (form instanceof window.HTMLFormElement ||
+               form instanceof window.HTMLFieldSetElement) {
       els = form.elements;
     }
 

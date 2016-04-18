@@ -21,12 +21,12 @@ export default function(date, element_type) {
   switch (element_type) {
     case 'date':
       return sprintf('%s-%s-%s',
-                     date.getFullYear(),
+                     date.getUTCFullYear(),
                      pad(date.getUTCMonth() + 1),
                      pad(date.getUTCDate()));
 
     case 'month':
-      return sprintf('%s-%s', date.getFullYear(),
+      return sprintf('%s-%s', date.getUTCFullYear(),
                      pad(date.getUTCMonth() + 1));
 
     case 'week':

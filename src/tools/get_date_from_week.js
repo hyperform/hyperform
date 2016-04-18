@@ -9,10 +9,10 @@
 export default function(week, year) {
   var date = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
 
-  if (date.getDay() <= 4/* thursday */) {
-    date.setDate(date.getDate() - date.getDay() + 1);
+  if (date.getUTCDay() <= 4/* thursday */) {
+    date.setUTCDate(date.getUTCDate() - date.getUTCDay() + 1);
   } else {
-    date.setDate(date.getDate() + 8 - date.getDay());
+    date.setUTCDate(date.getUTCDate() + 8 - date.getUTCDay());
   }
 
   return date;
