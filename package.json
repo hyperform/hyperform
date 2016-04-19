@@ -8,19 +8,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Port8000/hyperform.git"
+    "url": "git+https://github.com/hyperform/hyperform.git"
   },
   "keywords": [
     "html5",
     "form",
     "validation"
   ],
-  "author": "Port 8000 UG (haftungsbeschränkt)",
+  "author": "Manuel Strehl",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Port8000/hyperform/issues"
+    "url": "https://github.com/hyperform/hyperform/issues"
   },
-  "homepage": "https://github.com/Port8000/hyperform#readme",
+  "homepage": "https://github.com/hyperform/hyperform#readme",
   "devDependencies": {
     "ava": "^0.14.0",
     "babel-register": "^6.7.2",
