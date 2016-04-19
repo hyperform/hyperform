@@ -2,10 +2,8 @@
 
 
 import is_validation_candidate from '../tools/is_validation_candidate';
+import { type_checked } from '../components/types';
 
-
-/* the spec says to only check those. ¯\_(ツ)_/¯ */
-const checked_types = ['email', 'url'];
 
 /* we use a dummy <a> where we set the href to test URL validity */
 const url_canary = document.createElement('a');
@@ -19,7 +17,7 @@ const email_pattern = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0
 export default function(element) {
   if (! is_validation_candidate(element) ||
       ! element.value ||
-      ! checked_types.contains(element.type)) {
+      type_checked.indexOf(element.type) === -1) {
     /* we're not responsible for this element */
     return true;
   }
