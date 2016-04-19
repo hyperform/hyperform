@@ -1,6 +1,6 @@
 {
   "name": "hyperform",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "HTML 5 form validation that is actually useful",
   "main": "src/hyperform.js",
   "scripts": {
