@@ -7,11 +7,18 @@
 
     var plain_numbers = ['number', 'range'];
 
+    /* everything that returns something meaningful for valueAsNumber and
+     * can have the step attribute */
     var numbers = dates.concat(plain_numbers, 'datetime-local');
 
-    var text = ['text', 'search', 'url', 'tel', 'email', 'password'];
+    /* the spec says to only check those for syntax in validity.typeMismatch.
+     * ¯\_(ツ)_/¯ */
+    var type_checked = ['email', 'url'];
 
-    /* missing from this set are: button, hidden, menu (from <button>), reset */
+    var text = ['text', 'search', 'tel', 'password'].concat(type_checked);
+
+    /* input element types, that are candidates for the validation API.
+     * Missing from this set are: button, hidden, menu (from <button>), reset */
     var validation_candidates = ['checkbox', 'color', 'file', 'image', 'radio', 'submit'].concat(numbers, text);
 
     /**
@@ -192,14 +199,99 @@
     var message_store = new WeakMap();
 
     /**
+     * return a new Date() representing the ISO date for a week number
+     *
+     * @see http://stackoverflow.com/a/16591175/113195
+     */
+
+    function get_date_from_week (week, year) {
+      var date = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
+
+      if (date.getUTCDay() <= 4 /* thursday */) {
+          date.setUTCDate(date.getUTCDate() - date.getUTCDay() + 1);
+        } else {
+        date.setUTCDate(date.getUTCDate() + 8 - date.getUTCDay());
+      }
+
+      return date;
+    }
+
+    /**
+     * calculate a date from a string according to HTML5
+     */
+    function string_to_date (string, element_type) {
+      var date = new Date(0);
+      switch (element_type) {
+        case 'datetime':
+          if (!/^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3})))?$/.test(string)) {
+            return null;
+          }
+          var ms = RegExp.$7;
+          while (ms.length < 3) {
+            ms += '0';
+          }
+          date.setUTCFullYear(Number(RegExp.$1));
+          date.setUTCMonth(Number(RegExp.$2) - 1, Number(RegExp.$3));
+          date.setUTCHours(Number(RegExp.$4), Number(RegExp.$5), Number(RegExp.$6 || 0), Number(ms));
+          return date;
+
+        case 'date':
+          if (!/^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/.test(string)) {
+            return null;
+          }
+          date.setUTCFullYear(Number(RegExp.$1));
+          date.setUTCMonth(Number(RegExp.$2) - 1, Number(RegExp.$3));
+          return date;
+
+        case 'month':
+          if (!/^([0-9]{4,})-(0[1-9]|1[012])$/.test(string)) {
+            return null;
+          }
+          date.setUTCFullYear(Number(RegExp.$1));
+          date.setUTCMonth(Number(RegExp.$2) - 1, 1);
+          return date;
+
+        case 'week':
+          if (!/^([0-9]{4,})-W(0[1-9]|[1234][0-9]|5[0-3])$/.test(string)) {
+            return null;
+          }
+          return get_date_from_week(Number(RegExp.$2), Number(RegExp.$1));
+
+        case 'time':
+          if (!/^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
+            return null;
+          }
+          date.setUTCHours(Number(RegExp.$1), Number(RegExp.$2), Number(RegExp.$3 || 0), Number(RegExp.$4 || 0));
+          return date;
+      }
+
+      return null;
+    }
+
+    /**
      * test the max attribute
      *
-     * @TODO support max in type=date fields
+     * we use Number() instead of parseFloat(), because an invalid attribute
+     * value like "123abc" should result in an error.
      */
     function test_max (element) {
-      /* we use Number() instead of parseFloat(), because an invalid attribute
-       * value like "123abc" should result in an error. */
-      return !is_validation_candidate(element) || !element.value || !element.hasAttribute('max') || isNaN(Number(element.getAttribute('max'))) || Number(element.value) <= Number(element.getAttribute('max'));
+
+      if (!is_validation_candidate(element) || !element.value || !element.hasAttribute('max')) {
+        /* we're not responsible here */
+        return true;
+      }
+
+      var value = void 0,
+          max = void 0;
+      if (dates.indexOf(element.type) > -1) {
+        value = 1 * string_to_date(element.value, element.type);
+        max = 1 * (string_to_date(element.getAttribute('max'), element.type) || NaN);
+      } else {
+        value = Number(element.value);
+        max = Number(element.getAttribute('max'));
+      }
+
+      return isNaN(max) || value <= max;
     }
 
     /**
@@ -214,12 +306,27 @@
     /**
      * test the min attribute
      *
-     * @TODO support min in type=date fields
+     * we use Number() instead of parseFloat(), because an invalid attribute
+     * value like "123abc" should result in an error.
      */
     function test_min (element) {
-      /* we use Number() instead of parseFloat(), because an invalid attribute
-       * value like "123abc" should result in an error. */
-      return !is_validation_candidate(element) || !element.value || !element.hasAttribute('min') || isNaN(Number(element.getAttribute('min'))) || Number(element.value) >= Number(element.getAttribute('min'));
+
+      if (!is_validation_candidate(element) || !element.value || !element.hasAttribute('min')) {
+        /* we're not responsible here */
+        return true;
+      }
+
+      var value = void 0,
+          min = void 0;
+      if (dates.indexOf(element.type) > -1) {
+        value = 1 * string_to_date(element.value, element.type);
+        min = 1 * (string_to_date(element.getAttribute('min'), element.type) || NaN);
+      } else {
+        value = Number(element.value);
+        min = Number(element.getAttribute('min'));
+      }
+
+      return isNaN(min) || value >= min;
     }
 
     /**
@@ -264,20 +371,77 @@
     }
 
     /**
-     * test the step attribute
-     *
-     * @TODO support steps in type=date fields
+     * calculate a date from a string according to HTML5
      */
-    function test_step (element) {
-      /* we use Number() instead of parseFloat(), because an invalid attribute
-       * value like "123abc" should result in an error. */
-      // TODO refactor those multiple "Number()" calls
-      return !is_validation_candidate(element) || !element.value || !element.hasAttribute('step') || element.getAttribute('step').toLowerCase() === 'any' || Number(element.getAttribute('step')) <= 0 || isNaN(Number(element.getAttribute('step'))) || Math.abs(Number(element.value) - Number(element.getAttribute('min') || 0)) % Number(element.getAttribute('step')) < 0.00000001 || /* crappy floating-point arithmetics! */
-      Math.abs(Number(element.value) - Number(element.getAttribute('min') || 0)) % Number(element.getAttribute('step')) > Number(element.getAttribute('step')) - 0.00000001;
+    function string_to_number (string, element_type) {
+      var rval = string_to_date(string, element_type);
+      if (rval !== null) {
+        return +rval;
+      }
+      /* not parseFloat, because we want NaN for invalid values like "1.2xxy" */
+      return Number(string);
     }
 
-    /* the spec says to only check those. ¯\_(ツ)_/¯ */
-    var checked_types = ['email', 'url'];
+    var default_step = {
+      'datetime-local': 60,
+      datetime: 60,
+      time: 60
+    };
+
+    var step_scale_factor = {
+      'datetime-local': 1000,
+      datetime: 1000,
+      date: 86400000,
+      week: 604800000,
+      time: 1000
+    };
+
+    var default_step_base = {
+      week: -259200000
+    };
+
+    /**
+     * test the step attribute
+     *
+     * @TODO type=month will get wrong results. We need to implement month-wide
+     *       steps. See https://html.spec.whatwg.org/multipage/forms.html#month-state-%28type=month%29
+     */
+    function test_step (element) {
+
+      if (!is_validation_candidate(element) || !element.value || numbers.indexOf(element.type) === -1 || (element.getAttribute('step') || '').toLowerCase() === 'any') {
+        /* we're not responsible here */
+        return true;
+      }
+
+      var step = element.getAttribute('step');
+      if (step) {
+        step = string_to_number(step, element.type);
+      } else {
+        step = default_step[element.type] || 1;
+      }
+
+      if (step <= 0 || isNaN(step)) {
+        /* error in specified "step". We cannot validate against it, so the value
+         * is true. */
+        return true;
+      }
+
+      var scale = step_scale_factor[element.type] || 1;
+
+      var value = string_to_number(element.value, element.type);
+      var min = string_to_number(element.getAttribute('min') || element.getAttribute('value') || '', element.type);
+
+      var base = min;
+      if (isNaN(base)) {
+        base = default_step_base[element.type] || 0;
+      }
+
+      var result = Math.abs(base - value) % (step * scale);
+
+      return result < 0.00000001 ||
+      /* crappy floating-point arithmetics! */
+      result > step * scale - 0.00000001;
+    }
 
     /* we use a dummy <a> where we set the href to test URL validity */
     var url_canary = document.createElement('a');
@@ -289,7 +453,7 @@
      * test the type-inherent syntax
      */
     function test_type (element) {
-      if (!is_validation_candidate(element) || !element.value || !checked_types.contains(element.type)) {
+      if (!is_validation_candidate(element) || !element.value || type_checked.indexOf(element.type) === -1) {
         /* we're not responsible for this element */
         return true;
       }
@@ -691,76 +855,6 @@
 
     mark(validationMessage);
 
-    /**
-     * return a new Date() representing the ISO date for a week number
-     *
-     * @see http://stackoverflow.com/a/16591175/113195
-     */
-
-    function get_date_from_week (week, year) {
-      var date = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
-
-      if (date.getUTCDay() <= 4 /* thursday */) {
-          date.setUTCDate(date.getUTCDate() - date.getUTCDay() + 1);
-        } else {
-        date.setUTCDate(date.getUTCDate() + 8 - date.getUTCDay());
-      }
-
-      return date;
-    }
-
-    /**
-     * calculate a date from a string according to HTML5
-     */
-    function string_to_date (string, element_type) {
-      var date = new Date(0);
-      switch (element_type) {
-        case 'datetime':
-          if (!/^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3})))?$/.test(string)) {
-            return null;
-          }
-          var ms = RegExp.$7;
-          while (ms.length < 3) {
-            ms += '0';
-          }
-          date.setUTCFullYear(Number(RegExp.$1));
-          date.setUTCMonth(Number(RegExp.$2) - 1, Number(RegExp.$3));
-          date.setUTCHours(Number(RegExp.$4), Number(RegExp.$5), Number(RegExp.$6 || 0), Number(ms));
-          return date;
-
-        case 'date':
-          if (!/^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/.test(string)) {
-            return null;
-          }
-          date.setUTCFullYear(Number(RegExp.$1));
-          date.setUTCMonth(Number(RegExp.$2) - 1, Number(RegExp.$3));
-          return date;
-
-        case 'month':
-          if (!/^([0-9]{4,})-(0[1-9]|1[012])$/.test(string)) {
-            return null;
-          }
-          date.setUTCFullYear(Number(RegExp.$1));
-          date.setUTCMonth(Number(RegExp.$2) - 1, 1);
-          return date;
-
-        case 'week':
-          if (!/^([0-9]{4,})-W(0[1-9]|[1234][0-9]|5[0-3])$/.test(string)) {
-            return null;
-          }
-          return get_date_from_week(Number(RegExp.$2), Number(RegExp.$1));
-
-        case 'time':
-          if (!/^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
-            return null;
-          }
-          date.setUTCHours(Number(RegExp.$1), Number(RegExp.$2), Number(RegExp.$3 || 0), Number(RegExp.$4 || 0));
-          return date;
-      }
-
-      return null;
-    }
-
     /* For a given date, get the ISO week number
      *
      * Source: http://stackoverflow.com/a/6117889/113195
@@ -916,12 +1010,7 @@
           return;
         }
 
-        var rval = valueAsDate.call(this);
-        if (rval !== null) {
-          return +rval;
-        }
-        /* not parseFloat, because we want NaN for invalid values like "1.2xxy" */
-        return Number(this.value);
+        return string_to_number(this.value, this.type);
       } else if (value !== undefined) {
         /* trying to set a number on a not-number input fails */
         throw new window.DOMException('valueAsNumber setter cannot set number on this element', 'InvalidStateError');
@@ -961,7 +1050,7 @@
 
     mark(willValidate);
 
-    var version = '0.1.0';
+    var version = '0.1.1';
 
     /**
      * public hyperform interface:

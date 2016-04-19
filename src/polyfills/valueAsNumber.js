@@ -3,6 +3,7 @@
 
 import mark from '../tools/mark';
 import installer from '../tools/property_installer';
+import string_to_number from '../tools/string_to_number';
 import { numbers } from '../components/types';
 import valueAsDate from './valueAsDate';
 
@@ -43,12 +44,7 @@ function valueAsNumber(value=undefined) {
       return;
     }
 
-    let rval = valueAsDate.call(this);
-    if (rval !== null) {
-      return +rval;
-    }
-    /* not parseFloat, because we want NaN for invalid values like "1.2xxy" */
-    return Number(this.value);
+    return string_to_number(this.value, this.type);
 
   } else if (value !== undefined) {
     /* trying to set a number on a not-number input fails */
