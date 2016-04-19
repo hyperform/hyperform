@@ -22,7 +22,7 @@ const step_scale_factor = {
 
 const default_step_base = {
   week: -259200000,
-}
+};
 
 /**
  * test the step attribute

@@ -4,7 +4,10 @@
   "description": "HTML 5 form validation that is actually useful",
   "main": "src/hyperform.js",
   "scripts": {
-    "test": "ava test"
+    "test": "jshint src && ava test",
+    "preversion": "npm test",
+    "version": "make version VERSION=$(npm view . version) && make all && git add src/version.js dist/",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
