@@ -39,18 +39,12 @@ icons: stuff/icon.16.png
 	@echo "* generate icons"
 	@for s in 16 32 57 64 70 72 76 114 120 128 144 150 152 180 192 256 310; do \
 		echo "  - $${s}px"; \
-		convert stuff/icon.png \
-		  -resize $${s}x$$s \
-		  -size $${s}x$$s \
-		  xc:transparent +swap \
-		  -gravity center \
-		  -composite \
-		  stuff/icon.$$s.png; \
+		rsvg-convert -w $$s -h $$s stuff/icon.svg > stuff/icon.$$s.png; \
 		optipng -quiet -o7 stuff/icon.$$s.png; \
 	done
 .PHONY: icons
 
-stuff/icon.16.png: stuff/icon.png
+stuff/icon.16.png: stuff/icon.svg
 
 version:
 	@# needs a VERSION= variable on the command line!
