@@ -1,7 +1,7 @@
 {
   "name": "hyperform",
   "version": "0.1.4",
-  "description": "HTML 5 form validation that is actually useful",
+  "description": "Capture form validation back from the browser",
   "main": "src/hyperform.js",
   "scripts": {
     "test": "jshint src && ava test",
@@ -16,6 +16,8 @@
   "keywords": [
     "html5",
     "form",
+    "forms",
+    "input",
     "validation"
   ],
   "author": "Manuel Strehl",

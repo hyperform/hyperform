@@ -12,7 +12,8 @@ The easiest way is installing via `npm`:
 
     npm install hyperform
 
-Or download the [current version as ZIP archive](https://github.com/hyperform/hyperform/archive/master.zip).
+Or download the [current version as ZIP
+archive](https://github.com/hyperform/hyperform/archive/master.zip).
 
 Then embed `dist/hyperform.min.js` in your file:
 
@@ -62,19 +63,27 @@ for prime time?
 | `valueLow` / `valueHigh`     | :new_moon:  | not started, yet |
 | `stepUp(n)` / `stepDown(n)`  | :new_moon:  | not started, yet |
 | `accept` attribute           | :new_moon:  | for `type=file` inputs. Is it useful to implement a check here? There are browsers without support here, that implement the File API. So we could totally do it. |
+| support for `novalidate`     | :new_moon:  |  |
 
 What parts of the high-level API are finished?
 
 * [ ] Trigger a `validate` event before validating an element.
 * [ ] Trigger a `valid` event, when an input becomes valid, again.
-* [ ] Allow functions to hook into the actual validations to accept or reject inputs.
+* [ ] Allow functions to hook into the actual validations to accept or reject
+    inputs.
 * [ ] Translate validation messages.
-* [ ] Add a registry for custom validators for inputs, that are called automatically in the `validity.customError` step.
-* [ ] Catch form submissions _before_ the `submit` event to do our own validation (`click`s on submit buttons and `enter` keys in text inputs in forms w/o submit buttons).
-* [ ] Add helper classes `valid` and `invalid` to elements to become independent of `:valid` / `:invalid` pseudo-classes.
-* [ ] Allow specifying settings to customize the behavior of Hyperform (e.g., specifying a renderer for error messages).
+* [ ] Add a registry for custom validators for inputs, that are called
+    automatically in the `validity.customError` step.
+* [ ] Catch form submissions _before_ the `submit` event to do our own
+    validation (`click`s on submit buttons and `enter` keys in text inputs in
+    forms w/o submit buttons).
+* [ ] Add helper classes `valid` and `invalid` as well as proper `aria-invalid`
+    to elements to become independent of `:valid` / `:invalid` pseudo-classes.
+* [ ] Allow specifying settings to customize the behavior of Hyperform (e.g.,
+    specifying a renderer for error messages).
 
-Do you have a wish or an idea? [File an issue and let us discuss it!](https://github.com/hyperform/hyperform/issues/new)
+Do you have a wish or an idea? [File an issue and let us discuss
+it!](https://github.com/hyperform/hyperform/issues/new)
 
 ## License
 
