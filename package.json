@@ -1,6 +1,6 @@
 {
   "name": "hyperform",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Capture form validation back from the browser",
   "main": "src/hyperform.js",
   "scripts": {
