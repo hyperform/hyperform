@@ -408,7 +408,8 @@ define(function () { 'use strict';
     function test_step (element) {
 
       if (!is_validation_candidate(element) || !element.value || numbers.indexOf(element.type) === -1 || (element.getAttribute('step') || '').toLowerCase() === 'any') {
-        /* we're not responsible here */
+        /* we're not responsible here. Note: If no step attribute is given, we
+         * need to validate against the default step as per spec. */
         return true;
       }
 
