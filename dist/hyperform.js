@@ -66,6 +66,13 @@
       return obj;
     }
 
+    /**
+     * return a function, that adds property to an element
+     *
+     * js> installer('foo', { value: 'bar' })(element);
+     * js> assert(element.foo === 'bar');
+     */
+
     function installer (property, descriptor) {
       return function (element) {
         delete element[property];
@@ -223,7 +230,7 @@
       var date = new Date(0);
       switch (element_type) {
         case 'datetime':
-          if (!/^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3})))?$/.test(string)) {
+          if (!/^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
             return null;
           }
           var ms = RegExp.$7;
