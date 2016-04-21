@@ -52,7 +52,7 @@ for prime time?
 | `validity.rangeUnderflow`    | :full_moon: |  |
 | `validity.rangeOverflow`     | :full_moon: |  |
 | `validity.stepMismatch`      | :last_quarter_moon: | Step validation for `type=month` is incorrect, yet |
-| `validity.badInput`          | :new_moon: | This one will take a bit. |
+| `validity.badInput`          | :waning_gibbous_moon: | Works for all but `type=email`. (That last one might be unfixable. See comment in [src/validators/bad_input.js](src/validators/bad_input.js).) |
 | `validity.customError`       | :full_moon: |  |
 | `validity.valid`             | :waning_gibbous_moon: | Depends on the other validations above. Apart from that, finished. |
 | `checkValidity()`            | :waning_gibbous_moon: | Depends on `ValidityState`. Apart from that, finished. |
@@ -67,20 +67,23 @@ for prime time?
 
 What parts of the high-level API are finished?
 
-* [ ] Trigger a `validate` event before validating an element.
-* [ ] Trigger a `valid` event, when an input becomes valid, again.
-* [ ] Allow functions to hook into the actual validations to accept or reject
-    inputs.
-* [ ] Translate validation messages.
-* [ ] Add a registry for custom validators for inputs, that are called
+* :new_moon: Trigger a `validate` event before validating an element.
+* :new_moon: Trigger a `valid` event, when an input becomes valid, again.
+* :new_moon: Allow functions to hook into the actual validations to accept or
+    reject inputs.
+* :new_moon: Translate validation messages.
+* :new_moon: Add a registry for custom validators for inputs, that are called
     automatically in the `validity.customError` step.
-* [ ] Catch form submissions _before_ the `submit` event to do our own
+* :new_moon: Catch form submissions _before_ the `submit` event to do our own
     validation (`click`s on submit buttons and `enter` keys in text inputs in
     forms w/o submit buttons).
-* [ ] Add helper classes `valid` and `invalid` as well as proper `aria-invalid`
-    to elements to become independent of `:valid` / `:invalid` pseudo-classes.
-* [ ] Allow specifying settings to customize the behavior of Hyperform (e.g.,
-    specifying a renderer for error messages).
+* :new_moon: Add helper classes `valid` and `invalid` as well as proper
+    `aria-invalid` to elements to become independent of `:valid` / `:invalid`
+    pseudo-classes.
+* :new_moon: Allow specifying settings to customize the behavior of Hyperform
+    (e. g., specifying a renderer for error messages).
+* :new_moon: Take single `<input>` elements out of validation (think
+    `novalidate` attribute for inputs).
 
 Do you have a wish or an idea? [File an issue and let us discuss
 it!](https://github.com/hyperform/hyperform/issues/new)

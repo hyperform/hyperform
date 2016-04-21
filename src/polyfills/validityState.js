@@ -21,6 +21,7 @@ import test_pattern from '../validators/pattern';
 import test_required from '../validators/required';
 import test_step from '../validators/step';
 import test_type from '../validators/type';
+import test_bad_input from '../validators/bad_input';
 
 
 /**
@@ -31,8 +32,11 @@ import test_type from '../validators/type';
  */
 const validity_state_checkers = {
   badInput: element => {
-    // TODO
-    return false;
+    const invalid = ! test_bad_input(element);
+    if (invalid) {
+      message_store.set(element, _('Please match the requested type.'));
+    }
+    return invalid;
   },
 
   customError: element => {

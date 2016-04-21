@@ -13,6 +13,10 @@ export const numbers = dates.concat(plain_numbers, 'datetime-local');
  * ¯\_(ツ)_/¯ */
 export const type_checked = [ 'email', 'url', ];
 
+/* check these for validity.badInput */
+export const input_checked = [ 'email', 'date', 'month', 'week', 'time',
+  'datetime', 'datetime-local', 'number', 'range', 'color', ];
+
 export const text = [ 'text', 'search', 'tel', 'password', ].concat(type_checked);
 
 /* input element types, that are candidates for the validation API.

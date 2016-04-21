@@ -14,6 +14,9 @@ define(function () { 'use strict';
      * ¯\_(ツ)_/¯ */
     var type_checked = ['email', 'url'];
 
+    /* check these for validity.badInput */
+    var input_checked = ['email', 'date', 'month', 'week', 'time', 'datetime', 'datetime-local', 'number', 'range', 'color'];
+
     var text = ['text', 'search', 'tel', 'password'].concat(type_checked);
 
     /* input element types, that are candidates for the validation API.
@@ -493,6 +496,44 @@ define(function () { 'use strict';
     }
 
     /**
+     * test whether the element suffers from bad input
+     */
+    function test_bad_input (element) {
+      if (!is_validation_candidate(element) || !element.value || input_checked.indexOf(element.type) === -1) {
+        /* we're not interested, thanks! */
+        return true;
+      }
+
+      var result = true;
+      switch (element.type) {
+        case 'color':
+          result = /^#[a-f0-9]{6}$/.test(element.value);
+          break;
+        case 'number':
+        case 'range':
+          result = !isNaN(Number(element.value));
+          break;
+        case 'datetime':
+        case 'date':
+        case 'month':
+        case 'week':
+        case 'time':
+          result = string_to_date(element.value, element.type) !== null;
+          break;
+        case 'datetime-local':
+          result = /^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(element.value);
+          break;
+        case 'email':
+          // TODO can we do this at all? Punycode conversion would be done by
+          // the browser or not at all. If not, typeMismatch will catch that
+          // alltogether.
+          break;
+      }
+
+      return result;
+    }
+
+    /**
      * Implement constraint checking functionality defined in the HTML5 standard
      *
      * @see https://html.spec.whatwg.org/multipage/forms.html#dom-cva-validity
@@ -500,8 +541,11 @@ define(function () { 'use strict';
      */
     var validity_state_checkers = {
       badInput: function badInput(element) {
-        // TODO
-        return false;
+        var invalid = !test_bad_input(element);
+        if (invalid) {
+          message_store.set(element, _('Please match the requested type.'));
+        }
+        return invalid;
       },
 
       customError: function customError(element) {
