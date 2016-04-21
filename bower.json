@@ -1,0 +1,26 @@
+{
+  "name": "hyperform",
+  "version": "0.1.6",
+  "homepage": "https://github.com/hyperform/hyperform",
+  "authors": [
+    "Manuel Strehl"
+  ],
+  "description": "Capture form validation back from the browser",
+  "main": "dist/hyperform.min.js",
+  "moduleType": [
+    "amd",
+    "es6",
+    "globals"
+  ],
+  "keywords": [
+    "html5"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
