@@ -33,7 +33,7 @@ define(function () { 'use strict';
       if (element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement) {
 
         /* it's type must be in the whitelist or missing (select, textarea) */
-        if (!element.type || validation_candidates.indexOf(element.type) > -1) {
+        if (!element.type || ['select-one', 'select-multiple', 'textarea'].indexOf(element.type) > -1 || validation_candidates.indexOf(element.type) > -1) {
 
           /* it mustn't be disabled or readonly */
           if (!element.disabled && !element.readonly) {
@@ -378,7 +378,7 @@ define(function () { 'use strict';
         case 'radio':
           /* radio inputs have "required" fulfilled, if _any_ other radio
            * with the same name in this form is checked. */
-          return element.checked || Array.prototype.filter.call(element.form.getElementsByName(element.name), function (radio) {
+          return element.checked || !!element.form && Array.prototype.filter.call(element.form.getElementsByName(element.name), function (radio) {
             return radio.form === element.form && radio.checked;
           }).length > 0;
         //break;
@@ -962,6 +962,10 @@ define(function () { 'use strict';
      * calculate a string from a date according to HTML5
      */
     function date_to_string(date, element_type) {
+      if (!(date instanceof Date)) {
+        return null;
+      }
+
       switch (element_type) {
         case 'datetime':
           return date_to_string(date, 'date') + 'T' + date_to_string(date, 'time');
