@@ -50,14 +50,13 @@
      * mark an object with a 'hyperform=true' property
      *
      * We use this to distinguish our properties from the native ones. Usage:
-     * js> obj.hyperform === true
+     * js> mark(obj);
+     * js> assert(obj.hyperform === true)
      */
 
     function mark (obj) {
-      if (typeof obj !== 'object') {
-        /* do it old style for primitive values */
-        obj.hyperform = true;
-      } else {
+      if (['object', 'function'].indexOf(typeof obj) > -1) {
+        delete obj.hyperform;
         Object.defineProperty(obj, 'hyperform', {
           value: true
         });
@@ -202,6 +201,11 @@
       }
       return s;
     }
+
+    /**
+     * TODO make this a wrapper around a WeakMap and check the element's native
+     * validationMessage, too, if that slips through somewhere (e.g. native browser
+     * validation). */
 
     var message_store = new WeakMap();
 
@@ -817,7 +821,7 @@
     mark(reportValidity);
 
     /**
-     * TODO allow HTMLFieldSetElement, too
+     *
      */
     function setCustomValidity(msg) {
       msg.is_custom = true;
@@ -1087,7 +1091,7 @@
         var els;
         if (form === window || form instanceof window.HTMLDocument) {
           /* install on the prototypes, when called for the document */
-          els = [window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype];
+          els = [window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype];
         } else if (form instanceof window.HTMLFormElement || form instanceof window.HTMLFieldSetElement) {
           els = form.elements;
         }
