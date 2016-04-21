@@ -43,7 +43,7 @@ for prime time?
 | feature                      | status             | comment |
 | ---------------------------- | ------------------ | ------- |
 | `willValidate`               | :full_moon: |  |
-| `setCustomValidity(message)` | :waning_gibbous_moon: | Finished apart from support for `<fieldset>` elements. |
+| `setCustomValidity(message)` | :full_moon: |  |
 | `validity.valueMissing`      | :full_moon: |  |
 | `validity.typeMismatch`      | :full_moon: |  |
 | `validity.patternMismatch`   | :full_moon: |  |
@@ -52,7 +52,7 @@ for prime time?
 | `validity.rangeUnderflow`    | :full_moon: |  |
 | `validity.rangeOverflow`     | :full_moon: |  |
 | `validity.stepMismatch`      | :last_quarter_moon: | Step validation for `type=month` is incorrect, yet |
-| `validity.badInput`          | :new_moon: | This one is hard. Will take a bit. |
+| `validity.badInput`          | :new_moon: | This one will take a bit. |
 | `validity.customError`       | :full_moon: |  |
 | `validity.valid`             | :waning_gibbous_moon: | Depends on the other validations above. Apart from that, finished. |
 | `checkValidity()`            | :waning_gibbous_moon: | Depends on `ValidityState`. Apart from that, finished. |

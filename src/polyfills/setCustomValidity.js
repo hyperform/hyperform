@@ -7,7 +7,7 @@ import message_store from '../components/message_store';
 
 
 /**
- * TODO allow HTMLFieldSetElement, too
+ *
  */
 function setCustomValidity(msg) {
   msg.is_custom = true;

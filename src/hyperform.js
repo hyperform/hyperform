@@ -43,6 +43,7 @@ const hyperform = {
         window.HTMLInputElement.prototype,
         window.HTMLSelectElement.prototype,
         window.HTMLTextAreaElement.prototype,
+        window.HTMLFieldSetElement.prototype,
       ];
     } else if (form instanceof window.HTMLFormElement ||
                form instanceof window.HTMLFieldSetElement) {
