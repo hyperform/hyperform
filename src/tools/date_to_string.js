@@ -18,6 +18,10 @@ function pad(num, size=2) {
  * calculate a string from a date according to HTML5
  */
 export default function date_to_string(date, element_type) {
+  if (! (date instanceof Date)) {
+    return null;
+  }
+
   switch (element_type) {
     case 'datetime':
       return date_to_string(date, 'date') + 'T' +

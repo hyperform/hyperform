@@ -21,6 +21,7 @@ export default function(element) {
 
     /* it's type must be in the whitelist or missing (select, textarea) */
     if (! element.type ||
+        ['select-one', 'select-multiple', 'textarea'].indexOf(element.type) > -1 ||
         validation_candidates.indexOf(element.type) > -1) {
 
       /* it mustn't be disabled or readonly */
