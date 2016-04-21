@@ -13,7 +13,11 @@
     "globals"
   ],
   "keywords": [
-    "html5"
+    "html5",
+    "form",
+    "forms",
+    "input",
+    "validation"
   ],
   "license": "MIT",
   "ignore": [
