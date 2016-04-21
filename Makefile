@@ -48,7 +48,9 @@ stuff/icon.16.png: stuff/icon.svg
 
 version:
 	@# needs a VERSION= variable on the command line!
+	@# assumes line 3 in bower.json is the version!
 	@if [ ! -z '$(VERSION)' ]; then \
 		sed -i '/^export default '"'"'[0-9.]\+'"'"';$$/c\export default '"'"'$(VERSION)'"'"';' src/version.js; \
+		sed -i '3c\  "version": "$(VERSION)",' bower.json; \
 	fi
 .PHONY: version
