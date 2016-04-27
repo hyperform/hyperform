@@ -51,9 +51,9 @@ const validity_state_checkers = {
     if (invalid) {
       message_store.set(element,
         element.title?
-          sprintf(_('Please match the requested format: %s.'), element.title)
+          sprintf(_('PatternMismatchWithTitle'), element.title)
           :
-          _('Please match the requested format.')
+          _('PatternMismatch')
       );
     }
     return invalid;
@@ -68,14 +68,14 @@ const validity_state_checkers = {
         case 'date':
         case 'datetime':
         case 'datetime-local':
+          msg = sprintf(_('DateRangeOverflow'), element.value);
+          break;
         case 'time':
-          msg = sprintf(_('Please select a value that is no later than %l.'),
-              element.value);
+          msg = sprintf(_('TimeRangeOverflow'), element.value);
           break;
         // case 'number':
         default:
-          msg = sprintf(_('Please select a value that is no more than %l.'),
-              element.value);
+          msg = sprintf(_('NumberRangeOverflow'), element.value);
           break;
       }
       message_store.set(element, msg);
@@ -93,14 +93,14 @@ const validity_state_checkers = {
         case 'date':
         case 'datetime':
         case 'datetime-local':
+          msg = sprintf(_('DateRangeUnderflow'), element.value);
+          break;
         case 'time':
-          msg = sprintf(_('Please select a value that is no earlier than %l.'),
-              element.value);
+          msg = sprintf(_('TimeRangeUnderflow'), element.value);
           break;
         // case 'number':
         default:
-          msg = sprintf(_('Please select a value that is no less than %l.'),
-              element.value);
+          msg = sprintf(_('NumberRangeUnderflow'), element.value);
           break;
       }
       message_store.set(element, msg);
@@ -123,13 +123,9 @@ const validity_state_checkers = {
       }
 
       if (sole !== false) {
-        message_store.set(element,
-          sprintf(_('Please select a valid value. The nearest valid value is %l.'),
-                  sole));
+        message_store.set(element, sprintf(_('StepMismatchOneValue'), sole));
       } else {
-        message_store.set(element,
-          sprintf(_('Please select a valid value. The two nearest valid values are %l and %l.'),
-                  min, max));
+        message_store.set(element, sprintf(_('StepMismatch'), min, max));
       }
     }
 
@@ -141,8 +137,8 @@ const validity_state_checkers = {
 
     if (invalid) {
       message_store.set(element,
-        sprintf(_('Please shorten this text to %l characters or less (you are currently using %l characters).'),
-                element.getAttribute('maxlength'), element.value.length));
+        sprintf(_('TextTooLong'), element.getAttribute('maxlength'),
+                element.value.length));
     }
 
     return invalid;
@@ -169,10 +165,10 @@ const validity_state_checkers = {
         if (element.hasAttribute('multiple')) {
           msg = _('Please enter a comma separated list of email addresses.');
         } else {
-          msg = _('Please enter an email address.');
+          msg = _('InvalidEmail');
         }
       } else if (element.type === 'url') {
-        msg = _('Please enter a URL.');
+        msg = _('InvalidURL');
       }
       message_store.set(element, msg);
     }
@@ -184,19 +180,19 @@ const validity_state_checkers = {
     const invalid = ! test_required(element);
 
     if (invalid) {
-      let msg = _('Please fill out this field.');
+      let msg = _('ValueMissing');
       if (element.type === 'checkbox') {
-        msg = _('Please check this box if you want to proceed.');
+        msg = _('CheckboxMissing');
       } else if (element.type === 'radio') {
-        msg = _('Please select one of these options.');
+        msg = _('RadioMissing');
       } else if (element.type === 'file') {
         if (element.hasAttribute('multiple')) {
           msg = _('Please select one or more files.');
         } else {
-          msg = _('Please select a file.');
+          msg = _('FileMissing');
         }
       } else if (element instanceof window.HTMLSelectElement) {
-        msg = _('Please select an item in the list.');
+        msg = _('SelectMissing');
       }
       message_store.set(element, msg);
     }

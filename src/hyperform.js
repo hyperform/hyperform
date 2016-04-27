@@ -9,6 +9,7 @@ import ValidityState from './polyfills/validityState';
 import valueAsDate from './polyfills/valueAsDate';
 import valueAsNumber from './polyfills/valueAsNumber';
 import willValidate from './polyfills/willValidate';
+import { set_language, add_translation } from './components/localization';
 import version from './version';
 
 
@@ -34,6 +35,10 @@ const hyperform = {
   valueAsNumber,
 
   willValidate,
+
+  set_language,
+
+  add_translation,
 
   capture(form) {
     var els;

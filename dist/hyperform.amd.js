@@ -199,11 +199,55 @@ define(function () { 'use strict';
       });
     }
 
-    var catalog = {};
+    var catalog = {
+      en: {
+        /**
+         * these validation messages are from Firefox source,
+         * http://mxr.mozilla.org/mozilla-central/source/dom/locales/en-US/chrome/dom/dom.properties
+         * released under MPL license, http://mozilla.org/MPL/2.0/.
+         */
+        TextTooLong: 'Please shorten this text to %l characters or less (you are currently using %l characters).',
+        ValueMissing: 'Please fill out this field.',
+        CheckboxMissing: 'Please check this box if you want to proceed.',
+        RadioMissing: 'Please select one of these options.',
+        FileMissing: 'Please select a file.',
+        SelectMissing: 'Please select an item in the list.',
+        InvalidEmail: 'Please enter an email address.',
+        InvalidURL: 'Please enter a URL.',
+        PatternMismatch: 'Please match the requested format.',
+        PatternMismatchWithTitle: 'Please match the requested format: %l.',
+        NumberRangeOverflow: 'Please select a value that is no more than %l.',
+        DateRangeOverflow: 'Please select a value that is no later than %l.',
+        TimeRangeOverflow: 'Please select a value that is no later than %l.',
+        NumberRangeUnderflow: 'Please select a value that is no less than %l.',
+        DateRangeUnderflow: 'Please select a value that is no earlier than %l.',
+        TimeRangeUnderflow: 'Please select a value that is no earlier than %l.',
+        StepMismatch: 'Please select a valid value. The two nearest valid values are %l and %l.',
+        StepMismatchOneValue: 'Please select a valid value. The nearest valid value is %l.',
+        BadInputNumber: 'Please enter a number.'
+      }
+    };
+
+    var language = 'en';
+
+    function set_language(newlang) {
+      language = newlang;
+    }
+
+    function add_translation(lang, new_catalog) {
+      if (!(lang in catalog)) {
+        catalog[lang] = {};
+      }
+      for (var key in new_catalog.keys()) {
+        catalog[lang][key] = new_catalog[key];
+      }
+    }
 
     function _ (s) {
-      if (s in catalog) {
-        return catalog[s];
+      if (s in catalog[language]) {
+        return catalog[language][s];
+      } else if (s in catalog.en) {
+        return catalog.en[s];
       }
       return s;
     }
@@ -562,7 +606,7 @@ define(function () { 'use strict';
       patternMismatch: function patternMismatch(element) {
         var invalid = !test_pattern(element);
         if (invalid) {
-          message_store.set(element, element.title ? sprintf(_('Please match the requested format: %s.'), element.title) : _('Please match the requested format.'));
+          message_store.set(element, element.title ? sprintf(_('PatternMismatchWithTitle'), element.title) : _('PatternMismatch'));
         }
         return invalid;
       },
@@ -576,12 +620,14 @@ define(function () { 'use strict';
             case 'date':
             case 'datetime':
             case 'datetime-local':
+              msg = sprintf(_('DateRangeOverflow'), element.value);
+              break;
             case 'time':
-              msg = sprintf(_('Please select a value that is no later than %l.'), element.value);
+              msg = sprintf(_('TimeRangeOverflow'), element.value);
               break;
             // case 'number':
             default:
-              msg = sprintf(_('Please select a value that is no more than %l.'), element.value);
+              msg = sprintf(_('NumberRangeOverflow'), element.value);
               break;
           }
           message_store.set(element, msg);
@@ -599,12 +645,14 @@ define(function () { 'use strict';
             case 'date':
             case 'datetime':
             case 'datetime-local':
+              msg = sprintf(_('DateRangeUnderflow'), element.value);
+              break;
             case 'time':
-              msg = sprintf(_('Please select a value that is no earlier than %l.'), element.value);
+              msg = sprintf(_('TimeRangeUnderflow'), element.value);
               break;
             // case 'number':
             default:
-              msg = sprintf(_('Please select a value that is no less than %l.'), element.value);
+              msg = sprintf(_('NumberRangeUnderflow'), element.value);
               break;
           }
           message_store.set(element, msg);
@@ -633,9 +681,9 @@ define(function () { 'use strict';
           }
 
           if (sole !== false) {
-            message_store.set(element, sprintf(_('Please select a valid value. The nearest valid value is %l.'), sole));
+            message_store.set(element, sprintf(_('StepMismatchOneValue'), sole));
           } else {
-            message_store.set(element, sprintf(_('Please select a valid value. The two nearest valid values are %l and %l.'), min, max));
+            message_store.set(element, sprintf(_('StepMismatch'), min, max));
           }
         }
 
@@ -646,7 +694,7 @@ define(function () { 'use strict';
         var invalid = !test_maxlength(element);
 
         if (invalid) {
-          message_store.set(element, sprintf(_('Please shorten this text to %l characters or less (you are currently using %l characters).'), element.getAttribute('maxlength'), element.value.length));
+          message_store.set(element, sprintf(_('TextTooLong'), element.getAttribute('maxlength'), element.value.length));
         }
 
         return invalid;
@@ -671,10 +719,10 @@ define(function () { 'use strict';
             if (element.hasAttribute('multiple')) {
               msg = _('Please enter a comma separated list of email addresses.');
             } else {
-              msg = _('Please enter an email address.');
+              msg = _('InvalidEmail');
             }
           } else if (element.type === 'url') {
-            msg = _('Please enter a URL.');
+            msg = _('InvalidURL');
           }
           message_store.set(element, msg);
         }
@@ -686,19 +734,19 @@ define(function () { 'use strict';
         var invalid = !test_required(element);
 
         if (invalid) {
-          var msg = _('Please fill out this field.');
+          var msg = _('ValueMissing');
           if (element.type === 'checkbox') {
-            msg = _('Please check this box if you want to proceed.');
+            msg = _('CheckboxMissing');
           } else if (element.type === 'radio') {
-            msg = _('Please select one of these options.');
+            msg = _('RadioMissing');
           } else if (element.type === 'file') {
             if (element.hasAttribute('multiple')) {
               msg = _('Please select one or more files.');
             } else {
-              msg = _('Please select a file.');
+              msg = _('FileMissing');
             }
           } else if (element instanceof window.HTMLSelectElement) {
-            msg = _('Please select an item in the list.');
+            msg = _('SelectMissing');
           }
           message_store.set(element, msg);
         }
@@ -1137,6 +1185,10 @@ define(function () { 'use strict';
       valueAsNumber: valueAsNumber,
 
       willValidate: willValidate,
+
+      set_language: set_language,
+
+      add_translation: add_translation,
 
       capture: function capture(form) {
         var els;
