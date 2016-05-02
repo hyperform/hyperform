@@ -35,6 +35,10 @@
     "jspm": "^0.17.0-beta.13",
     "uglify-js": "^2.6.2"
   },
+  "files": [
+    "src",
+    "dist"
+  ],
   "jshintConfig": {
     "esversion": 6,
     "strict": "global",
