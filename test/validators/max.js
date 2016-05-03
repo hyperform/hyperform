@@ -21,7 +21,7 @@ test('validator-max', t => {
   t.is(max(el), false);
 });
 
-test.skip('validator-max for date', t => {
+test('validator-max for date', t => {
   var el = document.createElement('input');
   el.type = 'date';
   el.setAttribute('max', '2015-01-01');
