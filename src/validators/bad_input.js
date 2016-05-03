@@ -39,7 +39,8 @@ export default function(element) {
     case 'email':
       // TODO can we do this at all? Punycode conversion would be done by
       // the browser or not at all. If not, typeMismatch will catch that
-      // alltogether.
+      // altogether. And I hesitate a bit to pull in a heavy punycode lib
+      // for basically no gain.
       break;
   }
 
