@@ -1,6 +1,7 @@
 'use strict';
 
 
+import catch_submit from './tools/catch_submit';
 import checkValidity from './polyfills/checkValidity';
 import reportValidity from './polyfills/reportValidity';
 import setCustomValidity from './polyfills/setCustomValidity';
@@ -57,6 +58,8 @@ const hyperform = {
                form instanceof window.HTMLFieldSetElement) {
       els = form.elements;
     }
+
+    catch_submit(form);
 
     const els_length = els.length;
     for (let i = 0; i < els_length; i++) {
