@@ -51,7 +51,7 @@ for prime time?
 | `validity.tooShort`          | :full_moon: |  |
 | `validity.rangeUnderflow`    | :full_moon: |  |
 | `validity.rangeOverflow`     | :full_moon: |  |
-| `validity.stepMismatch`      | :last_quarter_moon: | Step validation for `type=month` is incorrect, yet |
+| `validity.stepMismatch`      | :full_moon: |  |
 | `validity.badInput`          | :waning_gibbous_moon: | Works for all but `type=email`. (That last one might be unfixable. See comment in [src/validators/bad_input.js](src/validators/bad_input.js).) |
 | `validity.customError`       | :full_moon: |  |
 | `validity.valid`             | :waning_gibbous_moon: | Depends on the other validations above. Apart from that, finished. |

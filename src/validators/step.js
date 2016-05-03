@@ -56,16 +56,20 @@ export default function(element) {
 
   const scale = step_scale_factor[element.type] || 1;
 
-  const value = string_to_number(element.value, element.type);
-  const min = string_to_number(element.getAttribute('min') ||
+  let value = string_to_number(element.value, element.type);
+  let min = string_to_number(element.getAttribute('min') ||
                          element.getAttribute('value') || '', element.type);
 
-  let base = min;
-  if (isNaN(base)) {
-    base = default_step_base[element.type] || 0;
+  if (isNaN(min)) {
+    min = default_step_base[element.type] || 0;
   }
 
-  const result = Math.abs(base - value) % (step * scale);
+  if (element.type === 'month') {
+    min = (new Date(min)).getUTCMonth();
+    value = (new Date(value)).getUTCMonth();
+  }
+
+  const result = Math.abs(min - value) % (step * scale);
 
   return (result < 0.00000001 ||
           /* crappy floating-point arithmetics! */
