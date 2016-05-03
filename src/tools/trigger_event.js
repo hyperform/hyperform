@@ -9,4 +9,6 @@ export default function(element, event,
       event = _event;
   }
   element.dispatchEvent(event);
+
+  return event;
 }

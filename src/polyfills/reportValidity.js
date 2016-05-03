@@ -3,8 +3,9 @@
 
 import mark from '../tools/mark';
 import installer from '../tools/property_installer';
+import trigger_event from '../tools/trigger_event';
 import renderer from '../components/renderer';
-import checkValidity from './checkValidity';
+import ValidityState from './validityState';
 
 
 /**
@@ -13,15 +14,19 @@ import checkValidity from './checkValidity';
 function reportValidity() {
   /* jshint -W040 */
 
-  /* if this is a <form>, check validity of all child inputs */
+  /* if this is a <form>, report validity of all child inputs */
   if (this instanceof window.HTMLFormElement) {
     return Array.prototype.every.call(this.elements, reportValidity);
   }
 
-  const valid = checkValidity.call(this);
+  /* we copy checkValidity() here, b/c we have to check if the "invalid"
+   * event was canceled. */
+  var valid = ValidityState(this).valid;
   if (! valid) {
-    /* TODO suppress warning, if checkValidity's invalid event is canceled. */
-    renderer.show_warning(this);
+    const event = trigger_event(this, 'invalid', { cancelable: true });
+    if (! event.defaultPrevented) {
+      renderer.show_warning(this);
+    }
   }
   /* jshint +W040 */
   return valid;
