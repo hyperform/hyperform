@@ -9,6 +9,7 @@
 
 import get_next_valid from '../tools/get_next_valid';
 import installer from '../tools/property_installer';
+import is_validation_candidate from '../tools/is_validation_candidate';
 import mark from '../tools/mark';
 import sprintf from '../tools/sprintf';
 import _ from '../components/localization';
@@ -253,9 +254,11 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
   configurable: true,
   enumerable: true,
   get: function() {
-    for (let prop in validity_state_checkers) {
-      if (validity_state_checkers[prop](this.element)) {
-        return false;
+    if (is_validation_candidate(this.element)) {
+      for (let prop in validity_state_checkers) {
+        if (validity_state_checkers[prop](this.element)) {
+          return false;
+        }
       }
     }
     return true;

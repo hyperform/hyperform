@@ -1,7 +1,6 @@
 'use strict';
 
 
-import is_validation_candidate from '../tools/is_validation_candidate';
 import mark from '../tools/mark';
 import installer from '../tools/property_installer';
 import trigger_event from '../tools/trigger_event';
@@ -20,13 +19,9 @@ function checkValidity() {
   }
 
   /* default is true, also for elements that are no validation candidates */
-  var valid = true;
-
-  if (is_validation_candidate(this)) {
-    valid = ValidityState(this).valid;
-    if (! valid) {
-      trigger_event(this, 'invalid', { cancelable: true });
-    }
+  var valid = ValidityState(this).valid;
+  if (! valid) {
+    trigger_event(this, 'invalid', { cancelable: true });
   }
   /* jshint +W040 */
 
