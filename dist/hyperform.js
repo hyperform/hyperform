@@ -1,54 +1,6 @@
 (function () {
     'use strict';
 
-    /* and datetime-local? Spec says “Nah!” */
-
-    var dates = ['datetime', 'date', 'month', 'week', 'time'];
-
-    var plain_numbers = ['number', 'range'];
-
-    /* everything that returns something meaningful for valueAsNumber and
-     * can have the step attribute */
-    var numbers = dates.concat(plain_numbers, 'datetime-local');
-
-    /* the spec says to only check those for syntax in validity.typeMismatch.
-     * ¯\_(ツ)_/¯ */
-    var type_checked = ['email', 'url'];
-
-    /* check these for validity.badInput */
-    var input_checked = ['email', 'date', 'month', 'week', 'time', 'datetime', 'datetime-local', 'number', 'range', 'color'];
-
-    var text = ['text', 'search', 'tel', 'password'].concat(type_checked);
-
-    /* input element types, that are candidates for the validation API.
-     * Missing from this set are: button, hidden, menu (from <button>), reset */
-    var validation_candidates = ['checkbox', 'color', 'file', 'image', 'radio', 'submit'].concat(numbers, text);
-
-    /**
-     * check if an element is a candidate for constraint validation
-     *
-     * @see https://html.spec.whatwg.org/multipage/forms.html#barred-from-constraint-validation
-     */
-    function is_validation_candidate (element) {
-      /* it must be any of those elements */
-      if (element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement) {
-
-        /* it's type must be in the whitelist or missing (select, textarea) */
-        if (!element.type || ['select-one', 'select-multiple', 'textarea'].indexOf(element.type) > -1 || validation_candidates.indexOf(element.type) > -1) {
-
-          /* it mustn't be disabled or readonly */
-          if (!element.disabled && !element.readonly) {
-
-            /* then it's a candidate */
-            return true;
-          }
-        }
-      }
-
-      /* this is no HTML5 validation candidate... */
-      return false;
-    }
-
     /**
      * mark an object with a 'hyperform=true' property
      *
@@ -77,9 +29,11 @@
 
     function installer (property, descriptor) {
       return function (element) {
-        if (property in element && !element[property].hyperform) {
+        var original_descriptor = Object.getOwnPropertyDescriptor(element, property);
+        console.log(original_descriptor);
+        if (original_descriptor && !element[property].hyperform) {
           /* publish existing property under new name, if it's not from us */
-          Object.defineProperty(element, '_original_' + property, Object.getOwnPropertyDescriptor(element, property));
+          Object.defineProperty(element, '_original_' + property, original_descriptor);
         }
         delete element[property];
         Object.defineProperty(element, property, descriptor);
@@ -98,7 +52,44 @@
             event = _event;
         }
         element.dispatchEvent(event);
+
+        return event;
     }
+
+    /**
+     * TODO make this a wrapper around a WeakMap and check the element's native
+     * validationMessage, too, if that slips through somewhere (e.g. native browser
+     * validation). */
+
+    var message_store = new WeakMap();
+
+    var warnings_cache = new WeakMap();
+
+    var Renderer = {
+
+      show_warning: function show_warning(element) {
+        var msg = message_store.get(element);
+        var warning = warnings_cache.get(element);
+        if (msg) {
+          if (!warning) {
+            warning = document.createElement('div');
+            warning.className = 'hf-warning';
+            warnings_cache.set(element, warning);
+          }
+          warning.textContent = msg;
+          /* should also work, if element is last,
+           * http://stackoverflow.com/a/4793630/113195 */
+          element.parentNode.insertBefore(warning, element.nextSibling);
+        } else if (warning && warning.parentNode) {
+          warning.parentNode.removeChild(warning);
+        }
+      },
+
+      set: function set(renderer, action) {
+        Renderer[renderer] = action;
+      }
+
+    };
 
     function sliceIterator(arr, i) {
       var _arr = [];
@@ -164,6 +155,54 @@
       }
 
       return [prev, next];
+    }
+
+    /* and datetime-local? Spec says “Nah!” */
+
+    var dates = ['datetime', 'date', 'month', 'week', 'time'];
+
+    var plain_numbers = ['number', 'range'];
+
+    /* everything that returns something meaningful for valueAsNumber and
+     * can have the step attribute */
+    var numbers = dates.concat(plain_numbers, 'datetime-local');
+
+    /* the spec says to only check those for syntax in validity.typeMismatch.
+     * ¯\_(ツ)_/¯ */
+    var type_checked = ['email', 'url'];
+
+    /* check these for validity.badInput */
+    var input_checked = ['email', 'date', 'month', 'week', 'time', 'datetime', 'datetime-local', 'number', 'range', 'color'];
+
+    var text = ['text', 'search', 'tel', 'password'].concat(type_checked);
+
+    /* input element types, that are candidates for the validation API.
+     * Missing from this set are: button, hidden, menu (from <button>), reset */
+    var validation_candidates = ['checkbox', 'color', 'file', 'image', 'radio', 'submit'].concat(numbers, text);
+
+    /**
+     * check if an element is a candidate for constraint validation
+     *
+     * @see https://html.spec.whatwg.org/multipage/forms.html#barred-from-constraint-validation
+     */
+    function is_validation_candidate (element) {
+      /* it must be any of those elements */
+      if (element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement) {
+
+        /* it's type must be in the whitelist or missing (select, textarea) */
+        if (!element.type || ['select-one', 'select-multiple', 'textarea'].indexOf(element.type) > -1 || validation_candidates.indexOf(element.type) > -1) {
+
+          /* it mustn't be disabled or readonly */
+          if (!element.disabled && !element.readonly) {
+
+            /* then it's a candidate */
+            return true;
+          }
+        }
+      }
+
+      /* this is no HTML5 validation candidate... */
+      return false;
     }
 
     function sprintf (str) {
@@ -252,13 +291,6 @@
       }
       return s;
     }
-
-    /**
-     * TODO make this a wrapper around a WeakMap and check the element's native
-     * validationMessage, too, if that slips through somewhere (e.g. native browser
-     * validation). */
-
-    var message_store = new WeakMap();
 
     /**
      * return a new Date() representing the ISO date for a week number
@@ -814,9 +846,11 @@
       configurable: true,
       enumerable: true,
       get: function get() {
-        for (var _prop in validity_state_checkers) {
-          if (validity_state_checkers[_prop](this.element)) {
-            return false;
+        if (is_validation_candidate(this.element)) {
+          for (var _prop in validity_state_checkers) {
+            if (validity_state_checkers[_prop](this.element)) {
+              return false;
+            }
           }
         }
         return true;
@@ -838,26 +872,89 @@
     });
 
     /**
+     * check element's validity and report an error back to the user
+     */
+    function reportValidity(element) {
+      /* if this is a <form>, report validity of all child inputs */
+      if (element instanceof window.HTMLFormElement) {
+        return Array.prototype.every.call(element.elements, reportValidity);
+      }
+
+      /* we copy checkValidity() here, b/c we have to check if the "invalid"
+       * event was canceled. */
+      var valid = ValidityState(element).valid;
+      if (!valid) {
+        var event = trigger_event(element, 'invalid', { cancelable: true });
+        if (!event.defaultPrevented) {
+          Renderer.show_warning(element);
+        }
+      }
+
+      return valid;
+    }
+
+    /**
+     * publish a convenience function to replace the native element.reportValidity
+     */
+    reportValidity.install = installer('reportValidity', {
+      configurable: true,
+      enumerable: true,
+      value: function value() {
+        return reportValidity(this);
+      },
+      writable: true
+    });
+
+    mark(reportValidity);
+
+    /**
+     * catch the events _prior_ to a form being submitted
+     */
+    function catch_submit (listening_node) {
+      listening_node.addEventListener('click', function (event) {
+        if (event.target.nodeName === 'INPUT' || event.target.nodeName === 'BUTTON') {
+          if (event.target.type === 'image' || event.target.type === 'submit') {
+            if (event.target.form) {
+              event.preventDefault();
+              reportValidity(event.target.form);
+            }
+          }
+        }
+      }, {
+        capture: true
+      });
+
+      /* catch implicit submission */
+      listening_node.addEventListener('keypress', function (event) {
+        if (event.keyCode === 13) {
+          if (event.target.nodeName === 'INPUT') {
+            if (text.indexOf(event.target.type) > -1) {
+              if (event.target.form) {
+                event.preventDefault();
+                reportValidity(event.target.form);
+              }
+            }
+          }
+        }
+      }, {
+        capture: true
+      });
+    }
+
+    /**
      * check an element's validity with respect to it's form
      */
-    function checkValidity() {
-      /* jshint -W040 */
-
+    function checkValidity(element) {
       /* if this is a <form>, check validity of all child inputs */
-      if (this instanceof window.HTMLFormElement) {
-        return Array.prototype.every.call(this.elements, checkValidity);
+      if (element instanceof window.HTMLFormElement) {
+        return Array.prototype.every.call(element.elements, checkValidity);
       }
 
       /* default is true, also for elements that are no validation candidates */
-      var valid = true;
-
-      if (is_validation_candidate(this)) {
-        valid = ValidityState(this).valid;
-        if (!valid) {
-          trigger_event(this, 'invalid', { cancelable: true });
-        }
+      var valid = ValidityState(element).valid;
+      if (!valid) {
+        trigger_event(element, 'invalid', { cancelable: true });
       }
-      /* jshint +W040 */
 
       return valid;
     }
@@ -868,58 +965,13 @@
     checkValidity.install = installer('checkValidity', {
       configurable: true,
       enumerable: true,
-      value: checkValidity,
+      value: function value() {
+        return checkValidity(this);
+      },
       writable: true
     });
 
     mark(checkValidity);
-
-    var Renderer = {
-
-      show_warning: function show_warning(element) {
-        var msg = message_store.get(element);
-        if (msg) {
-          window.alert(msg);
-        }
-      },
-
-      set: function set(renderer, action) {
-        Renderer[renderer] = action;
-      }
-
-    };
-
-    /**
-     * check element's validity and report an error back to the user
-     */
-    function reportValidity() {
-      /* jshint -W040 */
-
-      /* if this is a <form>, check validity of all child inputs */
-      if (this instanceof window.HTMLFormElement) {
-        return Array.prototype.every.call(this.elements, reportValidity);
-      }
-
-      var valid = checkValidity.call(this);
-      if (!valid) {
-        /* TODO suppress warning, if checkValidity's invalid event is canceled. */
-        Renderer.show_warning(this);
-      }
-      /* jshint +W040 */
-      return valid;
-    }
-
-    /**
-     * publish a convenience function to replace the native element.reportValidity
-     */
-    reportValidity.install = installer('reportValidity', {
-      configurable: true,
-      enumerable: true,
-      value: reportValidity,
-      writable: true
-    });
-
-    mark(reportValidity);
 
     /**
      *
@@ -1196,6 +1248,8 @@
 
       add_translation: add_translation,
 
+      add_renderer: Renderer.set,
+
       capture: function capture(form) {
         var els;
         if (form === window || form instanceof window.HTMLDocument) {
@@ -1204,6 +1258,8 @@
         } else if (form instanceof window.HTMLFormElement || form instanceof window.HTMLFieldSetElement) {
           els = form.elements;
         }
+
+        catch_submit(form);
 
         var els_length = els.length;
         for (var i = 0; i < els_length; i++) {
