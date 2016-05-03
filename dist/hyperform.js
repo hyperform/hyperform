@@ -285,7 +285,7 @@
       var date = new Date(0);
       switch (element_type) {
         case 'datetime':
-          if (!/^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
+          if (!/^([0-9]{4,})-([0-9]{2})-([0-9]{2})T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
             return null;
           }
           var ms = RegExp.$7;
@@ -298,7 +298,7 @@
           return date;
 
         case 'date':
-          if (!/^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/.test(string)) {
+          if (!/^([0-9]{4,})-([0-9]{2})-([0-9]{2})$/.test(string)) {
             return null;
           }
           date.setUTCFullYear(Number(RegExp.$1));
@@ -306,7 +306,7 @@
           return date;
 
         case 'month':
-          if (!/^([0-9]{4,})-(0[1-9]|1[012])$/.test(string)) {
+          if (!/^([0-9]{4,})-([0-9]{2})$/.test(string)) {
             return null;
           }
           date.setUTCFullYear(Number(RegExp.$1));
@@ -494,12 +494,16 @@
       var value = string_to_number(element.value, element.type);
       var min = string_to_number(element.getAttribute('min') || element.getAttribute('value') || '', element.type);
 
-      var base = min;
-      if (isNaN(base)) {
-        base = default_step_base[element.type] || 0;
+      if (isNaN(min)) {
+        min = default_step_base[element.type] || 0;
       }
 
-      var result = Math.abs(base - value) % (step * scale);
+      if (element.type === 'month') {
+        min = new Date(min).getUTCMonth();
+        value = new Date(value).getUTCMonth();
+      }
+
+      var result = Math.abs(min - value) % (step * scale);
 
       return result < 0.00000001 ||
       /* crappy floating-point arithmetics! */
@@ -575,7 +579,8 @@
         case 'email':
           // TODO can we do this at all? Punycode conversion would be done by
           // the browser or not at all. If not, typeMismatch will catch that
-          // alltogether.
+          // altogether. And I hesitate a bit to pull in a heavy punycode lib
+          // for basically no gain.
           break;
       }
 
