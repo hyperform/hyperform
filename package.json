@@ -1,6 +1,6 @@
 {
   "name": "hyperform",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Capture form validation back from the browser",
   "main": "dist/hyperform.min.js",
   "jsnext:main": "src/hyperform.js",
@@ -35,6 +35,10 @@
     "jspm": "^0.17.0-beta.13",
     "uglify-js": "^2.6.2"
   },
+  "files": [
+    "src",
+    "dist"
+  ],
   "jshintConfig": {
     "esversion": 6,
     "strict": "global",
