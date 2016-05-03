@@ -11,24 +11,22 @@ import ValidityState from './validityState';
 /**
  * check element's validity and report an error back to the user
  */
-function reportValidity() {
-  /* jshint -W040 */
-
+function reportValidity(element) {
   /* if this is a <form>, report validity of all child inputs */
-  if (this instanceof window.HTMLFormElement) {
-    return Array.prototype.every.call(this.elements, reportValidity);
+  if (element instanceof window.HTMLFormElement) {
+    return Array.prototype.every.call(element.elements, reportValidity);
   }
 
   /* we copy checkValidity() here, b/c we have to check if the "invalid"
    * event was canceled. */
-  var valid = ValidityState(this).valid;
+  var valid = ValidityState(element).valid;
   if (! valid) {
-    const event = trigger_event(this, 'invalid', { cancelable: true });
+    const event = trigger_event(element, 'invalid', { cancelable: true });
     if (! event.defaultPrevented) {
-      renderer.show_warning(this);
+      renderer.show_warning(element);
     }
   }
-  /* jshint +W040 */
+
   return valid;
 }
 
@@ -39,7 +37,7 @@ function reportValidity() {
 reportValidity.install = installer('reportValidity', {
   configurable: true,
   enumerable: true,
-  value: reportValidity,
+  value: function() { return reportValidity(this); },
   writable: true,
 });
 

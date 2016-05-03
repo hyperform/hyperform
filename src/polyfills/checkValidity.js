@@ -10,20 +10,17 @@ import ValidityState from './validityState';
 /**
  * check an element's validity with respect to it's form
  */
-function checkValidity() {
-  /* jshint -W040 */
-
+function checkValidity(element) {
   /* if this is a <form>, check validity of all child inputs */
-  if (this instanceof window.HTMLFormElement) {
-    return Array.prototype.every.call(this.elements, checkValidity);
+  if (element instanceof window.HTMLFormElement) {
+    return Array.prototype.every.call(element.elements, checkValidity);
   }
 
   /* default is true, also for elements that are no validation candidates */
-  var valid = ValidityState(this).valid;
+  var valid = ValidityState(element).valid;
   if (! valid) {
-    trigger_event(this, 'invalid', { cancelable: true });
+    trigger_event(element, 'invalid', { cancelable: true });
   }
-  /* jshint +W040 */
 
   return valid;
 }
@@ -35,7 +32,7 @@ function checkValidity() {
 checkValidity.install = installer('checkValidity', {
   configurable: true,
   enumerable: true,
-  value: checkValidity,
+  value: function() { return checkValidity(this); },
   writable: true,
 });
 

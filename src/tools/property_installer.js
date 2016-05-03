@@ -9,12 +9,13 @@
  */
 export default function(property, descriptor) {
   return function(element) {
-    if (property in element && ! element[property].hyperform) {
+    const original_descriptor = Object.getOwnPropertyDescriptor(element, property);
+    if (original_descriptor && ! element[property].hyperform) {
       /* publish existing property under new name, if it's not from us */
       Object.defineProperty(
         element,
         '_original_'+property,
-        Object.getOwnPropertyDescriptor(element, property)
+        original_descriptor
       );
     }
     delete element[property];
