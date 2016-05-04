@@ -8,6 +8,7 @@
 
 
 import get_next_valid from '../tools/get_next_valid';
+import get_type from '../tools/get_type';
 import installer from '../tools/property_installer';
 import is_validation_candidate from '../tools/is_validation_candidate';
 import mark from '../tools/mark';
@@ -65,7 +66,7 @@ const validity_state_checkers = {
 
     if (invalid) {
       let msg;
-      switch (element.type) {
+      switch (get_type(element)) {
         case 'date':
         case 'datetime':
         case 'datetime-local':
@@ -90,7 +91,7 @@ const validity_state_checkers = {
 
     if (invalid) {
       let msg;
-      switch (element.type) {
+      switch (get_type(element)) {
         case 'date':
         case 'datetime':
         case 'datetime-local':
@@ -162,13 +163,15 @@ const validity_state_checkers = {
 
     if (invalid) {
       let msg = _('Please use the appropriate format.');
-      if (element.type === 'email') {
+      const type = get_type(element);
+
+      if (type === 'email') {
         if (element.hasAttribute('multiple')) {
           msg = _('Please enter a comma separated list of email addresses.');
         } else {
           msg = _('InvalidEmail');
         }
-      } else if (element.type === 'url') {
+      } else if (type === 'url') {
         msg = _('InvalidURL');
       }
       message_store.set(element, msg);
@@ -182,11 +185,13 @@ const validity_state_checkers = {
 
     if (invalid) {
       let msg = _('ValueMissing');
-      if (element.type === 'checkbox') {
+      const type = get_type(element);
+
+      if (type === 'checkbox') {
         msg = _('CheckboxMissing');
-      } else if (element.type === 'radio') {
+      } else if (type === 'radio') {
         msg = _('RadioMissing');
-      } else if (element.type === 'file') {
+      } else if (type === 'file') {
         if (element.hasAttribute('multiple')) {
           msg = _('Please select one or more files.');
         } else {

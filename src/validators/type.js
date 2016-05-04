@@ -1,6 +1,7 @@
 'use strict';
 
 
+import get_type from '../tools/get_type';
 import is_validation_candidate from '../tools/is_validation_candidate';
 import { type_checked } from '../components/types';
 
@@ -15,16 +16,18 @@ const email_pattern = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0
  * test the type-inherent syntax
  */
 export default function(element) {
+  const type = get_type(element);
+
   if (! is_validation_candidate(element) ||
       ! element.value ||
-      type_checked.indexOf(element.type) === -1) {
+      type_checked.indexOf(type) === -1) {
     /* we're not responsible for this element */
     return true;
   }
 
   var is_valid = true;
 
-  switch (element.type) {
+  switch (type) {
     case 'url':
         url_canary.href = element.value;
         is_valid = (url_canary.href === element.value ||

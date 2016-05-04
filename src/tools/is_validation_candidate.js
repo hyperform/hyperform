@@ -1,7 +1,8 @@
 'use strict';
 
 
-import { validation_candidates } from '../components/types';
+import { validation_candidates, non_inputs } from '../components/types';
+import get_type from '../tools/get_type';
 
 
 /**
@@ -19,13 +20,15 @@ export default function(element) {
       ||
       element instanceof window.HTMLInputElement) {
 
+    const type = get_type(element);
     /* it's type must be in the whitelist or missing (select, textarea) */
-    if (! element.type ||
-        ['select-one', 'select-multiple', 'textarea'].indexOf(element.type) > -1 ||
-        validation_candidates.indexOf(element.type) > -1) {
+    if (! type ||
+        non_inputs.indexOf(type) > -1 ||
+        validation_candidates.indexOf(type) > -1) {
 
       /* it mustn't be disabled or readonly */
-      if (! element.disabled && ! element.readonly) {
+      if (! element.hasAttribute('disabled') &&
+          ! element.hasAttribute('readonly')) {
 
         /* then it's a candidate */
         return true;

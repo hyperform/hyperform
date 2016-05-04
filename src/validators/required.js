@@ -15,6 +15,8 @@ export default function(element) {
     return true;
   }
 
+  /* we don't need get_type() for element.type, because "checkbox" and "radio"
+   * are well supported. */
   switch (element.type) {
     case 'checkbox':
       return element.checked;

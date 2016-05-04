@@ -196,8 +196,39 @@ define(function () { 'use strict';
     var text = ['text', 'search', 'tel', 'password'].concat(type_checked);
 
     /* input element types, that are candidates for the validation API.
-     * Missing from this set are: button, hidden, menu (from <button>), reset */
+     * Missing from this set are: button, hidden, menu (from <button>), reset and
+     * the types for non-<input> elements. */
     var validation_candidates = ['checkbox', 'color', 'file', 'image', 'radio', 'submit'].concat(numbers, text);
+
+    /* all known types of <input> */
+    var inputs = ['button', 'hidden', 'reset'].concat(validation_candidates);
+
+    /* apparently <select> and <textarea> have types of their own */
+    var non_inputs = ['select-one', 'select-multiple', 'textarea'];
+
+    /**
+     * get the element's type in a backwards-compatible way
+     */
+    function get_type (element) {
+      if (element instanceof window.HTMLTextAreaElement) {
+        return 'textarea';
+      } else if (element instanceof window.HTMLSelectElement) {
+        return element.hasAttribute('multiple') ? 'select-multiple' : 'select-one';
+      } else if (element instanceof window.HTMLButtonElement) {
+        return (element.getAttribute('type') || 'submit').toLowerCase();
+      } else if (element instanceof window.HTMLInputElement) {
+        var attr = (element.getAttribute('type') || '').toLowerCase();
+        if (attr && inputs.indexOf(attr) > -1) {
+          return attr;
+        } else {
+          /* perhaps the DOM has in-depth knowledge. Take that before returning
+           * 'text'. */
+          return element.type || 'text';
+        }
+      }
+
+      return '';
+    }
 
     /**
      * check if an element is a candidate for constraint validation
@@ -208,11 +239,12 @@ define(function () { 'use strict';
       /* it must be any of those elements */
       if (element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement) {
 
+        var type = get_type(element);
         /* it's type must be in the whitelist or missing (select, textarea) */
-        if (!element.type || ['select-one', 'select-multiple', 'textarea'].indexOf(element.type) > -1 || validation_candidates.indexOf(element.type) > -1) {
+        if (!type || non_inputs.indexOf(type) > -1 || validation_candidates.indexOf(type) > -1) {
 
           /* it mustn't be disabled or readonly */
-          if (!element.disabled && !element.readonly) {
+          if (!element.hasAttribute('disabled') && !element.hasAttribute('readonly')) {
 
             /* then it's a candidate */
             return true;
@@ -388,6 +420,7 @@ define(function () { 'use strict';
      * value like "123abc" should result in an error.
      */
     function test_max (element) {
+      var type = get_type(element);
 
       if (!is_validation_candidate(element) || !element.value || !element.hasAttribute('max')) {
         /* we're not responsible here */
@@ -396,9 +429,9 @@ define(function () { 'use strict';
 
       var value = void 0,
           max = void 0;
-      if (dates.indexOf(element.type) > -1) {
-        value = 1 * string_to_date(element.value, element.type);
-        max = 1 * (string_to_date(element.getAttribute('max'), element.type) || NaN);
+      if (dates.indexOf(type) > -1) {
+        value = 1 * string_to_date(element.value, type);
+        max = 1 * (string_to_date(element.getAttribute('max'), type) || NaN);
       } else {
         value = Number(element.value);
         max = Number(element.getAttribute('max'));
@@ -423,6 +456,7 @@ define(function () { 'use strict';
      * value like "123abc" should result in an error.
      */
     function test_min (element) {
+      var type = get_type(element);
 
       if (!is_validation_candidate(element) || !element.value || !element.hasAttribute('min')) {
         /* we're not responsible here */
@@ -431,9 +465,9 @@ define(function () { 'use strict';
 
       var value = void 0,
           min = void 0;
-      if (dates.indexOf(element.type) > -1) {
-        value = 1 * string_to_date(element.value, element.type);
-        min = 1 * (string_to_date(element.getAttribute('min'), element.type) || NaN);
+      if (dates.indexOf(type) > -1) {
+        value = 1 * string_to_date(element.value, type);
+        min = 1 * (string_to_date(element.getAttribute('min'), type) || NaN);
       } else {
         value = Number(element.value);
         min = Number(element.getAttribute('min'));
@@ -467,6 +501,8 @@ define(function () { 'use strict';
         return true;
       }
 
+      /* we don't need get_type() for element.type, because "checkbox" and "radio"
+       * are well supported. */
       switch (element.type) {
         case 'checkbox':
           return element.checked;
@@ -520,8 +556,9 @@ define(function () { 'use strict';
      *       steps. See https://html.spec.whatwg.org/multipage/forms.html#month-state-%28type=month%29
      */
     function test_step (element) {
+      var type = get_type(element);
 
-      if (!is_validation_candidate(element) || !element.value || numbers.indexOf(element.type) === -1 || (element.getAttribute('step') || '').toLowerCase() === 'any') {
+      if (!is_validation_candidate(element) || !element.value || numbers.indexOf(type) === -1 || (element.getAttribute('step') || '').toLowerCase() === 'any') {
         /* we're not responsible here. Note: If no step attribute is given, we
          * need to validate against the default step as per spec. */
         return true;
@@ -529,9 +566,9 @@ define(function () { 'use strict';
 
       var step = element.getAttribute('step');
       if (step) {
-        step = string_to_number(step, element.type);
+        step = string_to_number(step, type);
       } else {
-        step = default_step[element.type] || 1;
+        step = default_step[type] || 1;
       }
 
       if (step <= 0 || isNaN(step)) {
@@ -540,16 +577,16 @@ define(function () { 'use strict';
         return true;
       }
 
-      var scale = step_scale_factor[element.type] || 1;
+      var scale = step_scale_factor[type] || 1;
 
-      var value = string_to_number(element.value, element.type);
-      var min = string_to_number(element.getAttribute('min') || element.getAttribute('value') || '', element.type);
+      var value = string_to_number(element.value, type);
+      var min = string_to_number(element.getAttribute('min') || element.getAttribute('value') || '', type);
 
       if (isNaN(min)) {
-        min = default_step_base[element.type] || 0;
+        min = default_step_base[type] || 0;
       }
 
-      if (element.type === 'month') {
+      if (type === 'month') {
         min = new Date(min).getUTCMonth();
         value = new Date(value).getUTCMonth();
       }
@@ -571,14 +608,16 @@ define(function () { 'use strict';
      * test the type-inherent syntax
      */
     function test_type (element) {
-      if (!is_validation_candidate(element) || !element.value || type_checked.indexOf(element.type) === -1) {
+      var type = get_type(element);
+
+      if (!is_validation_candidate(element) || !element.value || type_checked.indexOf(type) === -1) {
         /* we're not responsible for this element */
         return true;
       }
 
       var is_valid = true;
 
-      switch (element.type) {
+      switch (type) {
         case 'url':
           url_canary.href = element.value;
           is_valid = url_canary.href === element.value || url_canary.href === element.value + '/';
@@ -603,13 +642,15 @@ define(function () { 'use strict';
      * test whether the element suffers from bad input
      */
     function test_bad_input (element) {
-      if (!is_validation_candidate(element) || !element.value || input_checked.indexOf(element.type) === -1) {
+      var type = get_type(element);
+
+      if (!is_validation_candidate(element) || !element.value || input_checked.indexOf(type) === -1) {
         /* we're not interested, thanks! */
         return true;
       }
 
       var result = true;
-      switch (element.type) {
+      switch (type) {
         case 'color':
           result = /^#[a-f0-9]{6}$/.test(element.value);
           break;
@@ -622,7 +663,7 @@ define(function () { 'use strict';
         case 'month':
         case 'week':
         case 'time':
-          result = string_to_date(element.value, element.type) !== null;
+          result = string_to_date(element.value, type) !== null;
           break;
         case 'datetime-local':
           result = /^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(element.value);
@@ -673,7 +714,7 @@ define(function () { 'use strict';
 
         if (invalid) {
           var msg = void 0;
-          switch (element.type) {
+          switch (get_type(element)) {
             case 'date':
             case 'datetime':
             case 'datetime-local':
@@ -698,7 +739,7 @@ define(function () { 'use strict';
 
         if (invalid) {
           var msg = void 0;
-          switch (element.type) {
+          switch (get_type(element)) {
             case 'date':
             case 'datetime':
             case 'datetime-local':
@@ -772,13 +813,15 @@ define(function () { 'use strict';
 
         if (invalid) {
           var msg = _('Please use the appropriate format.');
-          if (element.type === 'email') {
+          var type = get_type(element);
+
+          if (type === 'email') {
             if (element.hasAttribute('multiple')) {
               msg = _('Please enter a comma separated list of email addresses.');
             } else {
               msg = _('InvalidEmail');
             }
-          } else if (element.type === 'url') {
+          } else if (type === 'url') {
             msg = _('InvalidURL');
           }
           message_store.set(element, msg);
@@ -792,11 +835,13 @@ define(function () { 'use strict';
 
         if (invalid) {
           var msg = _('ValueMissing');
-          if (element.type === 'checkbox') {
+          var type = get_type(element);
+
+          if (type === 'checkbox') {
             msg = _('CheckboxMissing');
-          } else if (element.type === 'radio') {
+          } else if (type === 'radio') {
             msg = _('RadioMissing');
-          } else if (element.type === 'file') {
+          } else if (type === 'file') {
             if (element.hasAttribute('multiple')) {
               msg = _('Please select one or more files.');
             } else {

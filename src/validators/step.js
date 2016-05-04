@@ -1,6 +1,7 @@
 'use strict';
 
 
+import get_type from '../tools/get_type';
 import is_validation_candidate from '../tools/is_validation_candidate';
 import { numbers } from '../components/types';
 import string_to_number from '../tools/string_to_number';
@@ -31,10 +32,11 @@ const default_step_base = {
  *       steps. See https://html.spec.whatwg.org/multipage/forms.html#month-state-%28type=month%29
  */
 export default function(element) {
+  const type = get_type(element);
 
   if (! is_validation_candidate(element) ||
       ! element.value ||
-      numbers.indexOf(element.type) === -1 ||
+      numbers.indexOf(type) === -1 ||
       (element.getAttribute('step') || '').toLowerCase() === 'any') {
     /* we're not responsible here. Note: If no step attribute is given, we
      * need to validate against the default step as per spec. */
@@ -43,9 +45,9 @@ export default function(element) {
 
   let step = element.getAttribute('step');
   if (step) {
-    step = string_to_number(step, element.type);
+    step = string_to_number(step, type);
   } else {
-    step = default_step[element.type] || 1;
+    step = default_step[type] || 1;
   }
 
   if (step <= 0 || isNaN(step)) {
@@ -54,17 +56,17 @@ export default function(element) {
     return true;
   }
 
-  const scale = step_scale_factor[element.type] || 1;
+  const scale = step_scale_factor[type] || 1;
 
-  let value = string_to_number(element.value, element.type);
+  let value = string_to_number(element.value, type);
   let min = string_to_number(element.getAttribute('min') ||
-                         element.getAttribute('value') || '', element.type);
+                         element.getAttribute('value') || '', type);
 
   if (isNaN(min)) {
-    min = default_step_base[element.type] || 0;
+    min = default_step_base[type] || 0;
   }
 
-  if (element.type === 'month') {
+  if (type === 'month') {
     min = (new Date(min)).getUTCMonth();
     value = (new Date(value)).getUTCMonth();
   }

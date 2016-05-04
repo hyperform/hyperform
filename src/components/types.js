@@ -20,6 +20,13 @@ export const input_checked = [ 'email', 'date', 'month', 'week', 'time',
 export const text = [ 'text', 'search', 'tel', 'password', ].concat(type_checked);
 
 /* input element types, that are candidates for the validation API.
- * Missing from this set are: button, hidden, menu (from <button>), reset */
+ * Missing from this set are: button, hidden, menu (from <button>), reset and
+ * the types for non-<input> elements. */
 export const validation_candidates = [ 'checkbox', 'color', 'file', 'image',
   'radio', 'submit', ].concat(numbers, text);
+
+/* all known types of <input> */
+export const inputs = ['button', 'hidden', 'reset'].concat(validation_candidates);
+
+/* apparently <select> and <textarea> have types of their own */
+export const non_inputs = ['select-one', 'select-multiple', 'textarea'];
