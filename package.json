@@ -4,6 +4,8 @@
   "description": "Capture form validation back from the browser",
   "main": "dist/hyperform.min.js",
   "jsnext:main": "src/hyperform.js",
+  "module": "src/hyperform.js",
+  "style": "css/hyperform.css",
   "scripts": {
     "test": "jshint src && ava test",
     "preversion": "npm test",
