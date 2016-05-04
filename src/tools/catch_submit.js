@@ -15,8 +15,6 @@ function check(event) {
 
 /**
  * catch the events _prior_ to a form being submitted
- *
- * TODO respect novalidate and formnovalidate attributes
  */
 export default function(listening_node) {
   /* catch explicit submission (click on button) */
@@ -28,7 +26,11 @@ export default function(listening_node) {
 
         (event.target.type === 'image' || event.target.type === 'submit') &&
 
-        event.target.form) {
+        ! event.target.hasAttribute('formnovalidate') &&
+
+        event.target.form &&
+
+        ! event.target.form.hasAttribute('novalidate')) {
 
       check(event);
     }
@@ -44,11 +46,26 @@ export default function(listening_node) {
 
         text_types.indexOf(event.target.type) > -1 &&
 
-        event.target.form) {
+        event.target.form &&
 
-      /* TODO check, that there is no submit button in the form. Otherwise
+        ! event.target.form.hasAttribute('novalidate')) {
+
+      /* check, that there is no submit button in the form. Otherwise
        * that should be clicked. */
-      check(event);
+      var submit, el = event.target.form.elements.length;
+      for (let i = 0; i < el; i++) {
+        if (['image', 'submit'].indexOf(event.target.form.elements[i].type) > -1) {
+          submit = event.target.form.elements[i];
+          break;
+        }
+      }
+
+      if (submit) {
+        event.preventDefault();
+        submit.click();
+      } else {
+        check(event);
+      }
     }
   });
 }

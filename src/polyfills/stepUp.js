@@ -6,6 +6,7 @@ import get_type from '../tools/get_type';
 import mark from '../tools/mark';
 import installer from '../tools/property_installer';
 import { numbers } from '../components/types';
+import valueAsNumber from './valueAsNumber';
 
 
 /**

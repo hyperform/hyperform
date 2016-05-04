@@ -995,13 +995,11 @@
 
     /**
      * catch the events _prior_ to a form being submitted
-     *
-     * TODO respect novalidate and formnovalidate attributes
      */
     function catch_submit (listening_node) {
       /* catch explicit submission (click on button) */
       listening_node.addEventListener('click', function (event) {
-        if (!event.defaultPrevented && (event.target.nodeName === 'INPUT' || event.target.nodeName === 'BUTTON') && (event.target.type === 'image' || event.target.type === 'submit') && event.target.form) {
+        if (!event.defaultPrevented && (event.target.nodeName === 'INPUT' || event.target.nodeName === 'BUTTON') && (event.target.type === 'image' || event.target.type === 'submit') && !event.target.hasAttribute('formnovalidate') && event.target.form && !event.target.form.hasAttribute('novalidate')) {
 
           check(event);
         }
@@ -1009,11 +1007,25 @@
 
       /* catch implicit submission */
       listening_node.addEventListener('keypress', function (event) {
-        if (!event.defaultPrevented && event.keyCode === 13 && event.target.nodeName === 'INPUT' && text.indexOf(event.target.type) > -1 && event.target.form) {
+        if (!event.defaultPrevented && event.keyCode === 13 && event.target.nodeName === 'INPUT' && text.indexOf(event.target.type) > -1 && event.target.form && !event.target.form.hasAttribute('novalidate')) {
 
-          /* TODO check, that there is no submit button in the form. Otherwise
+          /* check, that there is no submit button in the form. Otherwise
            * that should be clicked. */
-          check(event);
+          var submit,
+              el = event.target.form.elements.length;
+          for (var i = 0; i < el; i++) {
+            if (['image', 'submit'].indexOf(event.target.form.elements[i].type) > -1) {
+              submit = event.target.form.elements[i];
+              break;
+            }
+          }
+
+          if (submit) {
+            event.preventDefault();
+            submit.click();
+          } else {
+            check(event);
+          }
         }
       });
     }
