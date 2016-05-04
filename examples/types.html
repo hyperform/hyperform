@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Different Element Types</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="../css/hyperform.css">
+    <link rel="stylesheet" href="examples.css">
+  </head>
+  <body>
+    <main>
+      <form id="types">
+        <div class="row">
+          <p class="col-md-4 form-group">
+            <label for="number">Numbers:</label>
+            <input type="number" name="number" id="number" class="form-control">
+          </p>
+          <p class="col-md-4 form-group">
+            <label for="url">URLs:</label>
+            <input type="url" name="url" id="url" class="form-control">
+          </p>
+          <p class="col-md-4 form-group">
+            <label for="email">E-Mail addresses:</label>
+            <input type="email" name="email" id="email" class="form-control">
+          </p>
+        </div>
+        <div class="row">
+          <p class="col-md-4 form-group">
+            <label for="date">Dates:</label>
+            <input type="date" name="date" id="date" class="form-control">
+          </p>
+          <p class="col-md-4 form-group">
+            <label for="time">Times:</label>
+            <input type="time" name="time" id="time" class="form-control">
+          </p>
+          <p class="col-md-4 form-group">
+            <label for="month">Months:</label>
+            <input type="month" name="month" id="month" class="form-control">
+          </p>
+        </div>
+        <p>
+          <button class="btn btn-primary">go!</button>
+        </p>
+      </form>
+    </main>
+    <script src="../dist/hyperform.js"></script>
+    <script>hyperform.capture(window);</script>
+  </body>
+</html>
