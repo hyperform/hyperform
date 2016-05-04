@@ -7,6 +7,7 @@
 const store = new WeakMap();
 
 
+/* jshint -W053 */
 var message_store = {
 
   set(element, message) {
@@ -31,5 +32,6 @@ var message_store = {
   },
 
 };
+/* jshint +W053 */
 
 export default message_store;

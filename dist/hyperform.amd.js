@@ -60,6 +60,7 @@ define(function () { 'use strict';
 
     var store = new WeakMap();
 
+    /* jshint -W053 */
     var message_store = {
       set: function set(element, message) {
         if (typeof message === 'string') {
