@@ -562,9 +562,6 @@
 
     /**
      * test the step attribute
-     *
-     * @TODO type=month will get wrong results. We need to implement month-wide
-     *       steps. See https://html.spec.whatwg.org/multipage/forms.html#month-state-%28type=month%29
      */
     function test_step (element) {
       var type = get_type(element);
@@ -598,8 +595,11 @@
       }
 
       if (type === 'month') {
-        min = new Date(min).getUTCMonth();
-        value = new Date(value).getUTCMonth();
+        /* type=month has month-wide steps. See
+         * https://html.spec.whatwg.org/multipage/forms.html#month-state-%28type=month%29
+         */
+        min = new Date(min).getUTCFullYear() * 12 + new Date(min).getUTCMonth();
+        value = new Date(value).getUTCFullYear() * 12 + new Date(value).getUTCMonth();
       }
 
       var result = Math.abs(min - value) % (step * scale);
