@@ -52,7 +52,7 @@ for prime time?
 | `validity.rangeUnderflow`    | :full_moon:        | :heavy_check_mark: |
 | `validity.rangeOverflow`     | :full_moon:        | :heavy_check_mark: |
 | `validity.stepMismatch`      | :full_moon:        | :heavy_check_mark: |
-| `validity.badInput`          | :waxing_gibbous_moon: | Works for all but `type=email`. (That last one might be unfixable. See comment in [src/validators/bad_input.js](src/validators/bad_input.js).) |
+| `validity.badInput`          | :waxing_gibbous_moon: | works for all but `type=email`. (That last one might be unfixable. See comment in [src/validators/bad_input.js](src/validators/bad_input.js).) |
 | `validity.customError`       | :full_moon:        | :heavy_check_mark: |
 | `validity.valid`             | :full_moon:        | :heavy_check_mark: (with restriction from `validity.badInput` above) |
 | `checkValidity()`            | :full_moon:        | :heavy_check_mark: (with restriction from `validity.badInput` above) |
@@ -61,8 +61,8 @@ for prime time?
 | `valueAsDate`                | :full_moon:        | :heavy_check_mark: |
 | `valueAsNumber`              | :full_moon:        | :heavy_check_mark: |
 | `valueLow` / `valueHigh`     | :new_moon:         | not started, yet   |
-| `stepUp(n)` / `stepDown(n)`  | :new_moon:         | not started, yet   |
-| `accept` attribute           | :new_moon:         | for `type=file` inputs. Is it useful to implement a check here? There are browsers without support here, that implement the File API. So we could totally do it. |
+| `stepUp(n)` / `stepDown(n)`  | :first_quarter_moon: | doesn’t work for date/time types, yet |
+| `accept` attribute           | :new_moon:         | for `type=file` inputs. It’s useful to implement a check because there are browsers without support, that implement the File API. |
 | support for `novalidate`     | :new_moon:         |                    |
 
 What parts of the high-level API are finished?

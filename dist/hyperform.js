@@ -164,13 +164,15 @@
      */
 
     function get_next_valid (element) {
+      var n = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
+
       var min = Number(element.getAttribute('min') || 0);
       var max = Number(element.getAttribute('max') || 100);
       var step = Number(element.getAttribute('step') || 1);
       var value = Number(element.value || 0);
 
-      var prev = min + Math.floor((value - min) / step) * step;
-      var next = min + (Math.floor((value - min) / step) + 1) * step;
+      var prev = min + Math.floor((value - min) / step) * step * n;
+      var next = min + (Math.floor((value - min) / step) + 1) * step * n;
 
       if (prev < min) {
         prev = null;
@@ -1182,7 +1184,8 @@
       var value = arguments.length <= 0 || arguments[0] === undefined ? undefined : arguments[0];
 
       /* jshint -W040 */
-      if (dates.indexOf(this.type) > -1) {
+      var type = get_type(this);
+      if (dates.indexOf(type) > -1) {
         if (value !== undefined) {
           /* setter: value must be null or a Date() */
           if (value === null) {
@@ -1191,7 +1194,7 @@
             if (isNaN(value.getTime())) {
               this.value = '';
             } else {
-              this.value = date_to_string(value, this.type);
+              this.value = date_to_string(value, type);
             }
           } else {
             throw new window.DOMException('valueAsDate setter encountered invalid value', 'TypeError');
@@ -1199,7 +1202,7 @@
           return;
         }
 
-        var value_date = string_to_date(this.value, this.type);
+        var value_date = string_to_date(this.value, type);
         return value_date instanceof Date ? value_date : null;
       } else if (value !== undefined) {
         /* trying to set a date on a not-date input fails */
@@ -1228,8 +1231,9 @@
       var value = arguments.length <= 0 || arguments[0] === undefined ? undefined : arguments[0];
 
       /* jshint -W040 */
-      if (numbers.indexOf(this.type) > -1) {
-        if (this.type === 'range' && this.hasAttribute('multiple')) {
+      var type = get_type(this);
+      if (numbers.indexOf(type) > -1) {
+        if (type === 'range' && this.hasAttribute('multiple')) {
           /* @see https://html.spec.whatwg.org/multipage/forms.html#do-not-apply */
           return NaN;
         }
@@ -1256,7 +1260,7 @@
           return;
         }
 
-        return string_to_number(this.value, this.type);
+        return string_to_number(this.value, type);
       } else if (value !== undefined) {
         /* trying to set a number on a not-number input fails */
         throw new window.DOMException('valueAsNumber setter cannot set number on this element', 'InvalidStateError');
