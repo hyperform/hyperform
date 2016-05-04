@@ -2,10 +2,34 @@
 
 
 /**
- * TODO make this a wrapper around a WeakMap and check the element's native
- * validationMessage, too, if that slips through somewhere (e.g. native browser
- * validation). */
-const message_store = new WeakMap();
+ * the internal storage for messages
+ */
+const store = new WeakMap();
 
+
+var message_store = {
+
+  set(element, message) {
+    if (typeof message === 'string') {
+      message = new String(message);
+    }
+    store.set(element, message);
+
+    return message_store;
+  },
+
+  get(element) {
+    var message = store.get(element);
+    if (message === undefined && ('_original_validationMessage' in element)) {
+      message = new String(element._original_validationMessage);
+    }
+    return message? message : new String('');
+  },
+
+  delete(element) {
+    return store.delete(element);
+  },
+
+};
 
 export default message_store;

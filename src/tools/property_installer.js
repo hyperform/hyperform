@@ -10,7 +10,10 @@
 export default function(property, descriptor) {
   return function(element) {
     const original_descriptor = Object.getOwnPropertyDescriptor(element, property);
-    if (original_descriptor && ! element[property].hyperform) {
+    if (original_descriptor && ! (
+        (original_descriptor.get && original_descriptor.get.hyperform) ||
+        (original_descriptor.value && original_descriptor.value.hyperform)
+       )) {
       /* publish existing property under new name, if it's not from us */
       Object.defineProperty(
         element,

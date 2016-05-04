@@ -29,8 +29,7 @@ define(function () { 'use strict';
     function installer (property, descriptor) {
       return function (element) {
         var original_descriptor = Object.getOwnPropertyDescriptor(element, property);
-        console.log(original_descriptor);
-        if (original_descriptor && !element[property].hyperform) {
+        if (original_descriptor && !(original_descriptor.get && original_descriptor.get.hyperform || original_descriptor.value && original_descriptor.value.hyperform)) {
           /* publish existing property under new name, if it's not from us */
           Object.defineProperty(element, '_original_' + property, original_descriptor);
         }
@@ -56,11 +55,31 @@ define(function () { 'use strict';
     }
 
     /**
-     * TODO make this a wrapper around a WeakMap and check the element's native
-     * validationMessage, too, if that slips through somewhere (e.g. native browser
-     * validation). */
+     * the internal storage for messages
+     */
 
-    var message_store = new WeakMap();
+    var store = new WeakMap();
+
+    var message_store = {
+      set: function set(element, message) {
+        if (typeof message === 'string') {
+          message = new String(message);
+        }
+        store.set(element, message);
+
+        return message_store;
+      },
+      get: function get(element) {
+        var message = store.get(element);
+        if (message === undefined && '_original_validationMessage' in element) {
+          message = new String(element._original_validationMessage);
+        }
+        return message ? message : new String('');
+      },
+      delete: function _delete(element) {
+        return store.delete(element);
+      }
+    };
 
     var warnings_cache = new WeakMap();
 
@@ -906,37 +925,35 @@ define(function () { 'use strict';
 
     mark(reportValidity);
 
+    function check(event) {
+      event.preventDefault();
+      if (reportValidity(event.target.form)) {
+        event.target.form.submit();
+      }
+    }
+
     /**
      * catch the events _prior_ to a form being submitted
+     *
+     * TODO respect novalidate and formnovalidate attributes
      */
     function catch_submit (listening_node) {
+      /* catch explicit submission (click on button) */
       listening_node.addEventListener('click', function (event) {
-        if (event.target.nodeName === 'INPUT' || event.target.nodeName === 'BUTTON') {
-          if (event.target.type === 'image' || event.target.type === 'submit') {
-            if (event.target.form) {
-              event.preventDefault();
-              reportValidity(event.target.form);
-            }
-          }
+        if (!event.defaultPrevented && (event.target.nodeName === 'INPUT' || event.target.nodeName === 'BUTTON') && (event.target.type === 'image' || event.target.type === 'submit') && event.target.form) {
+
+          check(event);
         }
-      }, {
-        capture: true
       });
 
       /* catch implicit submission */
       listening_node.addEventListener('keypress', function (event) {
-        if (event.keyCode === 13) {
-          if (event.target.nodeName === 'INPUT') {
-            if (text.indexOf(event.target.type) > -1) {
-              if (event.target.form) {
-                event.preventDefault();
-                reportValidity(event.target.form);
-              }
-            }
-          }
+        if (!event.defaultPrevented && event.keyCode === 13 && event.target.nodeName === 'INPUT' && text.indexOf(event.target.type) > -1 && event.target.form) {
+
+          /* TODO check, that there is no submit button in the form. Otherwise
+           * that should be clicked. */
+          check(event);
         }
-      }, {
-        capture: true
       });
     }
 

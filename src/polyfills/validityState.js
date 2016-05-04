@@ -42,7 +42,7 @@ const validity_state_checkers = {
 
   customError: element => {
     const msg = message_store.get(element);
-    const invalid = (msg && 'is_custom' in msg);
+    const invalid = (msg && ('is_custom' in msg));
     /* no need for message_store.set, because the message is already there. */
     return invalid;
   },

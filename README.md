@@ -54,9 +54,9 @@ for prime time?
 | `validity.stepMismatch`      | :full_moon: |  |
 | `validity.badInput`          | :waning_gibbous_moon: | Works for all but `type=email`. (That last one might be unfixable. See comment in [src/validators/bad_input.js](src/validators/bad_input.js).) |
 | `validity.customError`       | :full_moon: |  |
-| `validity.valid`             | :waning_gibbous_moon: | Depends on the other validations above. Apart from that, finished. |
-| `checkValidity()`            | :waning_gibbous_moon: | Depends on `ValidityState`. Apart from that, finished. |
-| `reportValidity()`           | :last_quarter_moon: | Depends on `ValidityState`. Needs a bit more love for the error message renderer. Will render error, even if `invalid` event is cancelled. |
+| `validity.valid`             | :full_moon: | with restriction from `validity.badInput` above |
+| `checkValidity()`            | :full_moon: | with restriction from `validity.badInput` above |
+| `reportValidity()`           | :waning_gibbous_moon: | with restriction from `validity.badInput` above. Needs a bit more love for the error message renderer. |
 | `validationMessage`          | :full_moon: |  |
 | `valueAsDate`                | :full_moon: |  |
 | `valueAsNumber`              | :full_moon: |  |
