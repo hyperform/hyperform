@@ -6,14 +6,14 @@
  *
  * TODO add support for date, time, ...
  */
-export default function(element) {
+export default function(element, n=1) {
   const min = Number(element.getAttribute('min') || 0);
   const max = Number(element.getAttribute('max') || 100);
   const step = Number(element.getAttribute('step') || 1);
   const value = Number(element.value || 0);
 
-  var prev = min + Math.floor((value - min) / step) * step;
-  var next = min + (Math.floor((value - min) / step) + 1) * step;
+  var prev = min + Math.floor((value - min) / step) * step * n;
+  var next = min + (Math.floor((value - min) / step) + 1) * step * n;
 
   if (prev < min) {
     prev = null;

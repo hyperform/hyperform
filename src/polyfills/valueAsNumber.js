@@ -1,6 +1,7 @@
 'use strict';
 
 
+import get_type from '../tools/get_type';
 import mark from '../tools/mark';
 import installer from '../tools/property_installer';
 import string_to_number from '../tools/string_to_number';
@@ -15,8 +16,9 @@ import valueAsDate from './valueAsDate';
  */
 function valueAsNumber(value=undefined) {
   /* jshint -W040 */
-  if (numbers.indexOf(this.type) > -1) {
-    if (this.type === 'range' && this.hasAttribute('multiple')) {
+  const type = get_type(this);
+  if (numbers.indexOf(type) > -1) {
+    if (type === 'range' && this.hasAttribute('multiple')) {
       /* @see https://html.spec.whatwg.org/multipage/forms.html#do-not-apply */
       return NaN;
     }
@@ -44,7 +46,7 @@ function valueAsNumber(value=undefined) {
       return;
     }
 
-    return string_to_number(this.value, this.type);
+    return string_to_number(this.value, type);
 
   } else if (value !== undefined) {
     /* trying to set a number on a not-number input fails */

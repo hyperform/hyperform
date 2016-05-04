@@ -1,6 +1,7 @@
 'use strict';
 
 
+import get_type from '../tools/get_type';
 import mark from '../tools/mark';
 import installer from '../tools/property_installer';
 import string_to_date from '../tools/string_to_date';
@@ -15,7 +16,8 @@ import { dates } from '../components/types';
  */
 function valueAsDate(value=undefined) {
   /* jshint -W040 */
-  if (dates.indexOf(this.type) > -1) {
+  const type = get_type(this);
+  if (dates.indexOf(type) > -1) {
     if (value !== undefined) {
       /* setter: value must be null or a Date() */
       if (value === null) {
@@ -24,7 +26,7 @@ function valueAsDate(value=undefined) {
         if (isNaN(value.getTime())) {
           this.value = '';
         } else {
-          this.value = date_to_string(value, this.type);
+          this.value = date_to_string(value, type);
         }
       } else {
         throw new window.DOMException(
@@ -33,7 +35,7 @@ function valueAsDate(value=undefined) {
       return;
     }
 
-    const value_date = string_to_date(this.value, this.type);
+    const value_date = string_to_date(this.value, type);
     return value_date instanceof Date? value_date : null;
 
   } else if (value !== undefined) {
