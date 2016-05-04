@@ -31,12 +31,17 @@ var message_store = {
   get(element) {
     var message = store.get(element);
     if (message === undefined && ('_original_validationMessage' in element)) {
+      /* get the browser's validation message, if we have none. Maybe it
+       * knows more than we. */
       message = new String(element._original_validationMessage);
     }
     return message? message : new String('');
   },
 
   delete(element) {
+    if ('_original_setCustomValidity' in element) {
+      element._original_setCustomValidity('');
+    }
     return store.delete(element);
   },
 

@@ -78,11 +78,16 @@ define(function () { 'use strict';
       get: function get(element) {
         var message = store.get(element);
         if (message === undefined && '_original_validationMessage' in element) {
+          /* get the browser's validation message, if we have none. Maybe it
+           * knows more than we. */
           message = new String(element._original_validationMessage);
         }
         return message ? message : new String('');
       },
       delete: function _delete(element) {
+        if ('_original_setCustomValidity' in element) {
+          element._original_setCustomValidity('');
+        }
         return store.delete(element);
       }
     };
@@ -922,6 +927,8 @@ define(function () { 'use strict';
             }
           }
         }
+
+        message_store.delete(this.element);
         return true;
       },
       set: undefined
@@ -1072,7 +1079,9 @@ define(function () { 'use strict';
       if (!msg) {
         return '';
       }
-      return msg;
+
+      /* make it a primitive again, since message_store returns String(). */
+      return msg.toString();
     }
 
     /**

@@ -16,7 +16,9 @@ function validationMessage() {
   if (! msg) {
     return '';
   }
-  return msg;
+
+  /* make it a primitive again, since message_store returns String(). */
+  return msg.toString();
 }
 
 

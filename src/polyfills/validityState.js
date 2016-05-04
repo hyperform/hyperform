@@ -266,6 +266,8 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
         }
       }
     }
+
+    message_store.delete(this.element);
     return true;
   },
   set: undefined,
