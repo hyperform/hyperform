@@ -2,17 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Simple Form</title>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
+    <link rel="stylesheet" href="../css/hyperform.css">
+    <link rel="stylesheet" href="examples.css">
   </head>
   <body>
-    <form id="simple">
-      <p>
-        <input type="text" name="foo" required>
-      </p>
-      <p>
-        <button>go!</button>
-      </p>
-    </form>
+    <main>
+      <form id="simple" class="pure-form">
+        <p>
+          <label>
+            A required field. Try submitting without filling it in.<br>
+            <input type="text" name="foo" required>
+          </label>
+        </p>
+        <p>
+          <button class="pure-button pure-button-primary">go!</button>
+        </p>
+      </form>
+    </main>
     <script src="../dist/hyperform.js"></script>
     <script>hyperform.capture(window);</script>
   </body>

@@ -1,0 +1,15 @@
+.hf-warning {
+  padding: .25em .5em;
+  font-size: 14px;
+  line-height: 18px;
+  background: linear-gradient(to bottom, rgba(255,255,255,.9), rgba(255,255,255,.75));
+  color: #600;
+  pointer-events: none;
+  position: absolute;
+  display: none;
+}
+
+.hf-invalid:focus + .hf-warning,
+:invalid:focus + .hf-warning {
+  display: block;
+}
