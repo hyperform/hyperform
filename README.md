@@ -40,30 +40,30 @@ What parts of the [HTML5 validation
 API](https://html.spec.whatwg.org/multipage/forms.html#constraints) are ready
 for prime time?
 
-| feature                      | status             | comment |
-| ---------------------------- | ------------------ | ------- |
-| `willValidate`               | :full_moon: |  |
-| `setCustomValidity(message)` | :full_moon: |  |
-| `validity.valueMissing`      | :full_moon: |  |
-| `validity.typeMismatch`      | :full_moon: |  |
-| `validity.patternMismatch`   | :full_moon: |  |
-| `validity.tooLong`           | :full_moon: |  |
-| `validity.tooShort`          | :full_moon: |  |
-| `validity.rangeUnderflow`    | :full_moon: |  |
-| `validity.rangeOverflow`     | :full_moon: |  |
-| `validity.stepMismatch`      | :full_moon: |  |
+| feature                      | status             | comment            |
+| ---------------------------- | ------------------ | ------------------ |
+| `willValidate`               | :full_moon:        | :heavy_check_mark: |
+| `setCustomValidity(message)` | :full_moon:        | :heavy_check_mark: |
+| `validity.valueMissing`      | :full_moon:        | :heavy_check_mark: |
+| `validity.typeMismatch`      | :full_moon:        | :heavy_check_mark: |
+| `validity.patternMismatch`   | :full_moon:        | :heavy_check_mark: |
+| `validity.tooLong`           | :full_moon:        | :heavy_check_mark: |
+| `validity.tooShort`          | :full_moon:        | :heavy_check_mark: |
+| `validity.rangeUnderflow`    | :full_moon:        | :heavy_check_mark: |
+| `validity.rangeOverflow`     | :full_moon:        | :heavy_check_mark: |
+| `validity.stepMismatch`      | :full_moon:        | :heavy_check_mark: |
 | `validity.badInput`          | :waxing_gibbous_moon: | Works for all but `type=email`. (That last one might be unfixable. See comment in [src/validators/bad_input.js](src/validators/bad_input.js).) |
-| `validity.customError`       | :full_moon: |  |
-| `validity.valid`             | :full_moon: | with restriction from `validity.badInput` above |
-| `checkValidity()`            | :full_moon: | with restriction from `validity.badInput` above |
-| `reportValidity()`           | :full_moon: | with restriction from `validity.badInput` above |
-| `validationMessage`          | :full_moon: |  |
-| `valueAsDate`                | :full_moon: |  |
-| `valueAsNumber`              | :full_moon: |  |
-| `valueLow` / `valueHigh`     | :new_moon:  | not started, yet |
-| `stepUp(n)` / `stepDown(n)`  | :new_moon:  | not started, yet |
-| `accept` attribute           | :new_moon:  | for `type=file` inputs. Is it useful to implement a check here? There are browsers without support here, that implement the File API. So we could totally do it. |
-| support for `novalidate`     | :new_moon:  |  |
+| `validity.customError`       | :full_moon:        | :heavy_check_mark: |
+| `validity.valid`             | :full_moon:        | :heavy_check_mark: (with restriction from `validity.badInput` above) |
+| `checkValidity()`            | :full_moon:        | :heavy_check_mark: (with restriction from `validity.badInput` above) |
+| `reportValidity()`           | :full_moon:        | :heavy_check_mark: (with restriction from `validity.badInput` above) |
+| `validationMessage`          | :full_moon:        | :heavy_check_mark: |
+| `valueAsDate`                | :full_moon:        | :heavy_check_mark: |
+| `valueAsNumber`              | :full_moon:        | :heavy_check_mark: |
+| `valueLow` / `valueHigh`     | :new_moon:         | not started, yet   |
+| `stepUp(n)` / `stepDown(n)`  | :new_moon:         | not started, yet   |
+| `accept` attribute           | :new_moon:         | for `type=file` inputs. Is it useful to implement a check here? There are browsers without support here, that implement the File API. So we could totally do it. |
+| support for `novalidate`     | :new_moon:         |                    |
 
 What parts of the high-level API are finished?
 
