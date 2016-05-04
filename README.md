@@ -52,11 +52,11 @@ for prime time?
 | `validity.rangeUnderflow`    | :full_moon: |  |
 | `validity.rangeOverflow`     | :full_moon: |  |
 | `validity.stepMismatch`      | :full_moon: |  |
-| `validity.badInput`          | :waning_gibbous_moon: | Works for all but `type=email`. (That last one might be unfixable. See comment in [src/validators/bad_input.js](src/validators/bad_input.js).) |
+| `validity.badInput`          | :waxing_gibbous_moon: | Works for all but `type=email`. (That last one might be unfixable. See comment in [src/validators/bad_input.js](src/validators/bad_input.js).) |
 | `validity.customError`       | :full_moon: |  |
 | `validity.valid`             | :full_moon: | with restriction from `validity.badInput` above |
 | `checkValidity()`            | :full_moon: | with restriction from `validity.badInput` above |
-| `reportValidity()`           | :waning_gibbous_moon: | with restriction from `validity.badInput` above. Needs a bit more love for the error message renderer. |
+| `reportValidity()`           | :full_moon: | with restriction from `validity.badInput` above |
 | `validationMessage`          | :full_moon: |  |
 | `valueAsDate`                | :full_moon: |  |
 | `valueAsNumber`              | :full_moon: |  |
@@ -71,22 +71,28 @@ What parts of the high-level API are finished?
 * :new_moon: Trigger a `valid` event, when an input becomes valid, again.
 * :new_moon: Allow functions to hook into the actual validations to accept or
     reject inputs.
-* :new_moon: Translate validation messages.
-* :new_moon: Add a registry for custom validators for inputs, that are called
+* :waxing_crescent_moon: Translate validation messages. There are some
+    partial translations available: https://github.com/hyperform/hyperform-l10n
+* :new_moon: Add a registry for user provided validators, that are called
     automatically in the `validity.customError` step.
-* :new_moon: Catch form submissions _before_ the `submit` event to do our own
+* :waxing_gibbous_moon: Catch form submissions _before_ the `submit` event to do our own
     validation (`click`s on submit buttons and `enter` keys in text inputs in
     forms w/o submit buttons).
-* :new_moon: Add helper classes `valid` and `invalid` as well as proper
+* :new_moon: Add helper classes `hf-valid` and `hf-invalid` as well as proper
     `aria-invalid` to elements to become independent of `:valid` / `:invalid`
     pseudo-classes.
-* :new_moon: Allow specifying settings to customize the behavior of Hyperform
+* :waxing_crescent_moon: Allow specifying settings to customize the behavior of Hyperform
     (e. g., specifying a renderer for error messages).
 * :new_moon: Take single `<input>` elements out of validation (think
     `novalidate` attribute for inputs).
 
 Do you have a wish or an idea? [File an issue and let us discuss
 it!](https://github.com/hyperform/hyperform/issues/new)
+
+## Examples
+
+Check out the files in the [`examples`
+folder](https://github.com/hyperform/hyperform/tree/master/examples).
 
 ## License
 
