@@ -1,6 +1,9 @@
 'use strict';
 
 
+import mark from '../tools/mark';
+
+
 /**
  * the internal storage for messages
  */
@@ -14,7 +17,13 @@ var message_store = {
     if (typeof message === 'string') {
       message = new String(message);
     }
+    mark(message);
     store.set(element, message);
+
+    /* allow the :invalid selector to match */
+    if ('_original_setCustomValidity' in element) {
+      element._original_setCustomValidity(message);
+    }
 
     return message_store;
   },
