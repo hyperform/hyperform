@@ -1083,33 +1083,6 @@ define(function () { 'use strict';
 
     mark(setCustomValidity);
 
-    /**
-     * TODO allow HTMLFieldSetElement, too
-     */
-    function validationMessage() {
-      /* jshint -W040 */
-      var msg = message_store.get(this);
-      /* jshint +W040 */
-      if (!msg) {
-        return '';
-      }
-
-      /* make it a primitive again, since message_store returns String(). */
-      return msg.toString();
-    }
-
-    /**
-     * publish a convenience function to replace the native element.validationMessage
-     */
-    validationMessage.install = installer('validationMessage', {
-      configurable: true,
-      enumerable: true,
-      get: validationMessage,
-      set: undefined
-    });
-
-    mark(validationMessage);
-
     /* For a given date, get the ISO week number
      *
      * Source: http://stackoverflow.com/a/6117889/113195
@@ -1291,6 +1264,105 @@ define(function () { 'use strict';
     mark(valueAsNumber);
 
     /**
+     *
+     */
+    function stepDown(element) {
+      var n = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
+
+      if (numbers.indexOf(get_type(element)) === -1) {
+        throw new window.DOMException('stepDown encountered invalid type', 'InvalidStateError');
+      }
+      if ((element.getAttribute('step') || '').toLowerCase() === 'any') {
+        throw new window.DOMException('stepDown encountered step "any"', 'InvalidStateError');
+      }
+
+      var _get_next_valid = get_next_valid(element, n);
+
+      var prev = _get_next_valid.prev;
+      var next = _get_next_valid.next;
+
+
+      if (prev !== null) {
+        valueAsNumber.call(element, prev);
+      }
+    }
+
+    stepDown.install = installer('stepDown', {
+      configurable: true,
+      enumerable: true,
+      value: function value() {
+        var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+        return stepDown(this, n);
+      },
+      writable: true
+    });
+
+    mark(stepDown);
+
+    /**
+     *
+     */
+    function stepUp(element) {
+      var n = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
+
+      if (numbers.indexOf(get_type(element)) === -1) {
+        throw new window.DOMException('stepUp encountered invalid type', 'InvalidStateError');
+      }
+      if ((element.getAttribute('step') || '').toLowerCase() === 'any') {
+        throw new window.DOMException('stepUp encountered step "any"', 'InvalidStateError');
+      }
+
+      var _get_next_valid = get_next_valid(element, n);
+
+      var prev = _get_next_valid.prev;
+      var next = _get_next_valid.next;
+
+
+      if (next !== null) {
+        valueAsNumber.call(element, next);
+      }
+    }
+
+    stepUp.install = installer('stepUp', {
+      configurable: true,
+      enumerable: true,
+      value: function value() {
+        var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+        return stepUp(this, n);
+      },
+      writable: true
+    });
+
+    mark(stepUp);
+
+    /**
+     * TODO allow HTMLFieldSetElement, too
+     */
+    function validationMessage() {
+      /* jshint -W040 */
+      var msg = message_store.get(this);
+      /* jshint +W040 */
+      if (!msg) {
+        return '';
+      }
+
+      /* make it a primitive again, since message_store returns String(). */
+      return msg.toString();
+    }
+
+    /**
+     * publish a convenience function to replace the native element.validationMessage
+     */
+    validationMessage.install = installer('validationMessage', {
+      configurable: true,
+      enumerable: true,
+      get: validationMessage,
+      set: undefined
+    });
+
+    mark(validationMessage);
+
+    /**
      * check, if an element will be subject to HTML5 validation
      */
     function willValidate() {
@@ -1311,61 +1383,71 @@ define(function () { 'use strict';
 
     mark(willValidate);
 
+    var _classCallCheck = (function (instance, Constructor) {
+      if (!(instance instanceof Constructor)) {
+        throw new TypeError("Cannot call a class as a function");
+      }
+    })
+
+    var Wrapper = function Wrapper(form) {
+      _classCallCheck(this, Wrapper);
+
+      this.form = form;
+    };
+
     var version = '0.2.4';
 
     /**
      * public hyperform interface:
      */
-    var hyperform = {
-
-      version: version,
-
-      checkValidity: checkValidity,
-
-      reportValidity: reportValidity,
-
-      setCustomValidity: setCustomValidity,
-
-      validationMessage: validationMessage,
-
-      ValidityState: ValidityState,
-
-      valueAsDate: valueAsDate,
-
-      valueAsNumber: valueAsNumber,
-
-      willValidate: willValidate,
-
-      set_language: set_language,
-
-      add_translation: add_translation,
-
-      add_renderer: Renderer.set,
-
-      capture: function capture(form) {
-        var els;
-        if (form === window || form instanceof window.HTMLDocument) {
-          /* install on the prototypes, when called for the document */
-          els = [window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype];
-        } else if (form instanceof window.HTMLFormElement || form instanceof window.HTMLFieldSetElement) {
-          els = form.elements;
-        }
-
-        catch_submit(form);
-
-        var els_length = els.length;
-        for (var i = 0; i < els_length; i++) {
-          checkValidity.install(els[i]);
-          reportValidity.install(els[i]);
-          setCustomValidity.install(els[i]);
-          validationMessage.install(els[i]);
-          ValidityState.install(els[i]);
-          valueAsDate.install(els[i]);
-          valueAsNumber.install(els[i]);
-          willValidate.install(els[i]);
-        }
+    function hyperform(form) {
+      if (form instanceof window.NodeList || form instanceof window.HTMLCollection || typeof form === 'array') {
+        return Array.prototype.map.call(form, function (element) {
+          return hyperform(element);
+        });
       }
-    };
+
+      var els;
+      if (form === window || form instanceof window.HTMLDocument) {
+        /* install on the prototypes, when called for the document */
+        els = [window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype];
+      } else if (form instanceof window.HTMLFormElement || form instanceof window.HTMLFieldSetElement) {
+        els = form.elements;
+      }
+
+      catch_submit(form);
+
+      var els_length = els.length;
+      for (var i = 0; i < els_length; i++) {
+        checkValidity.install(els[i]);
+        reportValidity.install(els[i]);
+        setCustomValidity.install(els[i]);
+        stepDown.install(els[i]);
+        stepUp.install(els[i]);
+        validationMessage.install(els[i]);
+        ValidityState.install(els[i]);
+        valueAsDate.install(els[i]);
+        valueAsNumber.install(els[i]);
+        willValidate.install(els[i]);
+      }
+
+      return new Wrapper(form);
+    }
+
+    hyperform.version = version;
+    hyperform.checkValidity = checkValidity;
+    hyperform.reportValidity = reportValidity;
+    hyperform.setCustomValidity = setCustomValidity;
+    hyperform.stepDown = stepDown;
+    hyperform.stepUp = stepUp;
+    hyperform.validationMessage = validationMessage;
+    hyperform.ValidityState = ValidityState;
+    hyperform.valueAsDate = valueAsDate;
+    hyperform.valueAsNumber = valueAsNumber;
+    hyperform.willValidate = willValidate;
+    hyperform.set_language = set_language;
+    hyperform.add_translation = add_translation;
+    hyperform.add_renderer = Renderer.set;
 
     window.hyperform = hyperform;
 
