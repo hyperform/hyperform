@@ -24,7 +24,7 @@ import version from './version';
 function hyperform(form) {
   if (form instanceof window.NodeList ||
       form instanceof window.HTMLCollection ||
-      typeof form === 'array') {
+      form instanceof Array) {
     return Array.prototype.map.call(form, element => hyperform(element));
   }
 
