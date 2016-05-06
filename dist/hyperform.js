@@ -1408,7 +1408,7 @@
       this.form = form;
     };
 
-    var version = '0.3.1';
+    var version = '0.4.0';
 
     /**
      * public hyperform interface:
