@@ -19,16 +19,20 @@ Then embed `dist/hyperform.min.js` in your file:
 
     <script src="path/to/hyperform/dist/hyperform.min.js"></script>
 
+In old browsers you will need polyfills for the follwing features: `WeakMap`
+(IE 10 and lower), array methods `filter` and `every`, object method `keys`,
+`Object.defineProperty`, and `string`’s `trim()` method (IE 8 and lower).
+
 ## Usage
 
 The library introduces the global variable `hyperform`. You can let Hyperform
 take over a single form:
 
-    hyperform.capture(document.forms[0]);
+    hyperform(document.forms[0]);
 
 or all forms, current and future ones:
 
-    hyperform.capture(document);
+    hyperform(window);
 
 If you need only a certain feature, you can access it directly by name:
 
