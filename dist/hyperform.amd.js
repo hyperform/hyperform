@@ -1395,7 +1395,7 @@ define(function () { 'use strict';
       this.form = form;
     };
 
-    var version = '0.3.0';
+    var version = '0.3.1';
 
     /**
      * public hyperform interface:
