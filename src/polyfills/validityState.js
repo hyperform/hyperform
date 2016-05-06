@@ -15,6 +15,7 @@ import mark from '../tools/mark';
 import sprintf from '../tools/sprintf';
 import _ from '../components/localization';
 import message_store from '../components/message_store';
+import Registry from '../components/registry';
 import test_max from '../validators/max';
 import test_maxlength from '../validators/maxlength';
 import test_min from '../validators/min';
@@ -43,8 +44,19 @@ const validity_state_checkers = {
 
   customError: element => {
     const msg = message_store.get(element);
-    const invalid = (msg && ('is_custom' in msg));
-    /* no need for message_store.set, because the message is already there. */
+    var invalid = (msg && ('is_custom' in msg));
+    /* no need for message_store.set, if the message is already there. */
+
+    if (! msg) {
+      const custom_validator = Registry.get(element);
+      if (custom_validator) {
+        invalid = ! custom_validator(element);
+        if (invalid) {
+          message_store.set(custom_validator.message ||
+                            _('Please comply with all requirements.'));
+        }
+      }
+    }
     return invalid;
   },
 

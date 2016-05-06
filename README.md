@@ -77,7 +77,7 @@ What parts of the high-level API are finished?
     reject inputs.
 * :waxing_crescent_moon: Translate validation messages. There are some
     partial translations available: https://github.com/hyperform/hyperform-l10n
-* :new_moon: Add a registry for user provided validators, that are called
+* :full_moon: Provide a registry for user defined validators, that are called
     automatically in the `validity.customError` step.
 * :waxing_gibbous_moon: Catch form submissions _before_ the `submit` event to do our own
     validation (`click`s on submit buttons and `enter` keys in text inputs in

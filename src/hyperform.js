@@ -13,6 +13,7 @@ import valueAsDate from './polyfills/valueAsDate';
 import valueAsNumber from './polyfills/valueAsNumber';
 import willValidate from './polyfills/willValidate';
 import { set_language, add_translation } from './components/localization';
+import Registry from './components/registry';
 import Renderer from './components/renderer';
 import Wrapper from './components/wrapper';
 import version from './version';
@@ -76,5 +77,6 @@ hyperform.willValidate = willValidate;
 hyperform.set_language = set_language;
 hyperform.add_translation = add_translation;
 hyperform.add_renderer = Renderer.set;
+hyperform.register = Registry.set;
 
 window.hyperform = hyperform;

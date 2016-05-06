@@ -355,6 +355,8 @@ define(function () { 'use strict';
       return s;
     }
 
+    var Registry = new WeakMap();
+
     /**
      * return a new Date() representing the ISO date for a week number
      *
@@ -709,7 +711,17 @@ define(function () { 'use strict';
       customError: function customError(element) {
         var msg = message_store.get(element);
         var invalid = msg && 'is_custom' in msg;
-        /* no need for message_store.set, because the message is already there. */
+        /* no need for message_store.set, if the message is already there. */
+
+        if (!msg) {
+          var custom_validator = Registry.get(element);
+          if (custom_validator) {
+            invalid = !custom_validator(element);
+            if (invalid) {
+              message_store.set(custom_validator.message || _('Please comply with all requirements.'));
+            }
+          }
+        }
         return invalid;
       },
 
@@ -1448,6 +1460,7 @@ define(function () { 'use strict';
     hyperform.set_language = set_language;
     hyperform.add_translation = add_translation;
     hyperform.add_renderer = Renderer.set;
+    hyperform.register = Registry.set;
 
     window.hyperform = hyperform;
 
