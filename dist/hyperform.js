@@ -1525,7 +1525,7 @@
 
     mark(willValidate);
 
-    var version = '0.4.2';
+    var version = '0.4.3';
 
     /**
      * public hyperform interface:
