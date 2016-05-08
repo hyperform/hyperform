@@ -7,7 +7,8 @@ import message_store from '../components/message_store';
 
 
 /**
- * TODO allow HTMLFieldSetElement, too
+ * get the validation message for an element, empty string, if the element
+ * satisfies all constraints.
  */
 function validationMessage() {
   /* jshint -W040 */

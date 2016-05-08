@@ -55,6 +55,64 @@
         return event;
     }
 
+    var _classCallCheck = (function (instance, Constructor) {
+      if (!(instance instanceof Constructor)) {
+        throw new TypeError("Cannot call a class as a function");
+      }
+    })
+
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
+
+    function _createClass (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+
+    var instances = new WeakMap();
+
+    var Wrapper = function () {
+      function Wrapper(form, settings) {
+        _classCallCheck(this, Wrapper);
+
+        this.form = form;
+        this.settings = settings || {};
+        instances.set(form, this);
+      }
+
+      /* try to get the appropriate wrapper for a specific element by looking up
+       * its parent chain */
+
+
+      _createClass(Wrapper, null, [{
+        key: 'get_wrapped',
+        value: function get_wrapped(element) {
+          var wrapped;
+          while (!wrapped && element) {
+            wrapped = instances.get(element);
+            element = element.parentNode;
+          }
+
+          if (!wrapped) {
+            /* this may also be undefined. */
+            wrapped = instances.get(window);
+          }
+
+          return wrapped;
+        }
+      }]);
+
+      return Wrapper;
+    }();
+
     /**
      * the internal storage for messages
      */
@@ -63,6 +121,14 @@
     /* jshint -W053 */
     var message_store = {
       set: function set(element, message) {
+        if (element instanceof window.HTMLFieldSetElement) {
+          var wrapped_form = Wrapper.get_wrapped(element.form);
+          if (wrapped_form && wrapped_form.settings.strict) {
+            /* make this a no-op for <fieldset> in strict mode */
+            return message_store;
+          }
+        }
+
         if (typeof message === 'string') {
           message = new String(message);
         }
@@ -243,64 +309,6 @@
       return '';
     }
 
-    var _classCallCheck = (function (instance, Constructor) {
-      if (!(instance instanceof Constructor)) {
-        throw new TypeError("Cannot call a class as a function");
-      }
-    })
-
-    function defineProperties(target, props) {
-      for (var i = 0; i < props.length; i++) {
-        var descriptor = props[i];
-        descriptor.enumerable = descriptor.enumerable || false;
-        descriptor.configurable = true;
-        if ("value" in descriptor) descriptor.writable = true;
-        Object.defineProperty(target, descriptor.key, descriptor);
-      }
-    }
-
-    function _createClass (Constructor, protoProps, staticProps) {
-      if (protoProps) defineProperties(Constructor.prototype, protoProps);
-      if (staticProps) defineProperties(Constructor, staticProps);
-      return Constructor;
-    };
-
-    var instances = new WeakMap();
-
-    var Wrapper = function () {
-      function Wrapper(form, settings) {
-        _classCallCheck(this, Wrapper);
-
-        this.form = form;
-        this.settings = settings || {};
-        instances.set(form, this);
-      }
-
-      /* try to get the appropriate wrapper for a specific element by looking up
-       * its parent chain */
-
-
-      _createClass(Wrapper, null, [{
-        key: 'get_wrapped',
-        value: function get_wrapped(element) {
-          var wrapped;
-          while (!wrapped && element) {
-            wrapped = instances.get(element);
-            element = element.parentNode;
-          }
-
-          if (!wrapped) {
-            /* this may also be undefined. */
-            wrapped = instances.get(window);
-          }
-
-          return wrapped;
-        }
-      }]);
-
-      return Wrapper;
-    }();
-
     /**
      * check if an element is a candidate for constraint validation
      *
@@ -321,6 +329,17 @@
             /* it hasn't got the (non-standard) attribute 'novalidate' or its
              * parent form has got the strict parameter */
             if (wrapped_form && wrapped_form.settings.strict || !element.hasAttribute('novalidate') || !element.noValidate) {
+
+              var p = element.parentNode;
+              while (p && p.nodeType === 1) {
+                if (p instanceof window.HTMLFieldSetElement && p.hasAttribute('disabled')) {
+                  /* quick return, if it's a child of a disabled fieldset */
+                  return false;
+                } else if (p === element.form) {
+                  /* the outer boundary. We can stop looking. */
+                  break;
+                }
+              }
 
               /* then it's a candidate */
               return true;
@@ -1458,7 +1477,8 @@
     mark(stepUp);
 
     /**
-     * TODO allow HTMLFieldSetElement, too
+     * get the validation message for an element, empty string, if the element
+     * satisfies all constraints.
      */
     function validationMessage() {
       /* jshint -W040 */

@@ -1,6 +1,7 @@
 'use strict';
 
 
+import Wrapper from './wrapper';
 import mark from '../tools/mark';
 
 
@@ -14,6 +15,14 @@ const store = new WeakMap();
 var message_store = {
 
   set(element, message) {
+    if (element instanceof window.HTMLFieldSetElement) {
+      const wrapped_form = Wrapper.get_wrapped(element.form);
+      if (wrapped_form && wrapped_form.settings.strict) {
+        /* make this a no-op for <fieldset> in strict mode */
+        return message_store;
+      }
+    }
+
     if (typeof message === 'string') {
       message = new String(message);
     }

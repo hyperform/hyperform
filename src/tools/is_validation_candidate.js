@@ -38,6 +38,18 @@ export default function(element) {
             ! element.hasAttribute('novalidate') ||
             ! element.noValidate) {
 
+          let p = element.parentNode;
+          while (p && p.nodeType === 1) {
+            if (p instanceof window.HTMLFieldSetElement &&
+                p.hasAttribute('disabled')) {
+              /* quick return, if it's a child of a disabled fieldset */
+              return false;
+            } else if (p === element.form) {
+              /* the outer boundary. We can stop looking. */
+              break;
+            }
+          }
+
           /* then it's a candidate */
           return true;
         }
