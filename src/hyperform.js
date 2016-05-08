@@ -22,7 +22,9 @@ import version from './version';
 /**
  * public hyperform interface:
  */
-function hyperform(form) {
+function hyperform(form, {
+                     strict=false,
+                   }) {
   if (form instanceof window.NodeList ||
       form instanceof window.HTMLCollection ||
       form instanceof Array) {
@@ -60,7 +62,7 @@ function hyperform(form) {
     willValidate.install(els[i]);
   }
 
-  return new Wrapper(form);
+  return new Wrapper(form, { strict, });
 }
 
 hyperform.version = version;

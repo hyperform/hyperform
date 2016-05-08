@@ -2,6 +2,7 @@
 
 
 import { validation_candidates, non_inputs } from '../components/types';
+import Wrapper from '../components/wrapper';
 import get_type from '../tools/get_type';
 
 
@@ -30,8 +31,16 @@ export default function(element) {
       if (! element.hasAttribute('disabled') &&
           ! element.hasAttribute('readonly')) {
 
-        /* then it's a candidate */
-        return true;
+        const wrapped_form = Wrapper.get_wrapped(element.form);
+        /* it hasn't got the (non-standard) attribute 'novalidate' or its
+         * parent form has got the strict parameter */
+        if ((wrapped_form && wrapped_form.settings.strict) ||
+            ! element.hasAttribute('novalidate') ||
+            ! element.noValidate) {
+
+          /* then it's a candidate */
+          return true;
+        }
       }
 
     }

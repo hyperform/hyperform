@@ -87,8 +87,12 @@ What parts of the high-level API are finished?
     pseudo-classes.
 * :waxing_crescent_moon: Allow specifying settings to customize the behavior of Hyperform
     (e. g., specifying a renderer for error messages).
-* :new_moon: Take single `<input>` elements out of validation (think
-    `novalidate` attribute for inputs).
+* :full_moon: Take single `<input>` elements out of validation by supporting a
+    non-standard `novalidate` attribute and `noValidate` property for inputs:
+
+        var element = document.querySelector('input[name="foo"]');
+        element.noValidate = true;
+        // done. element won't be validated.
 
 Do you have a wish or an idea? [File an issue and let us discuss
 it!](https://github.com/hyperform/hyperform/issues/new)
