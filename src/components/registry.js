@@ -18,7 +18,7 @@ var registry = {
   },
 
   get(element) {
-    return internal_registry.get(element);
+    return internal_registry.get(element) || [];
   },
 
   delete(element) {

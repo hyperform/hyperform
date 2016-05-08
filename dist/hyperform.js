@@ -370,7 +370,7 @@
         return registry;
       },
       get: function get(element) {
-        return internal_registry.get(element);
+        return internal_registry.get(element) || [];
       },
       delete: function _delete(element) {
         return internal_registry.delete(element);
