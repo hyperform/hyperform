@@ -48,12 +48,17 @@ const validity_state_checkers = {
     /* no need for message_store.set, if the message is already there. */
 
     if (! msg) {
-      const custom_validator = Registry.get(element);
-      if (custom_validator) {
-        invalid = ! custom_validator(element);
-        if (invalid) {
-          message_store.set(custom_validator.message ||
-                            _('Please comply with all requirements.'));
+      /* check, if there are custom validators in the registry, and call
+       * them. */
+      const custom_validators = Registry.get(element);
+      if (custom_validators.length) {
+        for (const validator of custom_validators) {
+          invalid = ! validator(element);
+          if (invalid) {
+            message_store.set(validator.message ||
+                              _('Please comply with all requirements.'));
+            break;
+          }
         }
       }
     }

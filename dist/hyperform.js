@@ -356,7 +356,26 @@
       return s;
     }
 
-    var Registry = new WeakMap();
+    var internal_registry = new WeakMap();
+
+    /**
+     * slim wrapper around a WeakMap to ensure the values are arrays
+     * (hence allowing > 1 validators per element)
+     */
+    var registry = {
+      set: function set(element, validator) {
+        var current = internal_registry.get(element) || [];
+        current.push(validator);
+        internal_registry.set(element, current);
+        return registry;
+      },
+      get: function get(element) {
+        return internal_registry.get(element);
+      },
+      delete: function _delete(element) {
+        return internal_registry.delete(element);
+      }
+    };
 
     /**
      * return a new Date() representing the ISO date for a week number
@@ -715,11 +734,37 @@
         /* no need for message_store.set, if the message is already there. */
 
         if (!msg) {
-          var custom_validator = Registry.get(element);
-          if (custom_validator) {
-            invalid = !custom_validator(element);
-            if (invalid) {
-              message_store.set(custom_validator.message || _('Please comply with all requirements.'));
+          /* check, if there are custom validators in the registry, and call
+           * them. */
+          var custom_validators = registry.get(element);
+          if (custom_validators.length) {
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+              for (var _iterator = custom_validators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var validator = _step.value;
+
+                invalid = !validator(element);
+                if (invalid) {
+                  message_store.set(validator.message || _('Please comply with all requirements.'));
+                  break;
+                }
+              }
+            } catch (err) {
+              _didIteratorError = true;
+              _iteratorError = err;
+            } finally {
+              try {
+                if (!_iteratorNormalCompletion && _iterator.return) {
+                  _iterator.return();
+                }
+              } finally {
+                if (_didIteratorError) {
+                  throw _iteratorError;
+                }
+              }
             }
           }
         }
@@ -1461,7 +1506,7 @@
     hyperform.set_language = set_language;
     hyperform.add_translation = add_translation;
     hyperform.add_renderer = Renderer.set;
-    hyperform.register = Registry.set;
+    hyperform.register = registry.set;
 
     window.hyperform = hyperform;
 
