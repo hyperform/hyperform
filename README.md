@@ -102,9 +102,9 @@ What parts of the high-level API are finished?
 * :full_moon: Catch form submissions _before_ the `submit` event to do our own
     validation (`click`s on submit buttons and `enter` keys in text inputs in
     forms w/o submit buttons).
-* :first_quarter_moon: Add helper classes `hf-valid` and `hf-invalid` as well
-    as proper `aria-invalid` to elements to become independent of `:valid` /
-    `:invalid` pseudo-classes.
+* :full_moon: Add helper classes `hf-valid` and `hf-invalid` as well as proper
+    `aria-invalid` to elements to become independent of `:valid` / `:invalid`
+    pseudo-classes.
 * :waxing_crescent_moon: Allow specifying settings to customize the behavior of Hyperform
     (e. g., specifying a renderer for error messages).
 * :full_moon: Take single `<input>` elements out of validation by supporting a
