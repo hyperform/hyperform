@@ -55,28 +55,6 @@
         return event;
     }
 
-    var _classCallCheck = (function (instance, Constructor) {
-      if (!(instance instanceof Constructor)) {
-        throw new TypeError("Cannot call a class as a function");
-      }
-    })
-
-    function defineProperties(target, props) {
-      for (var i = 0; i < props.length; i++) {
-        var descriptor = props[i];
-        descriptor.enumerable = descriptor.enumerable || false;
-        descriptor.configurable = true;
-        if ("value" in descriptor) descriptor.writable = true;
-        Object.defineProperty(target, descriptor.key, descriptor);
-      }
-    }
-
-    function _createClass (Constructor, protoProps, staticProps) {
-      if (protoProps) defineProperties(Constructor.prototype, protoProps);
-      if (staticProps) defineProperties(Constructor, staticProps);
-      return Constructor;
-    };
-
     function sliceIterator(arr, i) {
       var _arr = [];
       var _n = true;
@@ -162,12 +140,12 @@
     /* check these for validity.badInput */
     var input_checked = ['email', 'date', 'month', 'week', 'time', 'datetime', 'datetime-local', 'number', 'range', 'color'];
 
-    var text = ['text', 'search', 'tel', 'password'].concat(type_checked);
+    var text_types = ['text', 'search', 'tel', 'password'].concat(type_checked);
 
     /* input element types, that are candidates for the validation API.
      * Missing from this set are: button, hidden, menu (from <button>), reset and
      * the types for non-<input> elements. */
-    var validation_candidates = ['checkbox', 'color', 'file', 'image', 'radio', 'submit'].concat(numbers, text);
+    var validation_candidates = ['checkbox', 'color', 'file', 'image', 'radio', 'submit'].concat(numbers, text_types);
 
     /* all known types of <input> */
     var inputs = ['button', 'hidden', 'reset'].concat(validation_candidates);
@@ -198,6 +176,734 @@
 
       return '';
     }
+
+    var _classCallCheck = (function (instance, Constructor) {
+      if (!(instance instanceof Constructor)) {
+        throw new TypeError("Cannot call a class as a function");
+      }
+    })
+
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
+
+    function _createClass (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+
+    /**
+     * the internal storage for messages
+     */
+    var store = new WeakMap();
+
+    /* jshint -W053 */
+    var message_store = {
+      set: function set(element, message) {
+        if (element instanceof window.HTMLFieldSetElement) {
+          var wrapped_form = Wrapper.get_wrapped(element.form);
+          if (wrapped_form && wrapped_form.settings.strict) {
+            /* make this a no-op for <fieldset> in strict mode */
+            return message_store;
+          }
+        }
+
+        if (typeof message === 'string') {
+          message = new String(message);
+        }
+        mark(message);
+        store.set(element, message);
+
+        /* allow the :invalid selector to match */
+        if ('_original_setCustomValidity' in element) {
+          element._original_setCustomValidity(message);
+        }
+
+        return message_store;
+      },
+      get: function get(element) {
+        var message = store.get(element);
+        if (message === undefined && '_original_validationMessage' in element) {
+          /* get the browser's validation message, if we have none. Maybe it
+           * knows more than we. */
+          message = new String(element._original_validationMessage);
+        }
+        return message ? message : new String('');
+      },
+      delete: function _delete(element) {
+        if ('_original_setCustomValidity' in element) {
+          element._original_setCustomValidity('');
+        }
+        return store.delete(element);
+      }
+    };
+
+    var warnings_cache = new WeakMap();
+
+    var Renderer = {
+
+      show_warning: function show_warning(element) {
+        var msg = message_store.get(element);
+        var warning = warnings_cache.get(element);
+        if (msg) {
+          if (!warning) {
+            warning = document.createElement('div');
+            warning.className = 'hf-warning';
+            warnings_cache.set(element, warning);
+          }
+          warning.textContent = msg;
+          /* should also work, if element is last,
+           * http://stackoverflow.com/a/4793630/113195 */
+          element.parentNode.insertBefore(warning, element.nextSibling);
+        } else if (warning && warning.parentNode) {
+          warning.parentNode.removeChild(warning);
+        }
+      },
+
+      set: function set(renderer, action) {
+        Renderer[renderer] = action;
+      }
+
+    };
+
+    /**
+     * check element's validity and report an error back to the user
+     */
+    function reportValidity(element) {
+      /* if this is a <form>, report validity of all child inputs */
+      if (element instanceof window.HTMLFormElement) {
+        return Array.prototype.every.call(element.elements, reportValidity);
+      }
+
+      /* we copy checkValidity() here, b/c we have to check if the "invalid"
+       * event was canceled. */
+      var valid = ValidityState(element).valid;
+      if (valid) {
+        var wrapped_form = Wrapper.get_wrapped(element.form);
+        if (wrapped_form && wrapped_form.settings.valid_event) {
+          trigger_event(element, 'valid');
+        }
+      } else {
+        var event = trigger_event(element, 'invalid', { cancelable: true });
+        if (!event.defaultPrevented) {
+          Renderer.show_warning(element);
+        }
+      }
+
+      return valid;
+    }
+
+    /**
+     * publish a convenience function to replace the native element.reportValidity
+     */
+    reportValidity.install = installer('reportValidity', {
+      configurable: true,
+      enumerable: true,
+      value: function value() {
+        return reportValidity(this);
+      },
+      writable: true
+    });
+
+    mark(reportValidity);
+
+    function check(event) {
+      event.preventDefault();
+      if (reportValidity(event.target.form)) {
+        event.target.form.submit();
+      }
+    }
+
+    /**
+     * catch the events _prior_ to a form being submitted
+     */
+    function catch_submit (listening_node) {
+      /* catch explicit submission (click on button) */
+      listening_node.addEventListener('click', function (event) {
+        if (!event.defaultPrevented && (event.target.nodeName === 'INPUT' || event.target.nodeName === 'BUTTON') && (event.target.type === 'image' || event.target.type === 'submit') && !event.target.hasAttribute('formnovalidate') && event.target.form && !event.target.form.hasAttribute('novalidate')) {
+
+          check(event);
+        }
+      });
+
+      /* catch implicit submission */
+      listening_node.addEventListener('keypress', function (event) {
+        if (!event.defaultPrevented && event.keyCode === 13 && event.target.nodeName === 'INPUT' && text_types.indexOf(event.target.type) > -1 && event.target.form && !event.target.form.hasAttribute('novalidate')) {
+
+          /* check, that there is no submit button in the form. Otherwise
+           * that should be clicked. */
+          var submit,
+              el = event.target.form.elements.length;
+          for (var i = 0; i < el; i++) {
+            if (['image', 'submit'].indexOf(event.target.form.elements[i].type) > -1) {
+              submit = event.target.form.elements[i];
+              break;
+            }
+          }
+
+          if (submit) {
+            event.preventDefault();
+            submit.click();
+          } else {
+            check(event);
+          }
+        }
+      });
+    }
+
+    /**
+     *
+     */
+    function setCustomValidity(msg) {
+      msg.is_custom = true;
+      /* jshint -W040 */
+      message_store.set(this, msg);
+      /* jshint +W040 */
+    }
+
+    /**
+     * publish a convenience function to replace the native element.setCustomValidity
+     */
+    setCustomValidity.install = installer('setCustomValidity', {
+      configurable: true,
+      enumerable: true,
+      get: setCustomValidity,
+      set: undefined
+    });
+
+    mark(setCustomValidity);
+
+    /**
+     * return a new Date() representing the ISO date for a week number
+     *
+     * @see http://stackoverflow.com/a/16591175/113195
+     */
+
+    function get_date_from_week (week, year) {
+      var date = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
+
+      if (date.getUTCDay() <= 4 /* thursday */) {
+          date.setUTCDate(date.getUTCDate() - date.getUTCDay() + 1);
+        } else {
+        date.setUTCDate(date.getUTCDate() + 8 - date.getUTCDay());
+      }
+
+      return date;
+    }
+
+    /**
+     * calculate a date from a string according to HTML5
+     */
+    function string_to_date (string, element_type) {
+      var date = new Date(0);
+      switch (element_type) {
+        case 'datetime':
+          if (!/^([0-9]{4,})-([0-9]{2})-([0-9]{2})T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
+            return null;
+          }
+          var ms = RegExp.$7;
+          while (ms.length < 3) {
+            ms += '0';
+          }
+          date.setUTCFullYear(Number(RegExp.$1));
+          date.setUTCMonth(Number(RegExp.$2) - 1, Number(RegExp.$3));
+          date.setUTCHours(Number(RegExp.$4), Number(RegExp.$5), Number(RegExp.$6 || 0), Number(ms));
+          return date;
+
+        case 'date':
+          if (!/^([0-9]{4,})-([0-9]{2})-([0-9]{2})$/.test(string)) {
+            return null;
+          }
+          date.setUTCFullYear(Number(RegExp.$1));
+          date.setUTCMonth(Number(RegExp.$2) - 1, Number(RegExp.$3));
+          return date;
+
+        case 'month':
+          if (!/^([0-9]{4,})-([0-9]{2})$/.test(string)) {
+            return null;
+          }
+          date.setUTCFullYear(Number(RegExp.$1));
+          date.setUTCMonth(Number(RegExp.$2) - 1, 1);
+          return date;
+
+        case 'week':
+          if (!/^([0-9]{4,})-W(0[1-9]|[1234][0-9]|5[0-3])$/.test(string)) {
+            return null;
+          }
+          return get_date_from_week(Number(RegExp.$2), Number(RegExp.$1));
+
+        case 'time':
+          if (!/^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
+            return null;
+          }
+          date.setUTCHours(Number(RegExp.$1), Number(RegExp.$2), Number(RegExp.$3 || 0), Number(RegExp.$4 || 0));
+          return date;
+      }
+
+      return null;
+    }
+
+    /**
+     * calculate a date from a string according to HTML5
+     */
+    function string_to_number (string, element_type) {
+      var rval = string_to_date(string, element_type);
+      if (rval !== null) {
+        return +rval;
+      }
+      /* not parseFloat, because we want NaN for invalid values like "1.2xxy" */
+      return Number(string);
+    }
+
+    function sprintf (str) {
+      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
+      }
+
+      var args_length = args.length;
+      var global_index = 0;
+
+      return str.replace(/%([0-9]+\$)?([sl])/g, function (match, position, type) {
+        var local_index = global_index;
+        if (position) {
+          local_index = Number(position.replace(/\$$/, '')) - 1;
+        }
+        global_index += 1;
+
+        var arg = '';
+        if (args_length > local_index) {
+          arg = args[local_index];
+        }
+
+        if (arg instanceof Date || typeof arg === 'number' || arg instanceof Number) {
+          /* try getting a localized representation of dates and numbers, if the
+           * browser supports this */
+          if (type === 'l') {
+            arg = (arg.toLocaleString || arg.toString).call(arg);
+          } else {
+            arg = arg.toString();
+          }
+        }
+
+        return arg;
+      });
+    }
+
+    /* For a given date, get the ISO week number
+     *
+     * Source: http://stackoverflow.com/a/6117889/113195
+     *
+     * Based on information at:
+     *
+     *    http://www.merlyn.demon.co.uk/weekcalc.htm#WNR
+     *
+     * Algorithm is to find nearest thursday, it's year
+     * is the year of the week number. Then get weeks
+     * between that date and the first day of that year.
+     *
+     * Note that dates in one year can be weeks of previous
+     * or next year, overlap is up to 3 days.
+     *
+     * e.g. 2014/12/29 is Monday in week  1 of 2015
+     *      2012/1/1   is Sunday in week 52 of 2011
+     */
+
+    function get_week_of_year (d) {
+      /* Copy date so don't modify original */
+      d = new Date(+d);
+      d.setUTCHours(0, 0, 0);
+      /* Set to nearest Thursday: current date + 4 - current day number
+       * Make Sunday's day number 7 */
+      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+      /* Get first day of year */
+      var yearStart = new Date(d.getUTCFullYear(), 0, 1);
+      /* Calculate full weeks to nearest Thursday */
+      var weekNo = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+      /* Return array of year and week number */
+      return [d.getUTCFullYear(), weekNo];
+    }
+
+    function pad(num) {
+      var size = arguments.length <= 1 || arguments[1] === undefined ? 2 : arguments[1];
+
+      var s = num + '';
+      while (s.length < size) {
+        s = '0' + s;
+      }
+      return s;
+    }
+
+    /**
+     * calculate a string from a date according to HTML5
+     */
+    function date_to_string(date, element_type) {
+      if (!(date instanceof Date)) {
+        return null;
+      }
+
+      switch (element_type) {
+        case 'datetime':
+          return date_to_string(date, 'date') + 'T' + date_to_string(date, 'time');
+
+        case 'datetime-local':
+          return sprintf('%s-%s-%sT%s:%s:%s.%s', date.getFullYear(), pad(date.getMonth() + 1), pad(date.getDate()), pad(date.getHours()), pad(date.getMinutes()), pad(date.getSeconds()), pad(date.getMilliseconds(), 3)).replace(/(:00)?\.000$/, '');
+
+        case 'date':
+          return sprintf('%s-%s-%s', date.getUTCFullYear(), pad(date.getUTCMonth() + 1), pad(date.getUTCDate()));
+
+        case 'month':
+          return sprintf('%s-%s', date.getUTCFullYear(), pad(date.getUTCMonth() + 1));
+
+        case 'week':
+          var params = get_week_of_year(date);
+          return sprintf.call(null, '%s-W%s', params[0], pad(params[1]));
+
+        case 'time':
+          return sprintf('%s:%s:%s.%s', pad(date.getUTCHours()), pad(date.getUTCMinutes()), pad(date.getUTCSeconds()), pad(date.getUTCMilliseconds(), 3)).replace(/(:00)?\.000$/, '');
+      }
+
+      return null;
+    }
+
+    /**
+     * implement the valueAsDate functionality
+     *
+     * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasdate
+     */
+    function valueAsDate() {
+      var value = arguments.length <= 0 || arguments[0] === undefined ? undefined : arguments[0];
+
+      /* jshint -W040 */
+      var type = get_type(this);
+      if (dates.indexOf(type) > -1) {
+        if (value !== undefined) {
+          /* setter: value must be null or a Date() */
+          if (value === null) {
+            this.value = '';
+          } else if (value instanceof Date) {
+            if (isNaN(value.getTime())) {
+              this.value = '';
+            } else {
+              this.value = date_to_string(value, type);
+            }
+          } else {
+            throw new window.DOMException('valueAsDate setter encountered invalid value', 'TypeError');
+          }
+          return;
+        }
+
+        var value_date = string_to_date(this.value, type);
+        return value_date instanceof Date ? value_date : null;
+      } else if (value !== undefined) {
+        /* trying to set a date on a not-date input fails */
+        throw new window.DOMException('valueAsDate setter cannot set date on this element', 'InvalidStateError');
+      }
+      /* jshint +W040 */
+
+      return null;
+    }
+
+    valueAsDate.install = installer('valueAsDate', {
+      configurable: true,
+      enumerable: true,
+      get: valueAsDate,
+      set: valueAsDate
+    });
+
+    mark(valueAsDate);
+
+    /**
+     * implement the valueAsNumber functionality
+     *
+     * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasnumber
+     */
+    function valueAsNumber() {
+      var value = arguments.length <= 0 || arguments[0] === undefined ? undefined : arguments[0];
+
+      /* jshint -W040 */
+      var type = get_type(this);
+      if (numbers.indexOf(type) > -1) {
+        if (type === 'range' && this.hasAttribute('multiple')) {
+          /* @see https://html.spec.whatwg.org/multipage/forms.html#do-not-apply */
+          return NaN;
+        }
+
+        if (value !== undefined) {
+          /* setter: value must be NaN or a finite number */
+          if (isNaN(value)) {
+            this.value = '';
+          } else if (typeof value === 'number' && window.isFinite(value)) {
+            try {
+              /* try setting as a date, but... */
+              valueAsDate.call(this, new Date(value));
+            } catch (e) {
+              /* ... when valueAsDate is not responsible, ... */
+              if (!(e instanceof window.DOMException)) {
+                throw e;
+              }
+              /* ... set it via Number.toString(). */
+              this.value = value.toString();
+            }
+          } else {
+            throw new window.DOMException('valueAsNumber setter encountered invalid value', 'TypeError');
+          }
+          return;
+        }
+
+        return string_to_number(this.value, type);
+      } else if (value !== undefined) {
+        /* trying to set a number on a not-number input fails */
+        throw new window.DOMException('valueAsNumber setter cannot set number on this element', 'InvalidStateError');
+      }
+      /* jshint +W040 */
+
+      return NaN;
+    }
+
+    valueAsNumber.install = installer('valueAsNumber', {
+      configurable: true,
+      enumerable: true,
+      get: valueAsNumber,
+      set: valueAsNumber
+    });
+
+    mark(valueAsNumber);
+
+    /**
+     *
+     */
+    function stepDown(element) {
+      var n = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
+
+      if (numbers.indexOf(get_type(element)) === -1) {
+        throw new window.DOMException('stepDown encountered invalid type', 'InvalidStateError');
+      }
+      if ((element.getAttribute('step') || '').toLowerCase() === 'any') {
+        throw new window.DOMException('stepDown encountered step "any"', 'InvalidStateError');
+      }
+
+      var _get_next_valid = get_next_valid(element, n);
+
+      var prev = _get_next_valid.prev;
+      var next = _get_next_valid.next;
+
+
+      if (prev !== null) {
+        valueAsNumber.call(element, prev);
+      }
+    }
+
+    stepDown.install = installer('stepDown', {
+      configurable: true,
+      enumerable: true,
+      value: function value() {
+        var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+        return stepDown(this, n);
+      },
+      writable: true
+    });
+
+    mark(stepDown);
+
+    /**
+     *
+     */
+    function stepUp(element) {
+      var n = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
+
+      if (numbers.indexOf(get_type(element)) === -1) {
+        throw new window.DOMException('stepUp encountered invalid type', 'InvalidStateError');
+      }
+      if ((element.getAttribute('step') || '').toLowerCase() === 'any') {
+        throw new window.DOMException('stepUp encountered step "any"', 'InvalidStateError');
+      }
+
+      var _get_next_valid = get_next_valid(element, n);
+
+      var prev = _get_next_valid.prev;
+      var next = _get_next_valid.next;
+
+
+      if (next !== null) {
+        valueAsNumber.call(element, next);
+      }
+    }
+
+    stepUp.install = installer('stepUp', {
+      configurable: true,
+      enumerable: true,
+      value: function value() {
+        var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+        return stepUp(this, n);
+      },
+      writable: true
+    });
+
+    mark(stepUp);
+
+    /**
+     * get the validation message for an element, empty string, if the element
+     * satisfies all constraints.
+     */
+    function validationMessage() {
+      /* jshint -W040 */
+      var msg = message_store.get(this);
+      /* jshint +W040 */
+      if (!msg) {
+        return '';
+      }
+
+      /* make it a primitive again, since message_store returns String(). */
+      return msg.toString();
+    }
+
+    /**
+     * publish a convenience function to replace the native element.validationMessage
+     */
+    validationMessage.install = installer('validationMessage', {
+      configurable: true,
+      enumerable: true,
+      get: validationMessage,
+      set: undefined
+    });
+
+    mark(validationMessage);
+
+    /**
+     * check, if an element will be subject to HTML5 validation
+     */
+    function willValidate() {
+      /* jshint -W040 */
+      return is_validation_candidate(this);
+      /* jshint +W040 */
+    }
+
+    /**
+     * publish a convenience function to replace the native element.willValidate
+     */
+    willValidate.install = installer('willValidate', {
+      configurable: true,
+      enumerable: true,
+      get: willValidate,
+      set: undefined
+    });
+
+    mark(willValidate);
+
+    var instances = new WeakMap();
+
+    /**
+     * wrap <form>s, window or document, that get treated with the global
+     * hyperform()
+     */
+
+    var Wrapper = function () {
+      function Wrapper(form, settings) {
+        _classCallCheck(this, Wrapper);
+
+        this.form = form;
+        this.settings = settings || {};
+
+        instances.set(form, this);
+
+        catch_submit(form);
+
+        if (form === window || form instanceof window.HTMLDocument) {
+          /* install on the prototypes, when called for the whole document */
+          this.install([window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype]);
+        } else if (form instanceof window.HTMLFormElement || form instanceof window.HTMLFieldSetElement) {
+          this.install(form.elements);
+        }
+
+        if (settings.revalidate === 'oninput') {
+          /* in a perfect world we'd just bind to "input", but support here is
+           * abysmal: http://caniuse.com/#feat=input-event */
+          form.addEventListener('keyup', this.revalidate.bind(this));
+          form.addEventListener('change', this.revalidate.bind(this));
+        }
+      }
+
+      /**
+       * revalidate an input element
+       */
+
+
+      _createClass(Wrapper, [{
+        key: 'revalidate',
+        value: function revalidate(event) {
+          if (event.target instanceof window.HTMLButtonElement || event.target instanceof window.HTMLTextAreaElement || event.target instanceof window.HTMLSelectElement || event.target instanceof window.HTMLInputElement) {
+            checkValidity(event.target);
+          }
+        }
+
+        /**
+         * install the polyfills on each given element
+         *
+         * If you add elements dynamically, you have to call install() on them
+         * yourself:
+         *
+         * js> var form = hyperform(document.forms[0]);
+         * js> document.forms[0].appendChild(input);
+         * js> form.install(input);
+         *
+         * You can skip this, if you called hyperform on window or document.
+         */
+
+      }, {
+        key: 'install',
+        value: function install(els) {
+          if (els instanceof window.HTMLElement) {
+            els = [els];
+          }
+
+          var els_length = els.length;
+
+          for (var i = 0; i < els_length; i++) {
+            checkValidity.install(els[i]);
+            reportValidity.install(els[i]);
+            setCustomValidity.install(els[i]);
+            stepDown.install(els[i]);
+            stepUp.install(els[i]);
+            validationMessage.install(els[i]);
+            ValidityState.install(els[i]);
+            valueAsDate.install(els[i]);
+            valueAsNumber.install(els[i]);
+            willValidate.install(els[i]);
+          }
+        }
+
+        /**
+         * try to get the appropriate wrapper for a specific element by looking up
+         * its parent chain
+         */
+
+      }], [{
+        key: 'get_wrapped',
+        value: function get_wrapped(element) {
+          var wrapped;
+          while (!wrapped && element) {
+            wrapped = instances.get(element);
+            element = element.parentNode;
+          }
+
+          if (!wrapped) {
+            /* this may also be undefined. */
+            wrapped = instances.get(window);
+          }
+
+          return wrapped;
+        }
+      }]);
+
+      return Wrapper;
+    }();
 
     /**
      * check if an element is a candidate for constraint validation
@@ -240,40 +946,6 @@
 
       /* this is no HTML5 validation candidate... */
       return false;
-    }
-
-    function sprintf (str) {
-      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-        args[_key - 1] = arguments[_key];
-      }
-
-      var args_length = args.length;
-      var global_index = 0;
-
-      return str.replace(/%([0-9]+\$)?([sl])/g, function (match, position, type) {
-        var local_index = global_index;
-        if (position) {
-          local_index = Number(position.replace(/\$$/, '')) - 1;
-        }
-        global_index += 1;
-
-        var arg = '';
-        if (args_length > local_index) {
-          arg = args[local_index];
-        }
-
-        if (arg instanceof Date || typeof arg === 'number' || arg instanceof Number) {
-          /* try getting a localized representation of dates and numbers, if the
-           * browser supports this */
-          if (type === 'l') {
-            arg = (arg.toLocaleString || arg.toString).call(arg);
-          } else {
-            arg = arg.toString();
-          }
-        }
-
-        return arg;
-      });
     }
 
     var catalog = {
@@ -349,76 +1021,6 @@
         return internal_registry.delete(element);
       }
     };
-
-    /**
-     * return a new Date() representing the ISO date for a week number
-     *
-     * @see http://stackoverflow.com/a/16591175/113195
-     */
-
-    function get_date_from_week (week, year) {
-      var date = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
-
-      if (date.getUTCDay() <= 4 /* thursday */) {
-          date.setUTCDate(date.getUTCDate() - date.getUTCDay() + 1);
-        } else {
-        date.setUTCDate(date.getUTCDate() + 8 - date.getUTCDay());
-      }
-
-      return date;
-    }
-
-    /**
-     * calculate a date from a string according to HTML5
-     */
-    function string_to_date (string, element_type) {
-      var date = new Date(0);
-      switch (element_type) {
-        case 'datetime':
-          if (!/^([0-9]{4,})-([0-9]{2})-([0-9]{2})T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
-            return null;
-          }
-          var ms = RegExp.$7;
-          while (ms.length < 3) {
-            ms += '0';
-          }
-          date.setUTCFullYear(Number(RegExp.$1));
-          date.setUTCMonth(Number(RegExp.$2) - 1, Number(RegExp.$3));
-          date.setUTCHours(Number(RegExp.$4), Number(RegExp.$5), Number(RegExp.$6 || 0), Number(ms));
-          return date;
-
-        case 'date':
-          if (!/^([0-9]{4,})-([0-9]{2})-([0-9]{2})$/.test(string)) {
-            return null;
-          }
-          date.setUTCFullYear(Number(RegExp.$1));
-          date.setUTCMonth(Number(RegExp.$2) - 1, Number(RegExp.$3));
-          return date;
-
-        case 'month':
-          if (!/^([0-9]{4,})-([0-9]{2})$/.test(string)) {
-            return null;
-          }
-          date.setUTCFullYear(Number(RegExp.$1));
-          date.setUTCMonth(Number(RegExp.$2) - 1, 1);
-          return date;
-
-        case 'week':
-          if (!/^([0-9]{4,})-W(0[1-9]|[1234][0-9]|5[0-3])$/.test(string)) {
-            return null;
-          }
-          return get_date_from_week(Number(RegExp.$2), Number(RegExp.$1));
-
-        case 'time':
-          if (!/^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
-            return null;
-          }
-          date.setUTCHours(Number(RegExp.$1), Number(RegExp.$2), Number(RegExp.$3 || 0), Number(RegExp.$4 || 0));
-          return date;
-      }
-
-      return null;
-    }
 
     /**
      * test the max attribute
@@ -524,18 +1126,6 @@
         default:
           return !!element.value;
       }
-    }
-
-    /**
-     * calculate a date from a string according to HTML5
-     */
-    function string_to_number (string, element_type) {
-      var rval = string_to_date(string, element_type);
-      if (rval !== null) {
-        return +rval;
-      }
-      /* not parseFloat, because we want NaN for invalid values like "1.2xxy" */
-      return Number(string);
     }
 
     var default_step = {
@@ -1020,545 +1610,6 @@
 
     mark(checkValidity);
 
-    var instances = new WeakMap();
-
-    var Wrapper = function () {
-      function Wrapper(form, settings) {
-        _classCallCheck(this, Wrapper);
-
-        this.form = form;
-        this.settings = settings || {};
-        instances.set(form, this);
-
-        if (settings.revalidate === 'oninput') {
-          /* in a perfect world we'd just bind to "input", but support here is
-           * abysmal: http://caniuse.com/#feat=input-event */
-          form.addEventListener('keyup', this.revalidate.bind(this));
-          form.addEventListener('change', this.revalidate.bind(this));
-        }
-      }
-
-      /**
-       * revalidate an input element
-       */
-
-
-      _createClass(Wrapper, [{
-        key: 'revalidate',
-        value: function revalidate(event) {
-          if (event.target instanceof window.HTMLButtonElement || event.target instanceof window.HTMLTextAreaElement || event.target instanceof window.HTMLSelectElement || event.target instanceof window.HTMLInputElement) {
-            checkValidity(event.target);
-          }
-        }
-
-        /**
-         * try to get the appropriate wrapper for a specific element by looking up
-         * its parent chain
-         */
-
-      }], [{
-        key: 'get_wrapped',
-        value: function get_wrapped(element) {
-          var wrapped;
-          while (!wrapped && element) {
-            wrapped = instances.get(element);
-            element = element.parentNode;
-          }
-
-          if (!wrapped) {
-            /* this may also be undefined. */
-            wrapped = instances.get(window);
-          }
-
-          return wrapped;
-        }
-      }]);
-
-      return Wrapper;
-    }();
-
-    /**
-     * the internal storage for messages
-     */
-    var store = new WeakMap();
-
-    /* jshint -W053 */
-    var message_store = {
-      set: function set(element, message) {
-        if (element instanceof window.HTMLFieldSetElement) {
-          var wrapped_form = Wrapper.get_wrapped(element.form);
-          if (wrapped_form && wrapped_form.settings.strict) {
-            /* make this a no-op for <fieldset> in strict mode */
-            return message_store;
-          }
-        }
-
-        if (typeof message === 'string') {
-          message = new String(message);
-        }
-        mark(message);
-        store.set(element, message);
-
-        /* allow the :invalid selector to match */
-        if ('_original_setCustomValidity' in element) {
-          element._original_setCustomValidity(message);
-        }
-
-        return message_store;
-      },
-      get: function get(element) {
-        var message = store.get(element);
-        if (message === undefined && '_original_validationMessage' in element) {
-          /* get the browser's validation message, if we have none. Maybe it
-           * knows more than we. */
-          message = new String(element._original_validationMessage);
-        }
-        return message ? message : new String('');
-      },
-      delete: function _delete(element) {
-        if ('_original_setCustomValidity' in element) {
-          element._original_setCustomValidity('');
-        }
-        return store.delete(element);
-      }
-    };
-
-    var warnings_cache = new WeakMap();
-
-    var Renderer = {
-
-      show_warning: function show_warning(element) {
-        var msg = message_store.get(element);
-        var warning = warnings_cache.get(element);
-        if (msg) {
-          if (!warning) {
-            warning = document.createElement('div');
-            warning.className = 'hf-warning';
-            warnings_cache.set(element, warning);
-          }
-          warning.textContent = msg;
-          /* should also work, if element is last,
-           * http://stackoverflow.com/a/4793630/113195 */
-          element.parentNode.insertBefore(warning, element.nextSibling);
-        } else if (warning && warning.parentNode) {
-          warning.parentNode.removeChild(warning);
-        }
-      },
-
-      set: function set(renderer, action) {
-        Renderer[renderer] = action;
-      }
-
-    };
-
-    /**
-     * check element's validity and report an error back to the user
-     */
-    function reportValidity(element) {
-      /* if this is a <form>, report validity of all child inputs */
-      if (element instanceof window.HTMLFormElement) {
-        return Array.prototype.every.call(element.elements, reportValidity);
-      }
-
-      /* we copy checkValidity() here, b/c we have to check if the "invalid"
-       * event was canceled. */
-      var valid = ValidityState(element).valid;
-      if (valid) {
-        var wrapped_form = Wrapper.get_wrapped(element.form);
-        if (wrapped_form && wrapped_form.settings.valid_event) {
-          trigger_event(element, 'valid');
-        }
-      } else {
-        var event = trigger_event(element, 'invalid', { cancelable: true });
-        if (!event.defaultPrevented) {
-          Renderer.show_warning(element);
-        }
-      }
-
-      return valid;
-    }
-
-    /**
-     * publish a convenience function to replace the native element.reportValidity
-     */
-    reportValidity.install = installer('reportValidity', {
-      configurable: true,
-      enumerable: true,
-      value: function value() {
-        return reportValidity(this);
-      },
-      writable: true
-    });
-
-    mark(reportValidity);
-
-    function check(event) {
-      event.preventDefault();
-      if (reportValidity(event.target.form)) {
-        event.target.form.submit();
-      }
-    }
-
-    /**
-     * catch the events _prior_ to a form being submitted
-     */
-    function catch_submit (listening_node) {
-      /* catch explicit submission (click on button) */
-      listening_node.addEventListener('click', function (event) {
-        if (!event.defaultPrevented && (event.target.nodeName === 'INPUT' || event.target.nodeName === 'BUTTON') && (event.target.type === 'image' || event.target.type === 'submit') && !event.target.hasAttribute('formnovalidate') && event.target.form && !event.target.form.hasAttribute('novalidate')) {
-
-          check(event);
-        }
-      });
-
-      /* catch implicit submission */
-      listening_node.addEventListener('keypress', function (event) {
-        if (!event.defaultPrevented && event.keyCode === 13 && event.target.nodeName === 'INPUT' && text.indexOf(event.target.type) > -1 && event.target.form && !event.target.form.hasAttribute('novalidate')) {
-
-          /* check, that there is no submit button in the form. Otherwise
-           * that should be clicked. */
-          var submit,
-              el = event.target.form.elements.length;
-          for (var i = 0; i < el; i++) {
-            if (['image', 'submit'].indexOf(event.target.form.elements[i].type) > -1) {
-              submit = event.target.form.elements[i];
-              break;
-            }
-          }
-
-          if (submit) {
-            event.preventDefault();
-            submit.click();
-          } else {
-            check(event);
-          }
-        }
-      });
-    }
-
-    /**
-     *
-     */
-    function setCustomValidity(msg) {
-      msg.is_custom = true;
-      /* jshint -W040 */
-      message_store.set(this, msg);
-      /* jshint +W040 */
-    }
-
-    /**
-     * publish a convenience function to replace the native element.setCustomValidity
-     */
-    setCustomValidity.install = installer('setCustomValidity', {
-      configurable: true,
-      enumerable: true,
-      get: setCustomValidity,
-      set: undefined
-    });
-
-    mark(setCustomValidity);
-
-    /* For a given date, get the ISO week number
-     *
-     * Source: http://stackoverflow.com/a/6117889/113195
-     *
-     * Based on information at:
-     *
-     *    http://www.merlyn.demon.co.uk/weekcalc.htm#WNR
-     *
-     * Algorithm is to find nearest thursday, it's year
-     * is the year of the week number. Then get weeks
-     * between that date and the first day of that year.
-     *
-     * Note that dates in one year can be weeks of previous
-     * or next year, overlap is up to 3 days.
-     *
-     * e.g. 2014/12/29 is Monday in week  1 of 2015
-     *      2012/1/1   is Sunday in week 52 of 2011
-     */
-
-    function get_week_of_year (d) {
-      /* Copy date so don't modify original */
-      d = new Date(+d);
-      d.setUTCHours(0, 0, 0);
-      /* Set to nearest Thursday: current date + 4 - current day number
-       * Make Sunday's day number 7 */
-      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-      /* Get first day of year */
-      var yearStart = new Date(d.getUTCFullYear(), 0, 1);
-      /* Calculate full weeks to nearest Thursday */
-      var weekNo = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
-      /* Return array of year and week number */
-      return [d.getUTCFullYear(), weekNo];
-    }
-
-    function pad(num) {
-      var size = arguments.length <= 1 || arguments[1] === undefined ? 2 : arguments[1];
-
-      var s = num + '';
-      while (s.length < size) {
-        s = '0' + s;
-      }
-      return s;
-    }
-
-    /**
-     * calculate a string from a date according to HTML5
-     */
-    function date_to_string(date, element_type) {
-      if (!(date instanceof Date)) {
-        return null;
-      }
-
-      switch (element_type) {
-        case 'datetime':
-          return date_to_string(date, 'date') + 'T' + date_to_string(date, 'time');
-
-        case 'datetime-local':
-          return sprintf('%s-%s-%sT%s:%s:%s.%s', date.getFullYear(), pad(date.getMonth() + 1), pad(date.getDate()), pad(date.getHours()), pad(date.getMinutes()), pad(date.getSeconds()), pad(date.getMilliseconds(), 3)).replace(/(:00)?\.000$/, '');
-
-        case 'date':
-          return sprintf('%s-%s-%s', date.getUTCFullYear(), pad(date.getUTCMonth() + 1), pad(date.getUTCDate()));
-
-        case 'month':
-          return sprintf('%s-%s', date.getUTCFullYear(), pad(date.getUTCMonth() + 1));
-
-        case 'week':
-          var params = get_week_of_year(date);
-          return sprintf.call(null, '%s-W%s', params[0], pad(params[1]));
-
-        case 'time':
-          return sprintf('%s:%s:%s.%s', pad(date.getUTCHours()), pad(date.getUTCMinutes()), pad(date.getUTCSeconds()), pad(date.getUTCMilliseconds(), 3)).replace(/(:00)?\.000$/, '');
-      }
-
-      return null;
-    }
-
-    /**
-     * implement the valueAsDate functionality
-     *
-     * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasdate
-     */
-    function valueAsDate() {
-      var value = arguments.length <= 0 || arguments[0] === undefined ? undefined : arguments[0];
-
-      /* jshint -W040 */
-      var type = get_type(this);
-      if (dates.indexOf(type) > -1) {
-        if (value !== undefined) {
-          /* setter: value must be null or a Date() */
-          if (value === null) {
-            this.value = '';
-          } else if (value instanceof Date) {
-            if (isNaN(value.getTime())) {
-              this.value = '';
-            } else {
-              this.value = date_to_string(value, type);
-            }
-          } else {
-            throw new window.DOMException('valueAsDate setter encountered invalid value', 'TypeError');
-          }
-          return;
-        }
-
-        var value_date = string_to_date(this.value, type);
-        return value_date instanceof Date ? value_date : null;
-      } else if (value !== undefined) {
-        /* trying to set a date on a not-date input fails */
-        throw new window.DOMException('valueAsDate setter cannot set date on this element', 'InvalidStateError');
-      }
-      /* jshint +W040 */
-
-      return null;
-    }
-
-    valueAsDate.install = installer('valueAsDate', {
-      configurable: true,
-      enumerable: true,
-      get: valueAsDate,
-      set: valueAsDate
-    });
-
-    mark(valueAsDate);
-
-    /**
-     * implement the valueAsNumber functionality
-     *
-     * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasnumber
-     */
-    function valueAsNumber() {
-      var value = arguments.length <= 0 || arguments[0] === undefined ? undefined : arguments[0];
-
-      /* jshint -W040 */
-      var type = get_type(this);
-      if (numbers.indexOf(type) > -1) {
-        if (type === 'range' && this.hasAttribute('multiple')) {
-          /* @see https://html.spec.whatwg.org/multipage/forms.html#do-not-apply */
-          return NaN;
-        }
-
-        if (value !== undefined) {
-          /* setter: value must be NaN or a finite number */
-          if (isNaN(value)) {
-            this.value = '';
-          } else if (typeof value === 'number' && window.isFinite(value)) {
-            try {
-              /* try setting as a date, but... */
-              valueAsDate.call(this, new Date(value));
-            } catch (e) {
-              /* ... when valueAsDate is not responsible, ... */
-              if (!(e instanceof window.DOMException)) {
-                throw e;
-              }
-              /* ... set it via Number.toString(). */
-              this.value = value.toString();
-            }
-          } else {
-            throw new window.DOMException('valueAsNumber setter encountered invalid value', 'TypeError');
-          }
-          return;
-        }
-
-        return string_to_number(this.value, type);
-      } else if (value !== undefined) {
-        /* trying to set a number on a not-number input fails */
-        throw new window.DOMException('valueAsNumber setter cannot set number on this element', 'InvalidStateError');
-      }
-      /* jshint +W040 */
-
-      return NaN;
-    }
-
-    valueAsNumber.install = installer('valueAsNumber', {
-      configurable: true,
-      enumerable: true,
-      get: valueAsNumber,
-      set: valueAsNumber
-    });
-
-    mark(valueAsNumber);
-
-    /**
-     *
-     */
-    function stepDown(element) {
-      var n = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
-
-      if (numbers.indexOf(get_type(element)) === -1) {
-        throw new window.DOMException('stepDown encountered invalid type', 'InvalidStateError');
-      }
-      if ((element.getAttribute('step') || '').toLowerCase() === 'any') {
-        throw new window.DOMException('stepDown encountered step "any"', 'InvalidStateError');
-      }
-
-      var _get_next_valid = get_next_valid(element, n);
-
-      var prev = _get_next_valid.prev;
-      var next = _get_next_valid.next;
-
-
-      if (prev !== null) {
-        valueAsNumber.call(element, prev);
-      }
-    }
-
-    stepDown.install = installer('stepDown', {
-      configurable: true,
-      enumerable: true,
-      value: function value() {
-        var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
-        return stepDown(this, n);
-      },
-      writable: true
-    });
-
-    mark(stepDown);
-
-    /**
-     *
-     */
-    function stepUp(element) {
-      var n = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
-
-      if (numbers.indexOf(get_type(element)) === -1) {
-        throw new window.DOMException('stepUp encountered invalid type', 'InvalidStateError');
-      }
-      if ((element.getAttribute('step') || '').toLowerCase() === 'any') {
-        throw new window.DOMException('stepUp encountered step "any"', 'InvalidStateError');
-      }
-
-      var _get_next_valid = get_next_valid(element, n);
-
-      var prev = _get_next_valid.prev;
-      var next = _get_next_valid.next;
-
-
-      if (next !== null) {
-        valueAsNumber.call(element, next);
-      }
-    }
-
-    stepUp.install = installer('stepUp', {
-      configurable: true,
-      enumerable: true,
-      value: function value() {
-        var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
-        return stepUp(this, n);
-      },
-      writable: true
-    });
-
-    mark(stepUp);
-
-    /**
-     * get the validation message for an element, empty string, if the element
-     * satisfies all constraints.
-     */
-    function validationMessage() {
-      /* jshint -W040 */
-      var msg = message_store.get(this);
-      /* jshint +W040 */
-      if (!msg) {
-        return '';
-      }
-
-      /* make it a primitive again, since message_store returns String(). */
-      return msg.toString();
-    }
-
-    /**
-     * publish a convenience function to replace the native element.validationMessage
-     */
-    validationMessage.install = installer('validationMessage', {
-      configurable: true,
-      enumerable: true,
-      get: validationMessage,
-      set: undefined
-    });
-
-    mark(validationMessage);
-
-    /**
-     * check, if an element will be subject to HTML5 validation
-     */
-    function willValidate() {
-      /* jshint -W040 */
-      return is_validation_candidate(this);
-      /* jshint +W040 */
-    }
-
-    /**
-     * publish a convenience function to replace the native element.willValidate
-     */
-    willValidate.install = installer('willValidate', {
-      configurable: true,
-      enumerable: true,
-      get: willValidate,
-      set: undefined
-    });
-
-    mark(willValidate);
-
     var version = '0.4.4';
 
     /**
@@ -1576,30 +1627,6 @@
         return Array.prototype.map.call(form, function (element) {
           return hyperform(element);
         });
-      }
-
-      var els;
-      if (form === window || form instanceof window.HTMLDocument) {
-        /* install on the prototypes, when called for the document */
-        els = [window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype];
-      } else if (form instanceof window.HTMLFormElement || form instanceof window.HTMLFieldSetElement) {
-        els = form.elements;
-      }
-
-      catch_submit(form);
-
-      var els_length = els.length;
-      for (var i = 0; i < els_length; i++) {
-        checkValidity.install(els[i]);
-        reportValidity.install(els[i]);
-        setCustomValidity.install(els[i]);
-        stepDown.install(els[i]);
-        stepUp.install(els[i]);
-        validationMessage.install(els[i]);
-        ValidityState.install(els[i]);
-        valueAsDate.install(els[i]);
-        valueAsNumber.install(els[i]);
-        willValidate.install(els[i]);
       }
 
       return new Wrapper(form, { strict: strict, revalidate: revalidate, valid_event: valid_event });
