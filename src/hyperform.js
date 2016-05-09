@@ -24,6 +24,8 @@ import version from './version';
  */
 function hyperform(form, {
                      strict=false,
+                     revalidate='oninput',
+                     valid_event=true,
                    }) {
   if (form instanceof window.NodeList ||
       form instanceof window.HTMLCollection ||
@@ -62,7 +64,7 @@ function hyperform(form, {
     willValidate.install(els[i]);
   }
 
-  return new Wrapper(form, { strict, });
+  return new Wrapper(form, { strict, revalidate, valid_event, });
 }
 
 hyperform.version = version;

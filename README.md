@@ -72,14 +72,14 @@ for prime time?
 What parts of the high-level API are finished?
 
 * :new_moon: Trigger a `validate` event before validating an element.
-* :new_moon: Trigger a `valid` event, when an input becomes valid, again.
+* :full_moon: Trigger a `valid` event, when an input becomes valid, again.
 * :new_moon: Allow functions to hook into the actual validations to accept or
     reject inputs.
 * :waxing_crescent_moon: Translate validation messages. There are some
     partial translations available: https://github.com/hyperform/hyperform-l10n
 * :full_moon: Provide a registry for user defined validators, that are called
     automatically in the `validity.customError` step.
-* :waxing_gibbous_moon: Catch form submissions _before_ the `submit` event to do our own
+* :full_moon: Catch form submissions _before_ the `submit` event to do our own
     validation (`click`s on submit buttons and `enter` keys in text inputs in
     forms w/o submit buttons).
 * :new_moon: Add helper classes `hf-valid` and `hf-invalid` as well as proper

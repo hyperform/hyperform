@@ -6,6 +6,7 @@ import installer from '../tools/property_installer';
 import trigger_event from '../tools/trigger_event';
 import renderer from '../components/renderer';
 import ValidityState from './validityState';
+import Wrapper from '../components/wrapper';
 
 
 /**
@@ -20,7 +21,12 @@ function reportValidity(element) {
   /* we copy checkValidity() here, b/c we have to check if the "invalid"
    * event was canceled. */
   var valid = ValidityState(element).valid;
-  if (! valid) {
+  if (valid) {
+    const wrapped_form = Wrapper.get_wrapped(element.form);
+    if (wrapped_form && wrapped_form.settings.valid_event) {
+      trigger_event(element, 'valid');
+    }
+  } else {
     const event = trigger_event(element, 'invalid', { cancelable: true });
     if (! event.defaultPrevented) {
       renderer.show_warning(element);

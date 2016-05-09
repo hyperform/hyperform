@@ -76,116 +76,6 @@ define(function () { 'use strict';
       return Constructor;
     };
 
-    var instances = new WeakMap();
-
-    var Wrapper = function () {
-      function Wrapper(form, settings) {
-        _classCallCheck(this, Wrapper);
-
-        this.form = form;
-        this.settings = settings || {};
-        instances.set(form, this);
-      }
-
-      /* try to get the appropriate wrapper for a specific element by looking up
-       * its parent chain */
-
-
-      _createClass(Wrapper, null, [{
-        key: 'get_wrapped',
-        value: function get_wrapped(element) {
-          var wrapped;
-          while (!wrapped && element) {
-            wrapped = instances.get(element);
-            element = element.parentNode;
-          }
-
-          if (!wrapped) {
-            /* this may also be undefined. */
-            wrapped = instances.get(window);
-          }
-
-          return wrapped;
-        }
-      }]);
-
-      return Wrapper;
-    }();
-
-    /**
-     * the internal storage for messages
-     */
-    var store = new WeakMap();
-
-    /* jshint -W053 */
-    var message_store = {
-      set: function set(element, message) {
-        if (element instanceof window.HTMLFieldSetElement) {
-          var wrapped_form = Wrapper.get_wrapped(element.form);
-          if (wrapped_form && wrapped_form.settings.strict) {
-            /* make this a no-op for <fieldset> in strict mode */
-            return message_store;
-          }
-        }
-
-        if (typeof message === 'string') {
-          message = new String(message);
-        }
-        mark(message);
-        store.set(element, message);
-
-        /* allow the :invalid selector to match */
-        if ('_original_setCustomValidity' in element) {
-          element._original_setCustomValidity(message);
-        }
-
-        return message_store;
-      },
-      get: function get(element) {
-        var message = store.get(element);
-        if (message === undefined && '_original_validationMessage' in element) {
-          /* get the browser's validation message, if we have none. Maybe it
-           * knows more than we. */
-          message = new String(element._original_validationMessage);
-        }
-        return message ? message : new String('');
-      },
-      delete: function _delete(element) {
-        if ('_original_setCustomValidity' in element) {
-          element._original_setCustomValidity('');
-        }
-        return store.delete(element);
-      }
-    };
-
-    var warnings_cache = new WeakMap();
-
-    var Renderer = {
-
-      show_warning: function show_warning(element) {
-        var msg = message_store.get(element);
-        var warning = warnings_cache.get(element);
-        if (msg) {
-          if (!warning) {
-            warning = document.createElement('div');
-            warning.className = 'hf-warning';
-            warnings_cache.set(element, warning);
-          }
-          warning.textContent = msg;
-          /* should also work, if element is last,
-           * http://stackoverflow.com/a/4793630/113195 */
-          element.parentNode.insertBefore(warning, element.nextSibling);
-        } else if (warning && warning.parentNode) {
-          warning.parentNode.removeChild(warning);
-        }
-      },
-
-      set: function set(renderer, action) {
-        Renderer[renderer] = action;
-      }
-
-    };
-
     function sliceIterator(arr, i) {
       var _arr = [];
       var _n = true;
@@ -1011,7 +901,7 @@ define(function () { 'use strict';
     };
 
     /**
-     * TODO allow HTMLFieldSetElement, too
+     * the validity state constructor
      */
     var ValidityState = function ValidityState(element) {
       if (!(element instanceof window.HTMLElement)) {
@@ -1032,6 +922,9 @@ define(function () { 'use strict';
       ValidityState.cache.set(element, this);
     };
 
+    /**
+     * the prototype for new validityState instances
+     */
     var ValidityStatePrototype = {};
     ValidityState.prototype = ValidityStatePrototype;
 
@@ -1090,6 +983,174 @@ define(function () { 'use strict';
     });
 
     /**
+     * check an element's validity with respect to it's form
+     */
+    function checkValidity(element) {
+      /* if this is a <form>, check validity of all child inputs */
+      if (element instanceof window.HTMLFormElement) {
+        return Array.prototype.every.call(element.elements, checkValidity);
+      }
+
+      /* default is true, also for elements that are no validation candidates */
+      var valid = ValidityState(element).valid;
+      if (valid) {
+        var wrapped_form = Wrapper.get_wrapped(element.form);
+        if (wrapped_form && wrapped_form.settings.valid_event) {
+          trigger_event(element, 'valid');
+        }
+      } else {
+        trigger_event(element, 'invalid', { cancelable: true });
+      }
+
+      return valid;
+    }
+
+    /**
+     * publish a convenience function to replace the native element.checkValidity
+     */
+    checkValidity.install = installer('checkValidity', {
+      configurable: true,
+      enumerable: true,
+      value: function value() {
+        return checkValidity(this);
+      },
+      writable: true
+    });
+
+    mark(checkValidity);
+
+    var instances = new WeakMap();
+
+    var Wrapper = function () {
+      function Wrapper(form, settings) {
+        _classCallCheck(this, Wrapper);
+
+        this.form = form;
+        this.settings = settings || {};
+        instances.set(form, this);
+
+        if (settings.revalidate === 'oninput') {
+          /* in a perfect world we'd just bind to "input", but support here is
+           * abysmal: http://caniuse.com/#feat=input-event */
+          form.addEventListener('keyup', this.revalidate.bind(this));
+          form.addEventListener('change', this.revalidate.bind(this));
+        }
+      }
+
+      /**
+       * revalidate an input element
+       */
+
+
+      _createClass(Wrapper, [{
+        key: 'revalidate',
+        value: function revalidate(event) {
+          if (event.target instanceof window.HTMLButtonElement || event.target instanceof window.HTMLTextAreaElement || event.target instanceof window.HTMLSelectElement || event.target instanceof window.HTMLInputElement) {
+            checkValidity(event.target);
+          }
+        }
+
+        /**
+         * try to get the appropriate wrapper for a specific element by looking up
+         * its parent chain
+         */
+
+      }], [{
+        key: 'get_wrapped',
+        value: function get_wrapped(element) {
+          var wrapped;
+          while (!wrapped && element) {
+            wrapped = instances.get(element);
+            element = element.parentNode;
+          }
+
+          if (!wrapped) {
+            /* this may also be undefined. */
+            wrapped = instances.get(window);
+          }
+
+          return wrapped;
+        }
+      }]);
+
+      return Wrapper;
+    }();
+
+    /**
+     * the internal storage for messages
+     */
+    var store = new WeakMap();
+
+    /* jshint -W053 */
+    var message_store = {
+      set: function set(element, message) {
+        if (element instanceof window.HTMLFieldSetElement) {
+          var wrapped_form = Wrapper.get_wrapped(element.form);
+          if (wrapped_form && wrapped_form.settings.strict) {
+            /* make this a no-op for <fieldset> in strict mode */
+            return message_store;
+          }
+        }
+
+        if (typeof message === 'string') {
+          message = new String(message);
+        }
+        mark(message);
+        store.set(element, message);
+
+        /* allow the :invalid selector to match */
+        if ('_original_setCustomValidity' in element) {
+          element._original_setCustomValidity(message);
+        }
+
+        return message_store;
+      },
+      get: function get(element) {
+        var message = store.get(element);
+        if (message === undefined && '_original_validationMessage' in element) {
+          /* get the browser's validation message, if we have none. Maybe it
+           * knows more than we. */
+          message = new String(element._original_validationMessage);
+        }
+        return message ? message : new String('');
+      },
+      delete: function _delete(element) {
+        if ('_original_setCustomValidity' in element) {
+          element._original_setCustomValidity('');
+        }
+        return store.delete(element);
+      }
+    };
+
+    var warnings_cache = new WeakMap();
+
+    var Renderer = {
+
+      show_warning: function show_warning(element) {
+        var msg = message_store.get(element);
+        var warning = warnings_cache.get(element);
+        if (msg) {
+          if (!warning) {
+            warning = document.createElement('div');
+            warning.className = 'hf-warning';
+            warnings_cache.set(element, warning);
+          }
+          warning.textContent = msg;
+          /* should also work, if element is last,
+           * http://stackoverflow.com/a/4793630/113195 */
+          element.parentNode.insertBefore(warning, element.nextSibling);
+        } else if (warning && warning.parentNode) {
+          warning.parentNode.removeChild(warning);
+        }
+      },
+
+      set: function set(renderer, action) {
+        Renderer[renderer] = action;
+      }
+
+    };
+
+    /**
      * check element's validity and report an error back to the user
      */
     function reportValidity(element) {
@@ -1101,7 +1162,12 @@ define(function () { 'use strict';
       /* we copy checkValidity() here, b/c we have to check if the "invalid"
        * event was canceled. */
       var valid = ValidityState(element).valid;
-      if (!valid) {
+      if (valid) {
+        var wrapped_form = Wrapper.get_wrapped(element.form);
+        if (wrapped_form && wrapped_form.settings.valid_event) {
+          trigger_event(element, 'valid');
+        }
+      } else {
         var event = trigger_event(element, 'invalid', { cancelable: true });
         if (!event.defaultPrevented) {
           Renderer.show_warning(element);
@@ -1168,38 +1234,6 @@ define(function () { 'use strict';
         }
       });
     }
-
-    /**
-     * check an element's validity with respect to it's form
-     */
-    function checkValidity(element) {
-      /* if this is a <form>, check validity of all child inputs */
-      if (element instanceof window.HTMLFormElement) {
-        return Array.prototype.every.call(element.elements, checkValidity);
-      }
-
-      /* default is true, also for elements that are no validation candidates */
-      var valid = ValidityState(element).valid;
-      if (!valid) {
-        trigger_event(element, 'invalid', { cancelable: true });
-      }
-
-      return valid;
-    }
-
-    /**
-     * publish a convenience function to replace the native element.checkValidity
-     */
-    checkValidity.install = installer('checkValidity', {
-      configurable: true,
-      enumerable: true,
-      value: function value() {
-        return checkValidity(this);
-      },
-      writable: true
-    });
-
-    mark(checkValidity);
 
     /**
      *
@@ -1532,6 +1566,10 @@ define(function () { 'use strict';
     function hyperform(form, _ref) {
       var _ref$strict = _ref.strict;
       var strict = _ref$strict === undefined ? false : _ref$strict;
+      var _ref$revalidate = _ref.revalidate;
+      var revalidate = _ref$revalidate === undefined ? 'oninput' : _ref$revalidate;
+      var _ref$valid_event = _ref.valid_event;
+      var valid_event = _ref$valid_event === undefined ? true : _ref$valid_event;
 
       if (form instanceof window.NodeList || form instanceof window.HTMLCollection || form instanceof Array) {
         return Array.prototype.map.call(form, function (element) {
@@ -1563,7 +1601,7 @@ define(function () { 'use strict';
         willValidate.install(els[i]);
       }
 
-      return new Wrapper(form, { strict: strict });
+      return new Wrapper(form, { strict: strict, revalidate: revalidate, valid_event: valid_event });
     }
 
     hyperform.version = version;

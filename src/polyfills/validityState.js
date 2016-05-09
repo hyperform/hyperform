@@ -227,7 +227,7 @@ const validity_state_checkers = {
 
 
 /**
- * TODO allow HTMLFieldSetElement, too
+ * the validity state constructor
  */
 var ValidityState = function(element) {
   if (! (element instanceof window.HTMLElement)) {
@@ -248,6 +248,10 @@ var ValidityState = function(element) {
   ValidityState.cache.set(element, this);
 };
 
+
+/**
+ * the prototype for new validityState instances
+ */
 var ValidityStatePrototype = {};
 ValidityState.prototype = ValidityStatePrototype;
 

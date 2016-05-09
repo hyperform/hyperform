@@ -5,6 +5,7 @@ import mark from '../tools/mark';
 import installer from '../tools/property_installer';
 import trigger_event from '../tools/trigger_event';
 import ValidityState from './validityState';
+import Wrapper from '../components/wrapper';
 
 
 /**
@@ -18,7 +19,12 @@ function checkValidity(element) {
 
   /* default is true, also for elements that are no validation candidates */
   var valid = ValidityState(element).valid;
-  if (! valid) {
+  if (valid) {
+    const wrapped_form = Wrapper.get_wrapped(element.form);
+    if (wrapped_form && wrapped_form.settings.valid_event) {
+      trigger_event(element, 'valid');
+    }
+  } else {
     trigger_event(element, 'invalid', { cancelable: true });
   }
 
