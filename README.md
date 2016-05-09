@@ -12,7 +12,11 @@ The easiest way is installing via `npm`:
 
     npm install hyperform
 
-Or download the [current version as ZIP
+or if you use Bower:
+
+    bower install hyperform
+
+or download the [current version as ZIP
 archive](https://github.com/hyperform/hyperform/archive/master.zip).
 
 Then embed `dist/hyperform.min.js` in your file:
@@ -34,9 +38,25 @@ or all forms, current and future ones:
 
     hyperform(window);
 
-If you need only a certain feature, you can access it directly by name:
+Configure settings as second argument:
+
+    hyperform(window, {
+        strict: false, // disable some high-level APIs
+        revalidate: 'oninput', // whether fields should be re-validated
+                               // automatically. Values: `oninput`,
+                               // `onsubmit` and `never`.
+        valid_event: true, // whether the non-standard `valid` event should
+                           // be triggered
+    });
+
+If you only need a certain feature, you can access it directly by name:
 
     hyperform.setCustomValidity.call(form.elements[0], 'my message');
+
+## Examples
+
+Check out the files in the [`examples`
+folder](https://github.com/hyperform/hyperform/tree/master/examples).
 
 ## Status
 
@@ -48,17 +68,17 @@ for prime time?
 | ---------------------------- | ------------------ | ------------------ |
 | `willValidate`               | :full_moon:        | :heavy_check_mark: |
 | `setCustomValidity(message)` | :full_moon:        | :heavy_check_mark: |
-| `validity.valueMissing`      | :full_moon:        | :heavy_check_mark: |
-| `validity.typeMismatch`      | :full_moon:        | :heavy_check_mark: |
-| `validity.patternMismatch`   | :full_moon:        | :heavy_check_mark: |
-| `validity.tooLong`           | :full_moon:        | :heavy_check_mark: |
-| `validity.tooShort`          | :full_moon:        | :heavy_check_mark: |
-| `validity.rangeUnderflow`    | :full_moon:        | :heavy_check_mark: |
-| `validity.rangeOverflow`     | :full_moon:        | :heavy_check_mark: |
-| `validity.stepMismatch`      | :full_moon:        | :heavy_check_mark: |
-| `validity.badInput`          | :waxing_gibbous_moon: | works for all but `type=email`. (That last one might be unfixable. See comment in [src/validators/bad_input.js](src/validators/bad_input.js).) |
-| `validity.customError`       | :full_moon:        | :heavy_check_mark: |
-| `validity.valid`             | :full_moon:        | :heavy_check_mark: (with restriction from `validity.badInput` above) |
+| `validity.valueMissing`      | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.typeMismatch`      | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.patternMismatch`   | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.tooLong`           | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.tooShort`          | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.rangeUnderflow`    | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.rangeOverflow`     | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.stepMismatch`      | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.badInput`          | :waxing_gibbous_moon: | works for all but `type=email`, which might be unfixable. See comment in [src/validators/bad_input.js](src/validators/bad_input.js). (access via `hyperform.validityState`) |
+| `validity.customError`       | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.valid`             | :full_moon:        | :heavy_check_mark: (with restriction from `validity.badInput` above. Access via `hyperform.validityState`) |
 | `checkValidity()`            | :full_moon:        | :heavy_check_mark: (with restriction from `validity.badInput` above) |
 | `reportValidity()`           | :full_moon:        | :heavy_check_mark: (with restriction from `validity.badInput` above) |
 | `validationMessage`          | :full_moon:        | :heavy_check_mark: |
@@ -96,11 +116,6 @@ What parts of the high-level API are finished?
 
 Do you have a wish or an idea? [File an issue and let us discuss
 it!](https://github.com/hyperform/hyperform/issues/new)
-
-## Examples
-
-Check out the files in the [`examples`
-folder](https://github.com/hyperform/hyperform/tree/master/examples).
 
 ## License
 
