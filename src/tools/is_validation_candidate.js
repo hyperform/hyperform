@@ -48,6 +48,7 @@ export default function(element) {
               /* the outer boundary. We can stop looking. */
               break;
             }
+            p = p.parentNode;
           }
 
           /* then it's a candidate */

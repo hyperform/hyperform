@@ -934,6 +934,7 @@ define(function () { 'use strict';
                   /* the outer boundary. We can stop looking. */
                   break;
                 }
+                p = p.parentNode;
               }
 
               /* then it's a candidate */
@@ -1614,7 +1615,13 @@ define(function () { 'use strict';
     /**
      * public hyperform interface:
      */
-    function hyperform(form, _ref) {
+    function hyperform(form) {
+      var _ref = arguments.length <= 1 || arguments[1] === undefined ? {
+        strict: false,
+        revalidate: 'oninput',
+        valid_event: true
+      } : arguments[1];
+
       var _ref$strict = _ref.strict;
       var strict = _ref$strict === undefined ? false : _ref$strict;
       var _ref$revalidate = _ref.revalidate;

@@ -25,6 +25,10 @@ function hyperform(form, {
                      strict=false,
                      revalidate='oninput',
                      valid_event=true,
+                   }={
+                     strict:false,
+                     revalidate:'oninput',
+                     valid_event:true,
                    }) {
   if (form instanceof window.NodeList ||
       form instanceof window.HTMLCollection ||
