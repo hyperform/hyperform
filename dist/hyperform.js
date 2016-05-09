@@ -39,7 +39,9 @@
       };
     }
 
-    function trigger_event (element, event, _ref) {
+    function trigger_event (element, event) {
+        var _ref = arguments.length <= 2 || arguments[2] === undefined ? { bubbles: true, cancelable: false } : arguments[2];
+
         var _ref$bubbles = _ref.bubbles;
         var bubbles = _ref$bubbles === undefined ? true : _ref$bubbles;
         var _ref$cancelable = _ref.cancelable;
@@ -279,7 +281,9 @@
     function reportValidity(element) {
       /* if this is a <form>, report validity of all child inputs */
       if (element instanceof window.HTMLFormElement) {
-        return Array.prototype.every.call(element.elements, reportValidity);
+        return Array.prototype.map.call(element.elements, reportValidity).every(function (b) {
+          return b;
+        });
       }
 
       /* we copy checkValidity() here, b/c we have to check if the "invalid"
@@ -1580,7 +1584,9 @@
     function checkValidity(element) {
       /* if this is a <form>, check validity of all child inputs */
       if (element instanceof window.HTMLFormElement) {
-        return Array.prototype.every.call(element.elements, checkValidity);
+        return Array.prototype.map.call(element.elements, checkValidity).every(function (b) {
+          return b;
+        });
       }
 
       /* default is true, also for elements that are no validation candidates */

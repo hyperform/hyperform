@@ -15,7 +15,9 @@ import Wrapper from '../components/wrapper';
 function reportValidity(element) {
   /* if this is a <form>, report validity of all child inputs */
   if (element instanceof window.HTMLFormElement) {
-    return Array.prototype.every.call(element.elements, reportValidity);
+    return (
+             Array.prototype.map.call(element.elements, reportValidity)
+           ).every(b=>b);
   }
 
   /* we copy checkValidity() here, b/c we have to check if the "invalid"

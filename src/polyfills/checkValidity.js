@@ -14,7 +14,9 @@ import Wrapper from '../components/wrapper';
 function checkValidity(element) {
   /* if this is a <form>, check validity of all child inputs */
   if (element instanceof window.HTMLFormElement) {
-    return Array.prototype.every.call(element.elements, checkValidity);
+    return (
+             Array.prototype.map.call(element.elements, checkValidity)
+           ).every(b=>b);
   }
 
   /* default is true, also for elements that are no validation candidates */
