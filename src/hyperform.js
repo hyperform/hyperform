@@ -25,11 +25,7 @@ function hyperform(form, {
                      strict=false,
                      revalidate='oninput',
                      valid_event=true,
-                   }={
-                     strict:false,
-                     revalidate:'oninput',
-                     valid_event:true,
-                   }) {
+                   }={}) {
   if (form instanceof window.NodeList ||
       form instanceof window.HTMLCollection ||
       form instanceof Array) {
@@ -40,6 +36,7 @@ function hyperform(form, {
 }
 
 hyperform.version = version;
+
 hyperform.checkValidity = checkValidity;
 hyperform.reportValidity = reportValidity;
 hyperform.setCustomValidity = setCustomValidity;
@@ -50,9 +47,11 @@ hyperform.ValidityState = ValidityState;
 hyperform.valueAsDate = valueAsDate;
 hyperform.valueAsNumber = valueAsNumber;
 hyperform.willValidate = willValidate;
+
 hyperform.set_language = set_language;
 hyperform.add_translation = add_translation;
 hyperform.add_renderer = Renderer.set;
 hyperform.register = Registry.set;
 
+/* publish globally */
 window.hyperform = hyperform;

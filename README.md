@@ -24,8 +24,8 @@ Then embed `dist/hyperform.min.js` in your file:
     <script src="path/to/hyperform/dist/hyperform.min.js"></script>
 
 In old browsers you will need polyfills for the follwing features: `WeakMap`
-(IE 10 and lower), array methods `filter` and `every`, object method `keys`,
-`Object.defineProperty`, and `string`’s `trim()` method (IE 8 and lower).
+(IE 10 and lower), `element.classList` (IE 9 and lower), array methods `filter`
+and `every`, object method `keys` and `Object.defineProperty` (IE 8 and lower).
 
 ## Usage
 
@@ -102,9 +102,9 @@ What parts of the high-level API are finished?
 * :full_moon: Catch form submissions _before_ the `submit` event to do our own
     validation (`click`s on submit buttons and `enter` keys in text inputs in
     forms w/o submit buttons).
-* :new_moon: Add helper classes `hf-valid` and `hf-invalid` as well as proper
-    `aria-invalid` to elements to become independent of `:valid` / `:invalid`
-    pseudo-classes.
+* :first_quarter_moon: Add helper classes `hf-valid` and `hf-invalid` as well
+    as proper `aria-invalid` to elements to become independent of `:valid` /
+    `:invalid` pseudo-classes.
 * :waxing_crescent_moon: Allow specifying settings to customize the behavior of Hyperform
     (e. g., specifying a renderer for error messages).
 * :full_moon: Take single `<input>` elements out of validation by supporting a

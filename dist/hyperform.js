@@ -40,7 +40,7 @@
     }
 
     function trigger_event (element, event) {
-        var _ref = arguments.length <= 2 || arguments[2] === undefined ? { bubbles: true, cancelable: false } : arguments[2];
+        var _ref = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
         var _ref$bubbles = _ref.bubbles;
         var bubbles = _ref$bubbles === undefined ? true : _ref$bubbles;
@@ -930,13 +930,15 @@
              * parent form has got the strict parameter */
             if (wrapped_form && wrapped_form.settings.strict || !element.hasAttribute('novalidate') || !element.noValidate) {
 
+              /* it isn't part of a <fieldset disabled> */
               var p = element.parentNode;
               while (p && p.nodeType === 1) {
                 if (p instanceof window.HTMLFieldSetElement && p.hasAttribute('disabled')) {
                   /* quick return, if it's a child of a disabled fieldset */
                   return false;
                 } else if (p === element.form) {
-                  /* the outer boundary. We can stop looking. */
+                  /* the outer boundary. We can stop looking for relevant
+                   * fieldsets. */
                   break;
                 }
                 p = p.parentNode;
@@ -1227,7 +1229,7 @@
         case 'email':
           if (element.hasAttribute('multiple')) {
             is_valid = element.value.split(',').map(function (item) {
-              return item.trim();
+              return item /*.trim()*/.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
             }).every(function (value) {
               return email_pattern.test(value);
             });
@@ -1269,6 +1271,11 @@
           break;
         case 'datetime-local':
           result = /^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(element.value);
+          break;
+        case 'tel':
+          /* spec says No! Phone numbers can have all kinds of formats, so this
+           * is expected to be a free-text field. */
+          // TODO we could allow a setting 'phone_regex' to be evaluated here.
           break;
         case 'email':
           // TODO can we do this at all? Punycode conversion would be done by
@@ -1546,20 +1553,31 @@
     /**
      * the "valid" property calls all other validity checkers and returns true,
      * if all those return false.
+     *
+     * This is the major access point for _all_ other API methods, namely
+     * (check|report)Validity().
      */
     Object.defineProperty(ValidityStatePrototype, 'valid', {
       configurable: true,
       enumerable: true,
       get: function get() {
+        this.element.classList.add('hf-validated');
+
         if (is_validation_candidate(this.element)) {
           for (var _prop in validity_state_checkers) {
             if (validity_state_checkers[_prop](this.element)) {
+              this.element.classList.add('hf-invalid');
+              this.element.classList.remove('hf-valid');
+              this.element.setAttribute('aria-invalid', 'true');
               return false;
             }
           }
         }
 
         message_store.delete(this.element);
+        this.element.classList.remove('hf-invalid');
+        this.element.classList.add('hf-valid');
+        this.element.setAttribute('aria-invalid', 'false');
         return true;
       },
       set: undefined
@@ -1623,11 +1641,7 @@
      * public hyperform interface:
      */
     function hyperform(form) {
-      var _ref = arguments.length <= 1 || arguments[1] === undefined ? {
-        strict: false,
-        revalidate: 'oninput',
-        valid_event: true
-      } : arguments[1];
+      var _ref = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
       var _ref$strict = _ref.strict;
       var strict = _ref$strict === undefined ? false : _ref$strict;
@@ -1646,6 +1660,7 @@
     }
 
     hyperform.version = version;
+
     hyperform.checkValidity = checkValidity;
     hyperform.reportValidity = reportValidity;
     hyperform.setCustomValidity = setCustomValidity;
@@ -1656,11 +1671,13 @@
     hyperform.valueAsDate = valueAsDate;
     hyperform.valueAsNumber = valueAsNumber;
     hyperform.willValidate = willValidate;
+
     hyperform.set_language = set_language;
     hyperform.add_translation = add_translation;
     hyperform.add_renderer = Renderer.set;
     hyperform.register = registry.set;
 
+    /* publish globally */
     window.hyperform = hyperform;
 
 }());

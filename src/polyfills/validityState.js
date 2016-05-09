@@ -275,20 +275,31 @@ for (let prop in validity_state_checkers) {
 /**
  * the "valid" property calls all other validity checkers and returns true,
  * if all those return false.
+ *
+ * This is the major access point for _all_ other API methods, namely
+ * (check|report)Validity().
  */
 Object.defineProperty(ValidityStatePrototype, 'valid', {
   configurable: true,
   enumerable: true,
   get: function() {
+    this.element.classList.add('hf-validated');
+
     if (is_validation_candidate(this.element)) {
       for (let prop in validity_state_checkers) {
         if (validity_state_checkers[prop](this.element)) {
+          this.element.classList.add('hf-invalid');
+          this.element.classList.remove('hf-valid');
+          this.element.setAttribute('aria-invalid', 'true');
           return false;
         }
       }
     }
 
     message_store.delete(this.element);
+    this.element.classList.remove('hf-invalid');
+    this.element.classList.add('hf-valid');
+    this.element.setAttribute('aria-invalid', 'false');
     return true;
   },
   set: undefined,

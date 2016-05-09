@@ -37,7 +37,7 @@ export default function(element) {
         if (element.hasAttribute('multiple')) {
           is_valid = element.value
                        .split(',')
-                       .map(item => item.trim())
+                       .map(item => item/*.trim()*/.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, ''))
                        .every(value => email_pattern.test(value));
         } else {
           is_valid = email_pattern.test(element.value);

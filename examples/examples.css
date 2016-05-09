@@ -2,3 +2,11 @@ main {
   max-width: 1024px;
   margin: 1.5em auto;
 }
+
+:not(button).hf-invalid {
+  border-color: red !important;
+}
+
+:not(button).hf-valid {
+  border-color: green !important;
+}
