@@ -190,6 +190,8 @@ const validity_state_checkers = {
         }
       } else if (type === 'url') {
         msg = _('InvalidURL');
+      } else if (type === 'file') {
+        msg = _('Please select a file of the correct type.');
       }
       message_store.set(element, msg);
     }

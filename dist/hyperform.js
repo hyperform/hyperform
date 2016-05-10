@@ -225,7 +225,7 @@
 
         /* allow the :invalid selector to match */
         if ('_original_setCustomValidity' in element) {
-          element._original_setCustomValidity(message);
+          element._original_setCustomValidity(message.toString());
         }
 
         return message_store;
@@ -994,13 +994,34 @@
       if (!(lang in catalog)) {
         catalog[lang] = {};
       }
-      for (var key in new_catalog.keys()) {
-        catalog[lang][key] = new_catalog[key];
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = Object.keys(new_catalog)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var key = _step.value;
+
+          catalog[lang][key] = new_catalog[key];
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
       }
     }
 
     function _ (s) {
-      if (s in catalog[language]) {
+      if (language in catalog && s in catalog[language]) {
         return catalog[language][s];
       } else if (s in catalog.en) {
         return catalog.en[s];
@@ -1202,6 +1223,24 @@
       result > step * scale - 0.00000001;
     }
 
+    /**
+     * split a string on comma and trim the components
+     *
+     * As specified at
+     * https://html.spec.whatwg.org/multipage/infrastructure.html#split-a-string-on-commas
+     * plus removing empty entries.
+     *
+     * We don't use String.trim() to remove the need to polyfill it.
+     */
+
+    function comma_split (str) {
+      return str.split(',').map(function (item) {
+        return item /*.trim()*/.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+      }).filter(function (b) {
+        return b;
+      });
+    }
+
     /* we use a dummy <a> where we set the href to test URL validity */
     var url_canary = document.createElement('a');
 
@@ -1214,7 +1253,7 @@
     function test_type (element) {
       var type = get_type(element);
 
-      if (!is_validation_candidate(element) || !element.value || type_checked.indexOf(type) === -1) {
+      if (!is_validation_candidate(element) || type !== 'file' && !element.value || type !== 'file' && type_checked.indexOf(type) === -1) {
         /* we're not responsible for this element */
         return true;
       }
@@ -1228,15 +1267,58 @@
           break;
         case 'email':
           if (element.hasAttribute('multiple')) {
-            is_valid = element.value.split(',').map(function (item) {
-              return item /*.trim()*/.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
-            }).every(function (value) {
+            is_valid = comma_split(element.value).every(function (value) {
               return email_pattern.test(value);
             });
           } else {
             is_valid = email_pattern.test(element.value);
           }
           break;
+        case 'file':
+          if ('files' in element && element.files.length && element.hasAttribute('accept')) {
+            var patterns = comma_split(element.getAttribute('accept')).map(function (pattern) {
+              if (/^(audio|video|image)\/\*$/.test(pattern)) {
+                pattern = new RegExp('^' + RegExp.$1 + '/.+$');
+              }
+              return pattern;
+            });
+
+            if (!patterns.length) {
+              break;
+            }
+
+            fileloop: for (var i = 0; i < element.files.length; i++) {
+              /* we need to match a whitelist, so pre-set with false */
+              var file_valid = false;
+
+              patternloop: for (var j = 0; j < patterns.length; j++) {
+                var file = element.files[i];
+                var pattern = patterns[j];
+
+                var fileprop = file.type;
+
+                if (typeof pattern === 'string' && pattern.substr(0, 1) === '.') {
+                  if (file.name.search('.') === -1) {
+                    /* no match with any file ending */
+                    continue patternloop;
+                  }
+
+                  fileprop = file.name.substr(file.name.lastIndexOf('.'));
+                }
+
+                if (fileprop.search(pattern) === 0) {
+                  /* we found one match and can quit looking */
+                  file_valid = true;
+                  break patternloop;
+                }
+              }
+
+              if (!file_valid) {
+                is_valid = false;
+                break fileloop;
+              }
+            }
+          }
       }
 
       return is_valid;
@@ -1468,6 +1550,8 @@
             }
           } else if (type === 'url') {
             msg = _('InvalidURL');
+          } else if (type === 'file') {
+            msg = _('Please select a file of the correct type.');
           }
           message_store.set(element, msg);
         }
