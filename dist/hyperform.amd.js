@@ -406,12 +406,13 @@ define(function () { 'use strict';
      */
     function string_to_date (string, element_type) {
       var date = new Date(0);
+      var ms;
       switch (element_type) {
         case 'datetime':
           if (!/^([0-9]{4,})-([0-9]{2})-([0-9]{2})T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
             return null;
           }
-          var ms = RegExp.$7;
+          ms = RegExp.$7 || '000';
           while (ms.length < 3) {
             ms += '0';
           }
@@ -446,7 +447,11 @@ define(function () { 'use strict';
           if (!/^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
             return null;
           }
-          date.setUTCHours(Number(RegExp.$1), Number(RegExp.$2), Number(RegExp.$3 || 0), Number(RegExp.$4 || 0));
+          ms = RegExp.$4 || '000';
+          while (ms.length < 3) {
+            ms += '0';
+          }
+          date.setUTCHours(Number(RegExp.$1), Number(RegExp.$2), Number(RegExp.$3 || 0), Number(ms));
           return date;
       }
 
@@ -1175,6 +1180,7 @@ define(function () { 'use strict';
 
     /**
      * test the step attribute
+     * TODO make sure that this works for time as intended.
      */
     function test_step (element) {
       var type = get_type(element);

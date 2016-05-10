@@ -9,12 +9,13 @@ import get_date_from_week from './get_date_from_week';
  */
 export default function(string, element_type) {
   var date = new Date(0);
+  var ms;
   switch (element_type) {
     case 'datetime':
       if (! /^([0-9]{4,})-([0-9]{2})-([0-9]{2})T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
         return null;
       }
-      var ms = RegExp.$7;
+      ms = RegExp.$7 || '000';
       while (ms.length < 3) {
         ms += '0';
       }
@@ -54,9 +55,12 @@ export default function(string, element_type) {
       if (! /^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
         return null;
       }
-      // TODO microseconds are wrong! They need right 0-padding.
+      ms = RegExp.$4 || '000';
+      while (ms.length < 3) {
+        ms += '0';
+      }
       date.setUTCHours(Number(RegExp.$1), Number(RegExp.$2),
-          Number(RegExp.$3 || 0), Number(RegExp.$4 || 0));
+          Number(RegExp.$3 || 0), Number(ms));
       return date;
   }
 
