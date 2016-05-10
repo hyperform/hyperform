@@ -54,6 +54,7 @@ export default function(string, element_type) {
       if (! /^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
         return null;
       }
+      // TODO microseconds are wrong! They need right 0-padding.
       date.setUTCHours(Number(RegExp.$1), Number(RegExp.$2),
           Number(RegExp.$3 || 0), Number(RegExp.$4 || 0));
       return date;
