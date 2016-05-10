@@ -27,7 +27,6 @@ const default_step_base = {
 
 /**
  * test the step attribute
- * TODO make sure that this works for time as intended.
  */
 export default function(element) {
   const type = get_type(element);

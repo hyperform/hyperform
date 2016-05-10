@@ -1181,7 +1181,6 @@
 
     /**
      * test the step attribute
-     * TODO make sure that this works for time as intended.
      */
     function test_step (element) {
       var type = get_type(element);
