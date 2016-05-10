@@ -95,7 +95,7 @@ What parts of the high-level API are finished?
 * :full_moon: Trigger a `valid` event, when an input becomes valid, again.
 * :new_moon: Allow functions to hook into the actual validations to accept or
     reject inputs.
-* :waxing_crescent_moon: Translate validation messages. There are some
+* :first_quarter_moon: Translate validation messages. There are some
     partial translations available: https://github.com/hyperform/hyperform-l10n
 * :full_moon: Provide a registry for user defined validators, that are called
     automatically in the `validity.customError` step.
@@ -105,7 +105,7 @@ What parts of the high-level API are finished?
 * :full_moon: Add helper classes `hf-valid` and `hf-invalid` as well as proper
     `aria-invalid` to elements to become independent of `:valid` / `:invalid`
     pseudo-classes.
-* :waxing_crescent_moon: Allow specifying settings to customize the behavior of Hyperform
+* :first_quarter_moon: Allow specifying settings to customize the behavior of Hyperform
     (e. g., specifying a renderer for error messages).
 * :full_moon: Take single `<input>` elements out of validation by supporting a
     non-standard `novalidate` attribute and `noValidate` property for inputs:
