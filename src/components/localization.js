@@ -43,14 +43,14 @@ export function add_translation(lang, new_catalog) {
   if (! (lang in catalog)) {
     catalog[lang] = {};
   }
-  for (let key in new_catalog.keys()) {
+  for (let key of Object.keys(new_catalog)) {
     catalog[lang][key] = new_catalog[key];
   }
 }
 
 
 export default function(s) {
-  if (s in catalog[language]) {
+  if ((language in catalog) && (s in catalog[language])) {
     return catalog[language][s];
   } else if (s in catalog.en) {
     return catalog.en[s];

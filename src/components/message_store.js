@@ -31,7 +31,7 @@ var message_store = {
 
     /* allow the :invalid selector to match */
     if ('_original_setCustomValidity' in element) {
-      element._original_setCustomValidity(message);
+      element._original_setCustomValidity(message.toString());
     }
 
     return message_store;
