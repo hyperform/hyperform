@@ -10,18 +10,24 @@ them…) and enriches it with custom events and hooks.
 
 The easiest way is installing via `npm`:
 
-    npm install hyperform
+```sh
+npm install hyperform
+```
 
 or if you use Bower:
 
-    bower install hyperform
+```sh
+bower install hyperform
+```
 
 or download the [current version as ZIP
 archive](https://github.com/hyperform/hyperform/archive/master.zip).
 
 Then embed `dist/hyperform.min.js` in your file:
 
-    <script src="path/to/hyperform/dist/hyperform.min.js"></script>
+```html
+<script src="path/to/hyperform/dist/hyperform.min.js"></script>
+```
 
 In old browsers you will need polyfills for the follwing features: `WeakMap`
 (IE 10 and lower), `element.classList` (IE 9 and lower), array methods `filter`
@@ -32,29 +38,37 @@ and `every`, object method `keys` and `Object.defineProperty` (IE 8 and lower).
 The library introduces the global variable `hyperform`. You can let Hyperform
 take over a single form:
 
-    hyperform(document.forms[0]);
+```js
+hyperform(document.forms[0]);
+```
 
 or all forms, current and future ones:
 
-    hyperform(window);
+```js
+hyperform(window);
+```
 
 Configure settings as second argument:
 
-    hyperform(window, {
-        strict: false,         // default. En- or disable some high-level APIs
+```js
+hyperform(window, {
+    strict: false,         // default. En- or disable some high-level APIs
 
-        revalidate: 'oninput', // default. Whether fields should be
-                               // re-validated automatically. Valid values:
-                               // `oninput`, `onsubmit`, and `never`.
+    revalidate: 'oninput', // default. Whether fields should be
+                           // re-validated automatically. Valid values:
+                           // `oninput`, `onsubmit`, and `never`.
 
-        valid_event: true,     // default. Whether the non-standard `valid`
-                               // event should be triggered
-    });
+    valid_event: true,     // default. Whether the non-standard `valid`
+                           // event should be triggered
+});
+```
 
 If you only need a certain feature, you can access it directly by name:
 
-    hyperform.willValidate.call(form.elements[0]);
-    var is_valid = hyperform.validityState(form.elements[0]).valid;
+```js
+hyperform.willValidate.call(form.elements[0]);
+var is_valid = hyperform.validityState(form.elements[0]).valid;
+```
 
 ## Examples
 
@@ -97,7 +111,9 @@ What parts of the high-level API are finished?
 * :new_moon: Trigger a `validate` event before validating an element.
 * :full_moon: Trigger a `valid` event, when an input becomes valid, again:
 
-        input.addEventListener('valid', () => alert('Yay!'));
+    ```js
+    input.addEventListener('valid', () => alert('Yay!'));
+    ```
 
 * :new_moon: Allow functions to hook into the actual validations to accept or
     reject inputs.
@@ -106,9 +122,11 @@ What parts of the high-level API are finished?
 * :full_moon: Provide a registry for user defined validators, that are called
     automatically in the `validity.customError` step:
 
-        hyperform.register(element, function(element) {
-          return result_of_convoluted_validation_routine();
-        });
+    ```js
+    hyperform.register(element, function(element) {
+      return result_of_convoluted_validation_routine();
+    });
+    ```
 
 * :full_moon: Catch form submissions _before_ the `submit` event to do our own
     validation (`click`s on submit buttons and `enter` keys in text inputs in
@@ -121,13 +139,17 @@ What parts of the high-level API are finished?
 * :full_moon: Take single `<input>` elements out of validation by supporting a
     non-standard `novalidate` attribute and `noValidate` property for inputs:
 
-        var element = document.querySelector('input[name="foo"]');
-        element.noValidate = true;
-        // done. element won't be validated.
+    ```js
+    var element = document.querySelector('input[name="foo"]');
+    element.noValidate = true;
+    // done. element won't be validated.
+    ```
 
 * :new_moon: Add support for declarative custom validation messages:
 
-        <input data-validation-message="We need this field!">
+    ```html
+    <input data-validation-message="We need this field!">
+    ```
 
 Do you have a wish or an idea? [File an issue and let us discuss
 it!](https://github.com/hyperform/hyperform/issues/new)
