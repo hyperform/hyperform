@@ -85,7 +85,7 @@ for prime time?
 | `valueAsDate`                | :full_moon:        | :heavy_check_mark: |
 | `valueAsNumber`              | :full_moon:        | :heavy_check_mark: |
 | `valueLow` / `valueHigh`     | :new_moon:         | not started, yet   |
-| `stepUp(n)` / `stepDown(n)`  | :first_quarter_moon: | doesn’t work for date/time types, yet |
+| `stepUp(n)` / `stepDown(n)`  | :full_moon:        | :heavy_check_mark: |
 | `accept` attribute           | :full_moon:        | :heavy_check_mark: for `type=file` inputs. It’s useful to implement a check because there are browsers without support, that implement the File API. |
 | support for `novalidate`     | :full_moon:        | :heavy_check_mark: |
 

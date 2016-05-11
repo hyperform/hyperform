@@ -92,36 +92,201 @@ define(function () { 'use strict';
       }
     };
 
-    /**
-     * get previous and next valid values for a stepped input element
+    function sprintf (str) {
+      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
+      }
+
+      var args_length = args.length;
+      var global_index = 0;
+
+      return str.replace(/%([0-9]+\$)?([sl])/g, function (match, position, type) {
+        var local_index = global_index;
+        if (position) {
+          local_index = Number(position.replace(/\$$/, '')) - 1;
+        }
+        global_index += 1;
+
+        var arg = '';
+        if (args_length > local_index) {
+          arg = args[local_index];
+        }
+
+        if (arg instanceof Date || typeof arg === 'number' || arg instanceof Number) {
+          /* try getting a localized representation of dates and numbers, if the
+           * browser supports this */
+          if (type === 'l') {
+            arg = (arg.toLocaleString || arg.toString).call(arg);
+          } else {
+            arg = arg.toString();
+          }
+        }
+
+        return arg;
+      });
+    }
+
+    /* For a given date, get the ISO week number
      *
-     * TODO add support for date, time, ...
+     * Source: http://stackoverflow.com/a/6117889/113195
+     *
+     * Based on information at:
+     *
+     *    http://www.merlyn.demon.co.uk/weekcalc.htm#WNR
+     *
+     * Algorithm is to find nearest thursday, it's year
+     * is the year of the week number. Then get weeks
+     * between that date and the first day of that year.
+     *
+     * Note that dates in one year can be weeks of previous
+     * or next year, overlap is up to 3 days.
+     *
+     * e.g. 2014/12/29 is Monday in week  1 of 2015
+     *      2012/1/1   is Sunday in week 52 of 2011
      */
 
-    function get_next_valid (element) {
-      var n = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
+    function get_week_of_year (d) {
+      /* Copy date so don't modify original */
+      d = new Date(+d);
+      d.setUTCHours(0, 0, 0);
+      /* Set to nearest Thursday: current date + 4 - current day number
+       * Make Sunday's day number 7 */
+      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+      /* Get first day of year */
+      var yearStart = new Date(d.getUTCFullYear(), 0, 1);
+      /* Calculate full weeks to nearest Thursday */
+      var weekNo = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+      /* Return array of year and week number */
+      return [d.getUTCFullYear(), weekNo];
+    }
 
-      var min = Number(element.getAttribute('min') || 0);
-      var max = Number(element.getAttribute('max') || 100);
-      var step = Number(element.getAttribute('step') || 1);
-      var value = Number(element.value || 0);
+    function pad(num) {
+      var size = arguments.length <= 1 || arguments[1] === undefined ? 2 : arguments[1];
 
-      var prev = min + Math.floor((value - min) / step) * step * n;
-      var next = min + (Math.floor((value - min) / step) + 1) * step * n;
+      var s = num + '';
+      while (s.length < size) {
+        s = '0' + s;
+      }
+      return s;
+    }
 
-      if (prev < min) {
-        prev = null;
-      } else if (prev > max) {
-        prev = max;
+    /**
+     * calculate a string from a date according to HTML5
+     */
+    function date_to_string(date, element_type) {
+      if (!(date instanceof Date)) {
+        return null;
       }
 
-      if (next > max) {
-        next = null;
-      } else if (next < min) {
-        next = min;
+      switch (element_type) {
+        case 'datetime':
+          return date_to_string(date, 'date') + 'T' + date_to_string(date, 'time');
+
+        case 'datetime-local':
+          return sprintf('%s-%s-%sT%s:%s:%s.%s', date.getFullYear(), pad(date.getMonth() + 1), pad(date.getDate()), pad(date.getHours()), pad(date.getMinutes()), pad(date.getSeconds()), pad(date.getMilliseconds(), 3)).replace(/(:00)?\.000$/, '');
+
+        case 'date':
+          return sprintf('%s-%s-%s', date.getUTCFullYear(), pad(date.getUTCMonth() + 1), pad(date.getUTCDate()));
+
+        case 'month':
+          return sprintf('%s-%s', date.getUTCFullYear(), pad(date.getUTCMonth() + 1));
+
+        case 'week':
+          var params = get_week_of_year(date);
+          return sprintf.call(null, '%s-W%s', params[0], pad(params[1]));
+
+        case 'time':
+          return sprintf('%s:%s:%s.%s', pad(date.getUTCHours()), pad(date.getUTCMinutes()), pad(date.getUTCSeconds()), pad(date.getUTCMilliseconds(), 3)).replace(/(:00)?\.000$/, '');
       }
 
-      return [prev, next];
+      return null;
+    }
+
+    /**
+     * return a new Date() representing the ISO date for a week number
+     *
+     * @see http://stackoverflow.com/a/16591175/113195
+     */
+
+    function get_date_from_week (week, year) {
+      var date = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
+
+      if (date.getUTCDay() <= 4 /* thursday */) {
+          date.setUTCDate(date.getUTCDate() - date.getUTCDay() + 1);
+        } else {
+        date.setUTCDate(date.getUTCDate() + 8 - date.getUTCDay());
+      }
+
+      return date;
+    }
+
+    /**
+     * calculate a date from a string according to HTML5
+     */
+    function string_to_date (string, element_type) {
+      var date = new Date(0);
+      var ms;
+      switch (element_type) {
+        case 'datetime':
+          if (!/^([0-9]{4,})-([0-9]{2})-([0-9]{2})T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
+            return null;
+          }
+          ms = RegExp.$7 || '000';
+          while (ms.length < 3) {
+            ms += '0';
+          }
+          date.setUTCFullYear(Number(RegExp.$1));
+          date.setUTCMonth(Number(RegExp.$2) - 1, Number(RegExp.$3));
+          date.setUTCHours(Number(RegExp.$4), Number(RegExp.$5), Number(RegExp.$6 || 0), Number(ms));
+          return date;
+
+        case 'date':
+          if (!/^([0-9]{4,})-([0-9]{2})-([0-9]{2})$/.test(string)) {
+            return null;
+          }
+          date.setUTCFullYear(Number(RegExp.$1));
+          date.setUTCMonth(Number(RegExp.$2) - 1, Number(RegExp.$3));
+          return date;
+
+        case 'month':
+          if (!/^([0-9]{4,})-([0-9]{2})$/.test(string)) {
+            return null;
+          }
+          date.setUTCFullYear(Number(RegExp.$1));
+          date.setUTCMonth(Number(RegExp.$2) - 1, 1);
+          return date;
+
+        case 'week':
+          if (!/^([0-9]{4,})-W(0[1-9]|[1234][0-9]|5[0-3])$/.test(string)) {
+            return null;
+          }
+          return get_date_from_week(Number(RegExp.$2), Number(RegExp.$1));
+
+        case 'time':
+          if (!/^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
+            return null;
+          }
+          ms = RegExp.$4 || '000';
+          while (ms.length < 3) {
+            ms += '0';
+          }
+          date.setUTCHours(Number(RegExp.$1), Number(RegExp.$2), Number(RegExp.$3 || 0), Number(ms));
+          return date;
+      }
+
+      return null;
+    }
+
+    /**
+     * calculate a date from a string according to HTML5
+     */
+    function string_to_number (string, element_type) {
+      var rval = string_to_date(string, element_type);
+      if (rval !== null) {
+        return +rval;
+      }
+      /* not parseFloat, because we want NaN for invalid values like "1.2xxy" */
+      return Number(string);
     }
 
     /* and datetime-local? Spec says “Nah!” */
@@ -176,6 +341,181 @@ define(function () { 'use strict';
       }
 
       return '';
+    }
+
+    var catalog = {
+      en: {
+        /**
+         * these validation messages are from Firefox source,
+         * http://mxr.mozilla.org/mozilla-central/source/dom/locales/en-US/chrome/dom/dom.properties
+         * released under MPL license, http://mozilla.org/MPL/2.0/.
+         */
+        TextTooLong: 'Please shorten this text to %l characters or less (you are currently using %l characters).',
+        ValueMissing: 'Please fill out this field.',
+        CheckboxMissing: 'Please check this box if you want to proceed.',
+        RadioMissing: 'Please select one of these options.',
+        FileMissing: 'Please select a file.',
+        SelectMissing: 'Please select an item in the list.',
+        InvalidEmail: 'Please enter an email address.',
+        InvalidURL: 'Please enter a URL.',
+        PatternMismatch: 'Please match the requested format.',
+        PatternMismatchWithTitle: 'Please match the requested format: %l.',
+        NumberRangeOverflow: 'Please select a value that is no more than %l.',
+        DateRangeOverflow: 'Please select a value that is no later than %l.',
+        TimeRangeOverflow: 'Please select a value that is no later than %l.',
+        NumberRangeUnderflow: 'Please select a value that is no less than %l.',
+        DateRangeUnderflow: 'Please select a value that is no earlier than %l.',
+        TimeRangeUnderflow: 'Please select a value that is no earlier than %l.',
+        StepMismatch: 'Please select a valid value. The two nearest valid values are %l and %l.',
+        StepMismatchOneValue: 'Please select a valid value. The nearest valid value is %l.',
+        BadInputNumber: 'Please enter a number.'
+      }
+    };
+
+    var language = 'en';
+
+    function set_language(newlang) {
+      language = newlang;
+    }
+
+    function add_translation(lang, new_catalog) {
+      if (!(lang in catalog)) {
+        catalog[lang] = {};
+      }
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = Object.keys(new_catalog)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var key = _step.value;
+
+          catalog[lang][key] = new_catalog[key];
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+    }
+
+    function _ (s) {
+      if (language in catalog && s in catalog[language]) {
+        return catalog[language][s];
+      } else if (s in catalog.en) {
+        return catalog.en[s];
+      }
+      return s;
+    }
+
+    var default_step = {
+      'datetime-local': 60,
+      datetime: 60,
+      time: 60
+    };
+
+    var step_scale_factor = {
+      'datetime-local': 1000,
+      datetime: 1000,
+      date: 86400000,
+      week: 604800000,
+      time: 1000
+    };
+
+    var default_step_base = {
+      week: -259200000
+    };
+
+    var default_min = {
+      range: 0
+    };
+
+    var default_max = {
+      range: 100
+    };
+
+    /**
+     * get previous and next valid values for a stepped input element
+     */
+    function get_next_valid (element) {
+      var n = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
+
+      var type = get_type(element);
+
+      var aMin = element.getAttribute('min');
+      var min = default_min[type] || NaN;
+      if (aMin) {
+        var pMin = string_to_number(aMin, type);
+        if (!isNaN(pMin)) {
+          min = pMin;
+        }
+      }
+
+      var aMax = element.getAttribute('max');
+      var max = default_max[type] || NaN;
+      if (aMax) {
+        var pMax = string_to_number(aMax, type);
+        if (!isNaN(pMax)) {
+          max = pMax;
+        }
+      }
+
+      var aStep = element.getAttribute('step');
+      var step = default_step[type] || 1;
+      if (aStep && aStep.toLowerCase() === 'any') {
+        /* quick return: we cannot calculate prev and next */
+        return [_('any value'), _('any value')];
+      } else if (aStep) {
+        var pStep = string_to_number(aStep, type);
+        if (!isNaN(pStep)) {
+          step = pStep;
+        }
+      }
+
+      var default_value = string_to_number(element.getAttribute('value'), type);
+
+      var value = string_to_number(element.value || element.getAttribute('value'), type);
+
+      if (isNaN(value)) {
+        /* quick return: we cannot calculate without a solid base */
+        return [_('any valid value'), _('any valid value')];
+      }
+
+      var step_base = !isNaN(min) ? min : !isNaN(default_value) ? default_value : default_step_base[type] || 0;
+
+      var scale = step_scale_factor[type] || 1;
+
+      var prev = step_base + Math.floor((value - step_base) / (step * scale)) * (step * scale) * n;
+      var next = step_base + (Math.floor((value - step_base) / (step * scale)) + 1) * (step * scale) * n;
+
+      if (prev < min) {
+        prev = null;
+      } else if (prev > max) {
+        prev = max;
+      }
+
+      if (next > max) {
+        next = null;
+      } else if (next < min) {
+        next = min;
+      }
+
+      /* convert to date objects, if appropriate */
+      if (dates.indexOf(type) > -1) {
+        prev = date_to_string(new Date(prev), type);
+        next = date_to_string(new Date(next), type);
+      }
+
+      return [prev, next];
     }
 
     var _classCallCheck = (function (instance, Constructor) {
@@ -382,203 +722,6 @@ define(function () { 'use strict';
     });
 
     mark(setCustomValidity);
-
-    /**
-     * return a new Date() representing the ISO date for a week number
-     *
-     * @see http://stackoverflow.com/a/16591175/113195
-     */
-
-    function get_date_from_week (week, year) {
-      var date = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
-
-      if (date.getUTCDay() <= 4 /* thursday */) {
-          date.setUTCDate(date.getUTCDate() - date.getUTCDay() + 1);
-        } else {
-        date.setUTCDate(date.getUTCDate() + 8 - date.getUTCDay());
-      }
-
-      return date;
-    }
-
-    /**
-     * calculate a date from a string according to HTML5
-     */
-    function string_to_date (string, element_type) {
-      var date = new Date(0);
-      var ms;
-      switch (element_type) {
-        case 'datetime':
-          if (!/^([0-9]{4,})-([0-9]{2})-([0-9]{2})T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
-            return null;
-          }
-          ms = RegExp.$7 || '000';
-          while (ms.length < 3) {
-            ms += '0';
-          }
-          date.setUTCFullYear(Number(RegExp.$1));
-          date.setUTCMonth(Number(RegExp.$2) - 1, Number(RegExp.$3));
-          date.setUTCHours(Number(RegExp.$4), Number(RegExp.$5), Number(RegExp.$6 || 0), Number(ms));
-          return date;
-
-        case 'date':
-          if (!/^([0-9]{4,})-([0-9]{2})-([0-9]{2})$/.test(string)) {
-            return null;
-          }
-          date.setUTCFullYear(Number(RegExp.$1));
-          date.setUTCMonth(Number(RegExp.$2) - 1, Number(RegExp.$3));
-          return date;
-
-        case 'month':
-          if (!/^([0-9]{4,})-([0-9]{2})$/.test(string)) {
-            return null;
-          }
-          date.setUTCFullYear(Number(RegExp.$1));
-          date.setUTCMonth(Number(RegExp.$2) - 1, 1);
-          return date;
-
-        case 'week':
-          if (!/^([0-9]{4,})-W(0[1-9]|[1234][0-9]|5[0-3])$/.test(string)) {
-            return null;
-          }
-          return get_date_from_week(Number(RegExp.$2), Number(RegExp.$1));
-
-        case 'time':
-          if (!/^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
-            return null;
-          }
-          ms = RegExp.$4 || '000';
-          while (ms.length < 3) {
-            ms += '0';
-          }
-          date.setUTCHours(Number(RegExp.$1), Number(RegExp.$2), Number(RegExp.$3 || 0), Number(ms));
-          return date;
-      }
-
-      return null;
-    }
-
-    /**
-     * calculate a date from a string according to HTML5
-     */
-    function string_to_number (string, element_type) {
-      var rval = string_to_date(string, element_type);
-      if (rval !== null) {
-        return +rval;
-      }
-      /* not parseFloat, because we want NaN for invalid values like "1.2xxy" */
-      return Number(string);
-    }
-
-    function sprintf (str) {
-      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-        args[_key - 1] = arguments[_key];
-      }
-
-      var args_length = args.length;
-      var global_index = 0;
-
-      return str.replace(/%([0-9]+\$)?([sl])/g, function (match, position, type) {
-        var local_index = global_index;
-        if (position) {
-          local_index = Number(position.replace(/\$$/, '')) - 1;
-        }
-        global_index += 1;
-
-        var arg = '';
-        if (args_length > local_index) {
-          arg = args[local_index];
-        }
-
-        if (arg instanceof Date || typeof arg === 'number' || arg instanceof Number) {
-          /* try getting a localized representation of dates and numbers, if the
-           * browser supports this */
-          if (type === 'l') {
-            arg = (arg.toLocaleString || arg.toString).call(arg);
-          } else {
-            arg = arg.toString();
-          }
-        }
-
-        return arg;
-      });
-    }
-
-    /* For a given date, get the ISO week number
-     *
-     * Source: http://stackoverflow.com/a/6117889/113195
-     *
-     * Based on information at:
-     *
-     *    http://www.merlyn.demon.co.uk/weekcalc.htm#WNR
-     *
-     * Algorithm is to find nearest thursday, it's year
-     * is the year of the week number. Then get weeks
-     * between that date and the first day of that year.
-     *
-     * Note that dates in one year can be weeks of previous
-     * or next year, overlap is up to 3 days.
-     *
-     * e.g. 2014/12/29 is Monday in week  1 of 2015
-     *      2012/1/1   is Sunday in week 52 of 2011
-     */
-
-    function get_week_of_year (d) {
-      /* Copy date so don't modify original */
-      d = new Date(+d);
-      d.setUTCHours(0, 0, 0);
-      /* Set to nearest Thursday: current date + 4 - current day number
-       * Make Sunday's day number 7 */
-      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-      /* Get first day of year */
-      var yearStart = new Date(d.getUTCFullYear(), 0, 1);
-      /* Calculate full weeks to nearest Thursday */
-      var weekNo = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
-      /* Return array of year and week number */
-      return [d.getUTCFullYear(), weekNo];
-    }
-
-    function pad(num) {
-      var size = arguments.length <= 1 || arguments[1] === undefined ? 2 : arguments[1];
-
-      var s = num + '';
-      while (s.length < size) {
-        s = '0' + s;
-      }
-      return s;
-    }
-
-    /**
-     * calculate a string from a date according to HTML5
-     */
-    function date_to_string(date, element_type) {
-      if (!(date instanceof Date)) {
-        return null;
-      }
-
-      switch (element_type) {
-        case 'datetime':
-          return date_to_string(date, 'date') + 'T' + date_to_string(date, 'time');
-
-        case 'datetime-local':
-          return sprintf('%s-%s-%sT%s:%s:%s.%s', date.getFullYear(), pad(date.getMonth() + 1), pad(date.getDate()), pad(date.getHours()), pad(date.getMinutes()), pad(date.getSeconds()), pad(date.getMilliseconds(), 3)).replace(/(:00)?\.000$/, '');
-
-        case 'date':
-          return sprintf('%s-%s-%s', date.getUTCFullYear(), pad(date.getUTCMonth() + 1), pad(date.getUTCDate()));
-
-        case 'month':
-          return sprintf('%s-%s', date.getUTCFullYear(), pad(date.getUTCMonth() + 1));
-
-        case 'week':
-          var params = get_week_of_year(date);
-          return sprintf.call(null, '%s-W%s', params[0], pad(params[1]));
-
-        case 'time':
-          return sprintf('%s:%s:%s.%s', pad(date.getUTCHours()), pad(date.getUTCMinutes()), pad(date.getUTCSeconds()), pad(date.getUTCMilliseconds(), 3)).replace(/(:00)?\.000$/, '');
-      }
-
-      return null;
-    }
 
     /**
      * implement the valueAsDate functionality
@@ -959,80 +1102,6 @@ define(function () { 'use strict';
       return false;
     }
 
-    var catalog = {
-      en: {
-        /**
-         * these validation messages are from Firefox source,
-         * http://mxr.mozilla.org/mozilla-central/source/dom/locales/en-US/chrome/dom/dom.properties
-         * released under MPL license, http://mozilla.org/MPL/2.0/.
-         */
-        TextTooLong: 'Please shorten this text to %l characters or less (you are currently using %l characters).',
-        ValueMissing: 'Please fill out this field.',
-        CheckboxMissing: 'Please check this box if you want to proceed.',
-        RadioMissing: 'Please select one of these options.',
-        FileMissing: 'Please select a file.',
-        SelectMissing: 'Please select an item in the list.',
-        InvalidEmail: 'Please enter an email address.',
-        InvalidURL: 'Please enter a URL.',
-        PatternMismatch: 'Please match the requested format.',
-        PatternMismatchWithTitle: 'Please match the requested format: %l.',
-        NumberRangeOverflow: 'Please select a value that is no more than %l.',
-        DateRangeOverflow: 'Please select a value that is no later than %l.',
-        TimeRangeOverflow: 'Please select a value that is no later than %l.',
-        NumberRangeUnderflow: 'Please select a value that is no less than %l.',
-        DateRangeUnderflow: 'Please select a value that is no earlier than %l.',
-        TimeRangeUnderflow: 'Please select a value that is no earlier than %l.',
-        StepMismatch: 'Please select a valid value. The two nearest valid values are %l and %l.',
-        StepMismatchOneValue: 'Please select a valid value. The nearest valid value is %l.',
-        BadInputNumber: 'Please enter a number.'
-      }
-    };
-
-    var language = 'en';
-
-    function set_language(newlang) {
-      language = newlang;
-    }
-
-    function add_translation(lang, new_catalog) {
-      if (!(lang in catalog)) {
-        catalog[lang] = {};
-      }
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = Object.keys(new_catalog)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var key = _step.value;
-
-          catalog[lang][key] = new_catalog[key];
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
-    }
-
-    function _ (s) {
-      if (language in catalog && s in catalog[language]) {
-        return catalog[language][s];
-      } else if (s in catalog.en) {
-        return catalog.en[s];
-      }
-      return s;
-    }
-
     var internal_registry = new WeakMap();
 
     /**
@@ -1159,24 +1228,6 @@ define(function () { 'use strict';
           return !!element.value;
       }
     }
-
-    var default_step = {
-      'datetime-local': 60,
-      datetime: 60,
-      time: 60
-    };
-
-    var step_scale_factor = {
-      'datetime-local': 1000,
-      datetime: 1000,
-      date: 86400000,
-      week: 604800000,
-      time: 1000
-    };
-
-    var default_step_base = {
-      week: -259200000
-    };
 
     /**
      * test the step attribute
