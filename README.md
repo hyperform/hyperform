@@ -41,17 +41,20 @@ or all forms, current and future ones:
 Configure settings as second argument:
 
     hyperform(window, {
-        strict: false, // disable some high-level APIs
-        revalidate: 'oninput', // whether fields should be re-validated
-                               // automatically. Values: `oninput`,
-                               // `onsubmit` and `never`.
-        valid_event: true, // whether the non-standard `valid` event should
-                           // be triggered
+        strict: false,         // default. En- or disable some high-level APIs
+
+        revalidate: 'oninput', // default. Whether fields should be
+                               // re-validated automatically. Valid values:
+                               // `oninput`, `onsubmit`, and `never`.
+
+        valid_event: true,     // default. Whether the non-standard `valid`
+                               // event should be triggered
     });
 
 If you only need a certain feature, you can access it directly by name:
 
-    hyperform.setCustomValidity.call(form.elements[0], 'my message');
+    hyperform.willValidate.call(form.elements[0]);
+    var is_valid = hyperform.validityState(form.elements[0]).valid;
 
 ## Examples
 
