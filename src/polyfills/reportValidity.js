@@ -24,7 +24,7 @@ function reportValidity(element) {
    * event was canceled. */
   var valid = ValidityState(element).valid;
   if (valid) {
-    const wrapped_form = Wrapper.get_wrapped(element.form);
+    const wrapped_form = Wrapper.get_wrapped(element);
     if (wrapped_form && wrapped_form.settings.valid_event) {
       trigger_event(element, 'valid');
     }

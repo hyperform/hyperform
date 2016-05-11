@@ -549,7 +549,7 @@ define(function () { 'use strict';
     var message_store = {
       set: function set(element, message) {
         if (element instanceof window.HTMLFieldSetElement) {
-          var wrapped_form = Wrapper.get_wrapped(element.form);
+          var wrapped_form = Wrapper.get_wrapped(element);
           if (wrapped_form && wrapped_form.settings.strict) {
             /* make this a no-op for <fieldset> in strict mode */
             return message_store;
@@ -629,7 +629,7 @@ define(function () { 'use strict';
        * event was canceled. */
       var valid = ValidityState(element).valid;
       if (valid) {
-        var wrapped_form = Wrapper.get_wrapped(element.form);
+        var wrapped_form = Wrapper.get_wrapped(element);
         if (wrapped_form && wrapped_form.settings.valid_event) {
           trigger_event(element, 'valid');
         }
@@ -1081,7 +1081,7 @@ define(function () { 'use strict';
           /* it mustn't be disabled or readonly */
           if (!element.hasAttribute('disabled') && !element.hasAttribute('readonly')) {
 
-            var wrapped_form = Wrapper.get_wrapped(element.form);
+            var wrapped_form = Wrapper.get_wrapped(element);
             /* it hasn't got the (non-standard) attribute 'novalidate' or its
              * parent form has got the strict parameter */
             if (wrapped_form && wrapped_form.settings.strict || !element.hasAttribute('novalidate') || !element.noValidate) {
@@ -1794,7 +1794,7 @@ define(function () { 'use strict';
       /* default is true, also for elements that are no validation candidates */
       var valid = ValidityState(element).valid;
       if (valid) {
-        var wrapped_form = Wrapper.get_wrapped(element.form);
+        var wrapped_form = Wrapper.get_wrapped(element);
         if (wrapped_form && wrapped_form.settings.valid_event) {
           trigger_event(element, 'valid');
         }

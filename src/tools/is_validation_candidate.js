@@ -31,7 +31,7 @@ export default function(element) {
       if (! element.hasAttribute('disabled') &&
           ! element.hasAttribute('readonly')) {
 
-        const wrapped_form = Wrapper.get_wrapped(element.form);
+        const wrapped_form = Wrapper.get_wrapped(element);
         /* it hasn't got the (non-standard) attribute 'novalidate' or its
          * parent form has got the strict parameter */
         if ((wrapped_form && wrapped_form.settings.strict) ||

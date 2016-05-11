@@ -22,7 +22,7 @@ function checkValidity(element) {
   /* default is true, also for elements that are no validation candidates */
   var valid = ValidityState(element).valid;
   if (valid) {
-    const wrapped_form = Wrapper.get_wrapped(element.form);
+    const wrapped_form = Wrapper.get_wrapped(element);
     if (wrapped_form && wrapped_form.settings.valid_event) {
       trigger_event(element, 'valid');
     }

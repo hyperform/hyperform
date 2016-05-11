@@ -16,7 +16,7 @@ var message_store = {
 
   set(element, message) {
     if (element instanceof window.HTMLFieldSetElement) {
-      const wrapped_form = Wrapper.get_wrapped(element.form);
+      const wrapped_form = Wrapper.get_wrapped(element);
       if (wrapped_form && wrapped_form.settings.strict) {
         /* make this a no-op for <fieldset> in strict mode */
         return message_store;
