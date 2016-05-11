@@ -1102,6 +1102,20 @@ define(function () { 'use strict';
       return false;
     }
 
+    var _toConsumableArray = (function (arr) {
+      if (Array.isArray(arr)) {
+        for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
+          arr2[i] = arr[i];
+        }return arr2;
+      } else {
+        return Array.from(arr);
+      }
+    })
+
+    function unicode_string_length (str) {
+      return [].concat(_toConsumableArray(str)).length;
+    }
+
     var internal_registry = new WeakMap();
 
     /**
@@ -1152,11 +1166,23 @@ define(function () { 'use strict';
 
     /**
      * test the maxlength attribute
-     *
-     * Allows empty input. If you do not want this, add the `required` attribute.
      */
     function test_maxlength (element) {
-        return !is_validation_candidate(element) || !element.value || !element.hasAttribute('maxlength') || element.value.length >= parseInt(element.getAttribute('maxlength'), 10);
+      if (!is_validation_candidate(element) || !element.value || text_types.indexOf(get_type(element)) === -1 || !element.hasAttribute('maxlength') || !element.getAttribute('maxlength') // catch maxlength=""
+      ) {
+          return true;
+        }
+
+      var maxlength = parseInt(element.getAttribute('maxlength'), 10);
+
+      /* check, if the maxlength value is usable at all.
+       * We allow maxlength === 0 to basically disable input (Firefox does, too).
+       */
+      if (isNaN(maxlength) || maxlength < 0) {
+        return true;
+      }
+
+      return unicode_string_length(element.value) <= maxlength;
     }
 
     /**
@@ -1188,11 +1214,21 @@ define(function () { 'use strict';
 
     /**
      * test the minlength attribute
-     *
-     * Allows empty input. If you do not want this, add the `required` attribute.
      */
     function test_minlength (element) {
-        return !is_validation_candidate(element) || !element.value || !element.hasAttribute('minlength') || element.value.length >= parseInt(element.getAttribute('minlength'), 10);
+      if (!is_validation_candidate(element) || !element.value || text_types.indexOf(get_type(element)) === -1 || !element.hasAttribute('minlength') || !element.getAttribute('minlength') // catch minlength=""
+      ) {
+          return true;
+        }
+
+      var minlength = parseInt(element.getAttribute('minlength'), 10);
+
+      /* check, if the minlength value is usable at all. */
+      if (isNaN(minlength) || minlength < 0) {
+        return true;
+      }
+
+      return unicode_string_length(element.value) >= minlength;
     }
 
     /**
@@ -1574,7 +1610,7 @@ define(function () { 'use strict';
         var invalid = !test_maxlength(element);
 
         if (invalid) {
-          message_store.set(element, sprintf(_('TextTooLong'), element.getAttribute('maxlength'), element.value.length));
+          message_store.set(element, sprintf(_('TextTooLong'), element.getAttribute('maxlength'), unicode_string_length(element.value)));
         }
 
         return invalid;
@@ -1584,7 +1620,7 @@ define(function () { 'use strict';
         var invalid = !test_minlength(element);
 
         if (invalid) {
-          message_store.set(element, sprintf(_('Please lengthen this text to %l characters or more (you are currently using %l characters).'), element.getAttribute('maxlength'), element.value.length));
+          message_store.set(element, sprintf(_('Please lengthen this text to %l characters or more (you are currently using %l characters).'), element.getAttribute('maxlength'), unicode_string_length(element.value)));
         }
 
         return invalid;

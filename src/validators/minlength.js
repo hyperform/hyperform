@@ -1,22 +1,36 @@
 'use strict';
 
 
+import get_type from '../tools/get_type';
 import is_validation_candidate from '../tools/is_validation_candidate';
+import unicode_string_length from '../tools/unicode_string_length';
+import { text as text_types } from '../components/types';
 
 
 /**
  * test the minlength attribute
- *
- * Allows empty input. If you do not want this, add the `required` attribute.
  */
 export default function(element) {
-  return (
+  if (
       ! is_validation_candidate(element)
       ||
       ! element.value
       ||
+      text_types.indexOf(get_type(element)) === -1
+      ||
       ! element.hasAttribute('minlength')
       ||
-      element.value.length >= parseInt(element.getAttribute('minlength'), 10)
-  );
+      ! element.getAttribute('minlength') // catch minlength=""
+  ) {
+    return true;
+  }
+
+  const minlength = parseInt(element.getAttribute('minlength'), 10);
+
+  /* check, if the minlength value is usable at all. */
+  if (isNaN(minlength) || minlength < 0) {
+    return true;
+  }
+
+  return unicode_string_length(element.value) >= minlength;
 }

@@ -1,22 +1,38 @@
 'use strict';
 
 
+import get_type from '../tools/get_type';
 import is_validation_candidate from '../tools/is_validation_candidate';
+import unicode_string_length from '../tools/unicode_string_length';
+import { text as text_types } from '../components/types';
 
 
 /**
  * test the maxlength attribute
- *
- * Allows empty input. If you do not want this, add the `required` attribute.
  */
 export default function(element) {
-  return (
+  if (
       ! is_validation_candidate(element)
       ||
       ! element.value
       ||
+      text_types.indexOf(get_type(element)) === -1
+      ||
       ! element.hasAttribute('maxlength')
       ||
-      element.value.length >= parseInt(element.getAttribute('maxlength'), 10)
-  );
+      ! element.getAttribute('maxlength') // catch maxlength=""
+  ) {
+    return true;
+  }
+
+  const maxlength = parseInt(element.getAttribute('maxlength'), 10);
+
+  /* check, if the maxlength value is usable at all.
+   * We allow maxlength === 0 to basically disable input (Firefox does, too).
+   */
+  if (isNaN(maxlength) || maxlength < 0) {
+    return true;
+  }
+
+  return unicode_string_length(element.value) <= maxlength;
 }

@@ -13,6 +13,7 @@ import installer from '../tools/property_installer';
 import is_validation_candidate from '../tools/is_validation_candidate';
 import mark from '../tools/mark';
 import sprintf from '../tools/sprintf';
+import unicode_string_length from '../tools/unicode_string_length';
 import _ from '../components/localization';
 import message_store from '../components/message_store';
 import Registry from '../components/registry';
@@ -157,7 +158,7 @@ const validity_state_checkers = {
     if (invalid) {
       message_store.set(element,
         sprintf(_('TextTooLong'), element.getAttribute('maxlength'),
-                element.value.length));
+                unicode_string_length(element.value)));
     }
 
     return invalid;
@@ -169,7 +170,8 @@ const validity_state_checkers = {
     if (invalid) {
       message_store.set(element,
         sprintf(_('Please lengthen this text to %l characters or more (you are currently using %l characters).'),
-                element.getAttribute('maxlength'), element.value.length));
+                element.getAttribute('maxlength'),
+                unicode_string_length(element.value)));
     }
 
     return invalid;
