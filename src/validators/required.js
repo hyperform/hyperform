@@ -24,13 +24,16 @@ export default function(element) {
     case 'radio':
       /* radio inputs have "required" fulfilled, if _any_ other radio
        * with the same name in this form is checked. */
-      return (
+      return !! (
         element.checked ||
         (
-          !! element.form &&
+          element.form &&
           Array.prototype.filter.call(
-            element.form.getElementsByName(element.name),
-            radio => radio.form === element.form && radio.checked).length > 0
+            document.getElementsByName(element.name),
+            radio => radio.name === element.name &&
+                     radio.form === element.form &&
+                     radio.checked
+          ).length > 0
         )
       );
       //break;

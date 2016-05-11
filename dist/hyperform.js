@@ -1221,9 +1221,9 @@
         case 'radio':
           /* radio inputs have "required" fulfilled, if _any_ other radio
            * with the same name in this form is checked. */
-          return element.checked || !!element.form && Array.prototype.filter.call(element.form.getElementsByName(element.name), function (radio) {
-            return radio.form === element.form && radio.checked;
-          }).length > 0;
+          return !!(element.checked || element.form && Array.prototype.filter.call(document.getElementsByName(element.name), function (radio) {
+            return radio.name === element.name && radio.form === element.form && radio.checked;
+          }).length > 0);
         //break;
         default:
           return !!element.value;
