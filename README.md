@@ -29,9 +29,11 @@ Then embed `dist/hyperform.min.js` in your file:
 <script src="path/to/hyperform/dist/hyperform.min.js"></script>
 ```
 
-In old browsers you will need polyfills for the follwing features: `WeakMap`
-(IE 10 and lower), `element.classList` (IE 9 and lower), array methods `filter`
-and `every`, object method `keys` and `Object.defineProperty` (IE 8 and lower).
+In old browsers you will need polyfills for the following features:
+[`WeakMap`](https://github.com/Benvie/WeakMap) (IE 10 and lower),
+[`element.classList`](https://github.com/remy/polyfills) (IE 9 and lower),
+`array.filter`, `array.every`, `Object.keys` and
+`Object.defineProperty` (IE 8 and lower).
 
 ## Usage
 
