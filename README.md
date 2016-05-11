@@ -76,7 +76,7 @@ for prime time?
 | `validity.rangeUnderflow`    | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
 | `validity.rangeOverflow`     | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
 | `validity.stepMismatch`      | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.badInput`          | :waxing_gibbous_moon: | works for all but `type=email`, which might be unfixable. See comment in [src/validators/bad_input.js](src/validators/bad_input.js). (access via `hyperform.validityState`) |
+| `validity.badInput`          | :waxing_gibbous_moon: | works for all but `type=email`, which'd need Punycode support. See comment in [src/validators/bad_input.js](src/validators/bad_input.js). (access via `hyperform.validityState`) |
 | `validity.customError`       | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
 | `validity.valid`             | :full_moon:        | :heavy_check_mark: (with restriction from `validity.badInput` above. Access via `hyperform.validityState`) |
 | `checkValidity()`            | :full_moon:        | :heavy_check_mark: (with restriction from `validity.badInput` above) |
@@ -92,13 +92,21 @@ for prime time?
 What parts of the high-level API are finished?
 
 * :new_moon: Trigger a `validate` event before validating an element.
-* :full_moon: Trigger a `valid` event, when an input becomes valid, again.
+* :full_moon: Trigger a `valid` event, when an input becomes valid, again:
+
+        input.addEventListener('valid', () => alert('Yay!'));
+
 * :new_moon: Allow functions to hook into the actual validations to accept or
     reject inputs.
-* :first_quarter_moon: Translate validation messages. There are some
-    partial translations available: https://github.com/hyperform/hyperform-l10n
+* :first_quarter_moon: Translate validation messages. We have some
+    partial translations ready: https://github.com/hyperform/hyperform-l10n
 * :full_moon: Provide a registry for user defined validators, that are called
-    automatically in the `validity.customError` step.
+    automatically in the `validity.customError` step:
+
+        hyperform.register(element, function(element) {
+          return result_of_convoluted_validation_routine();
+        });
+
 * :full_moon: Catch form submissions _before_ the `submit` event to do our own
     validation (`click`s on submit buttons and `enter` keys in text inputs in
     forms w/o submit buttons).
@@ -113,6 +121,10 @@ What parts of the high-level API are finished?
         var element = document.querySelector('input[name="foo"]');
         element.noValidate = true;
         // done. element won't be validated.
+
+* :new_moon: Add support for declarative custom validation messages:
+
+        <input data-validation-message="We need this field!">
 
 Do you have a wish or an idea? [File an issue and let us discuss
 it!](https://github.com/hyperform/hyperform/issues/new)
