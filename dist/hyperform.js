@@ -1820,7 +1820,7 @@
 
     mark(checkValidity);
 
-    var version = '0.5.3';
+    var version = '0.5.4';
 
     /**
      * public hyperform interface:
