@@ -665,7 +665,7 @@ define(function () { 'use strict';
     }
 
     /**
-     * catch the events _prior_ to a form being submitted
+     * catch all relevant events _prior_ to a form being submitted
      */
     function catch_submit (listening_node) {
       /* catch explicit submission (click on button) */
@@ -1033,19 +1033,28 @@ define(function () { 'use strict';
         /**
          * try to get the appropriate wrapper for a specific element by looking up
          * its parent chain
+         *
+         * @return Wrapper | undefined
          */
 
       }], [{
         key: 'get_wrapped',
         value: function get_wrapped(element) {
           var wrapped;
+
+          if (element.form) {
+            /* try a shortcut with the element's <form> */
+            wrapped = instances.get(element.form);
+          }
+
+          /* walk up the parent nodes until document (including) */
           while (!wrapped && element) {
             wrapped = instances.get(element);
             element = element.parentNode;
           }
 
           if (!wrapped) {
-            /* this may also be undefined. */
+            /* try the global instance, if exists. This may also be undefined. */
             wrapped = instances.get(window);
           }
 

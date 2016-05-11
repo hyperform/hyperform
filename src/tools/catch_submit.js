@@ -14,7 +14,7 @@ function check(event) {
 
 
 /**
- * catch the events _prior_ to a form being submitted
+ * catch all relevant events _prior_ to a form being submitted
  */
 export default function(listening_node) {
   /* catch explicit submission (click on button) */
