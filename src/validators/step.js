@@ -4,26 +4,9 @@
 import get_type from '../tools/get_type';
 import is_validation_candidate from '../tools/is_validation_candidate';
 import { numbers } from '../components/types';
+import { default_step, step_scale_factor, default_step_base } from '../components/step_defaults';
 import string_to_number from '../tools/string_to_number';
 
-
-const default_step = {
-  'datetime-local': 60,
-  datetime: 60,
-  time: 60,
-};
-
-const step_scale_factor = {
-  'datetime-local': 1000,
-  datetime: 1000,
-  date: 86400000,
-  week: 604800000,
-  time: 1000,
-};
-
-const default_step_base = {
-  week: -259200000,
-};
 
 /**
  * test the step attribute
