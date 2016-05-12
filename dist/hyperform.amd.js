@@ -548,6 +548,8 @@ define(function () { 'use strict';
     /* jshint -W053 */
     var message_store = {
       set: function set(element, message) {
+        var is_custom = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
+
         if (element instanceof window.HTMLFieldSetElement) {
           var wrapped_form = Wrapper.get_wrapped(element);
           if (wrapped_form && wrapped_form.settings.strict) {
@@ -558,6 +560,9 @@ define(function () { 'use strict';
 
         if (typeof message === 'string') {
           message = new String(message);
+        }
+        if (is_custom) {
+          message.is_custom = true;
         }
         mark(message);
         store.set(element, message);
@@ -716,9 +721,8 @@ define(function () { 'use strict';
      *
      */
     function setCustomValidity(msg) {
-      msg.is_custom = true;
       /* jshint -W040 */
-      message_store.set(this, msg);
+      message_store.set(this, msg, true);
       /* jshint +W040 */
     }
 

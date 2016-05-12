@@ -10,9 +10,8 @@ import message_store from '../components/message_store';
  *
  */
 function setCustomValidity(msg) {
-  msg.is_custom = true;
   /* jshint -W040 */
-  message_store.set(this, msg);
+  message_store.set(this, msg, true);
   /* jshint +W040 */
 }
 

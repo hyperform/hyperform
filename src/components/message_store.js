@@ -14,7 +14,7 @@ const store = new WeakMap();
 /* jshint -W053 */
 var message_store = {
 
-  set(element, message) {
+  set(element, message, is_custom=false) {
     if (element instanceof window.HTMLFieldSetElement) {
       const wrapped_form = Wrapper.get_wrapped(element);
       if (wrapped_form && wrapped_form.settings.strict) {
@@ -25,6 +25,9 @@ var message_store = {
 
     if (typeof message === 'string') {
       message = new String(message);
+    }
+    if (is_custom) {
+      message.is_custom = true;
     }
     mark(message);
     store.set(element, message);
