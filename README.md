@@ -110,7 +110,17 @@ for prime time?
 
 What parts of the high-level API are finished?
 
-* :new_moon: Trigger a `validate` event before validating an element.
+* :full_moon: Trigger a `validate` event before validating a form:
+
+    ```js
+    form.addEventListener('validate', event => {
+      /* cancel validation (will also cancel form submission!) */
+      event.preventDefault();
+    });
+    ```
+
+* :new_moon: Trigger an event before validating individual elements.
+
 * :full_moon: Trigger a `valid` event, when an input becomes valid, again:
 
     ```js
