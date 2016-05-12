@@ -1502,46 +1502,50 @@
       },
 
       customError: function customError(element) {
-        var msg = message_store.get(element);
-        var invalid = msg && 'is_custom' in msg;
-        /* no need for message_store.set, if the message is already there. */
+        /* check, if there are custom validators in the registry, and call
+         * them. */
+        var custom_validators = registry.get(element);
+        var valid = true;
 
-        if (!msg) {
-          /* check, if there are custom validators in the registry, and call
-           * them. */
-          var custom_validators = registry.get(element);
-          if (custom_validators.length) {
-            var _iteratorNormalCompletion = true;
-            var _didIteratorError = false;
-            var _iteratorError = undefined;
+        if (custom_validators.length) {
+          var _iteratorNormalCompletion = true;
+          var _didIteratorError = false;
+          var _iteratorError = undefined;
 
-            try {
-              for (var _iterator = custom_validators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                var validator = _step.value;
+          try {
+            for (var _iterator = custom_validators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              var validator = _step.value;
 
-                invalid = !validator(element);
-                if (invalid) {
-                  message_store.set(validator.message || _('Please comply with all requirements.'));
-                  break;
-                }
+              var result = validator(element);
+              valid &= result === undefined || result;
+              if (!valid) {
+                /* break on first invalid response */
+                break;
               }
-            } catch (err) {
-              _didIteratorError = true;
-              _iteratorError = err;
+            }
+          } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
+              }
             } finally {
-              try {
-                if (!_iteratorNormalCompletion && _iterator.return) {
-                  _iterator.return();
-                }
-              } finally {
-                if (_didIteratorError) {
-                  throw _iteratorError;
-                }
+              if (_didIteratorError) {
+                throw _iteratorError;
               }
             }
           }
         }
-        return invalid;
+
+        /* check, if there are other validity messages already */
+        if (valid) {
+          var msg = message_store.get(element);
+          valid = msg.toString() && 'is_custom' in msg;
+        }
+
+        return !valid;
       },
 
       patternMismatch: function patternMismatch(element) {

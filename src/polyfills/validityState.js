@@ -44,26 +44,29 @@ const validity_state_checkers = {
   },
 
   customError: element => {
-    const msg = message_store.get(element);
-    var invalid = (msg && ('is_custom' in msg));
-    /* no need for message_store.set, if the message is already there. */
+    /* check, if there are custom validators in the registry, and call
+     * them. */
+    const custom_validators = Registry.get(element);
+    var valid = true;
 
-    if (! msg) {
-      /* check, if there are custom validators in the registry, and call
-       * them. */
-      const custom_validators = Registry.get(element);
-      if (custom_validators.length) {
-        for (const validator of custom_validators) {
-          invalid = ! validator(element);
-          if (invalid) {
-            message_store.set(validator.message ||
-                              _('Please comply with all requirements.'));
-            break;
-          }
+    if (custom_validators.length) {
+      for (const validator of custom_validators) {
+        const result = validator(element);
+        valid &= (result === undefined || result);
+        if (! valid) {
+          /* break on first invalid response */
+          break;
         }
       }
     }
-    return invalid;
+
+    /* check, if there are other validity messages already */
+    if (valid) {
+      const msg = message_store.get(element);
+      valid = (msg.toString() && ('is_custom' in msg));
+    }
+
+    return ! valid;
   },
 
   patternMismatch: element => {
