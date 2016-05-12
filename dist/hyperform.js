@@ -733,8 +733,8 @@
     setCustomValidity.install = installer('setCustomValidity', {
       configurable: true,
       enumerable: true,
-      get: setCustomValidity,
-      set: undefined
+      value: setCustomValidity,
+      writable: true
     });
 
     mark(setCustomValidity);
