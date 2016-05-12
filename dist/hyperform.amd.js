@@ -628,16 +628,18 @@ define(function () { 'use strict';
       /* we copy checkValidity() here, b/c we have to check if the "invalid"
        * event was canceled. */
       var valid = ValidityState(element).valid;
+      var event;
       if (valid) {
         var wrapped_form = Wrapper.get_wrapped(element);
         if (wrapped_form && wrapped_form.settings.valid_event) {
-          trigger_event(element, 'valid');
+          event = trigger_event(element, 'valid', { cancelable: true });
         }
       } else {
-        var event = trigger_event(element, 'invalid', { cancelable: true });
-        if (!event.defaultPrevented) {
-          Renderer.show_warning(element);
-        }
+        event = trigger_event(element, 'invalid', { cancelable: true });
+      }
+
+      if (!event || !event.defaultPrevented) {
+        Renderer.show_warning(element);
       }
 
       return valid;
