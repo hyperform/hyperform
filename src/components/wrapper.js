@@ -61,7 +61,7 @@ export default class Wrapper {
         event.target instanceof window.HTMLTextAreaElement ||
         event.target instanceof window.HTMLSelectElement ||
         event.target instanceof window.HTMLInputElement) {
-      checkValidity(event.target);
+      reportValidity(event.target);
     }
   }
 

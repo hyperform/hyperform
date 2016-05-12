@@ -992,7 +992,7 @@ define(function () { 'use strict';
         key: 'revalidate',
         value: function revalidate(event) {
           if (event.target instanceof window.HTMLButtonElement || event.target instanceof window.HTMLTextAreaElement || event.target instanceof window.HTMLSelectElement || event.target instanceof window.HTMLInputElement) {
-            checkValidity(event.target);
+            reportValidity(event.target);
           }
         }
 
