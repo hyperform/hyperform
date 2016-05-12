@@ -63,7 +63,7 @@ const validity_state_checkers = {
     /* check, if there are other validity messages already */
     if (valid) {
       const msg = message_store.get(element);
-      valid = (msg.toString() && ('is_custom' in msg));
+      valid = ! (msg.toString() && ('is_custom' in msg));
     }
 
     return ! valid;

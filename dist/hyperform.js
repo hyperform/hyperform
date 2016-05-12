@@ -1552,7 +1552,7 @@
         /* check, if there are other validity messages already */
         if (valid) {
           var msg = message_store.get(element);
-          valid = msg.toString() && 'is_custom' in msg;
+          valid = !(msg.toString() && 'is_custom' in msg);
         }
 
         return !valid;
