@@ -596,6 +596,8 @@ define(function () { 'use strict';
     var Renderer = {
 
       show_warning: function show_warning(element) {
+        var sub_radio = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
         var msg = message_store.get(element);
         var warning = warnings_cache.get(element);
         if (msg) {
@@ -610,6 +612,14 @@ define(function () { 'use strict';
           element.parentNode.insertBefore(warning, element.nextSibling);
         } else if (warning && warning.parentNode) {
           warning.parentNode.removeChild(warning);
+        }
+        if (!sub_radio && element.type === 'radio' && element.form) {
+          /* render warnings for all other same-name radios, too */
+          Array.prototype.filter.call(document.getElementsByName(element.name), function (radio) {
+            return radio.name === element.name && radio.form === element.form;
+          }).map(function (radio) {
+            return Renderer.show_warning(radio, 'sub_radio');
+          });
         }
       },
 

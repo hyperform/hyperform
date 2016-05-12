@@ -9,7 +9,7 @@ const warnings_cache = new WeakMap();
 
 const Renderer = {
 
-  show_warning: function(element) {
+  show_warning: function(element, sub_radio=false) {
     const msg = message_store.get(element);
     var warning = warnings_cache.get(element);
     if (msg) {
@@ -24,6 +24,15 @@ const Renderer = {
       element.parentNode.insertBefore(warning, element.nextSibling);
     } else if (warning && warning.parentNode) {
       warning.parentNode.removeChild(warning);
+    }
+    if (! sub_radio && element.type === 'radio' && element.form) {
+      /* render warnings for all other same-name radios, too */
+      Array.prototype
+        .filter.call(document.getElementsByName(element.name),
+                     radio => radio.name === element.name &&
+                              radio.form === element.form
+        )
+        .map(radio => Renderer.show_warning(radio, 'sub_radio'));
     }
   },
 
