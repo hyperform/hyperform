@@ -1821,7 +1821,7 @@ define(function () { 'use strict';
 
     mark(checkValidity);
 
-    var version = '0.5.4';
+    var version = '0.5.5';
 
     /**
      * public hyperform interface:
