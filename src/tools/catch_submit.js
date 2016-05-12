@@ -10,7 +10,7 @@ function check(event) {
   event.preventDefault();
 
   /* trigger a "validate" event on the form to be submitted */
-  const val_event = trigger_event('validate', event.target.form,
+  const val_event = trigger_event(event.target.form, 'validate',
                                   { cancelable: true });
   if (val_event.defaultPrevented) {
     /* skip the whole submit thing, if the validation is canceled. A user

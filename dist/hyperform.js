@@ -664,7 +664,7 @@
       event.preventDefault();
 
       /* trigger a "validate" event on the form to be submitted */
-      var val_event = trigger_event('validate', event.target.form, { cancelable: true });
+      var val_event = trigger_event(event.target.form, 'validate', { cancelable: true });
       if (val_event.defaultPrevented) {
         /* skip the whole submit thing, if the validation is canceled. A user
          * can still call form.submit() afterwards. */
