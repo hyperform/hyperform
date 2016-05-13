@@ -19,7 +19,14 @@ function check(event) {
   }
 
   if (reportValidity(event.target.form)) {
-    event.target.form.submit();
+    /* apparently, the submit event is not triggered in most browsers on
+     * the submit() method, so we do it manually here to model a natural
+     * submit as closely as possible. */
+    const submit_event = trigger_event(event.target.form, 'submit',
+                                       { cancelable: true });
+    if (! submit_event.defaultPrevented) {
+      event.target.form.submit();
+    }
   }
 }
 
