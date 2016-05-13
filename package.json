@@ -1,6 +1,6 @@
 {
   "name": "hyperform",
-  "version": "0.5.10",
+  "version": "0.5.11",
   "description": "Capture form validation back from the browser",
   "main": "dist/hyperform.min.js",
   "jsnext:main": "src/hyperform.js",
