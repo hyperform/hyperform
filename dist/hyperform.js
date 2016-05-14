@@ -686,7 +686,18 @@
         return;
       }
 
-      if (reportValidity(event.target.form)) {
+      var valid = true;
+      var first_invalid;
+      Array.prototype.map.call(event.target.form.elements, function (element) {
+        if (!reportValidity(element)) {
+          valid = false;
+          if (!first_invalid && 'focus' in element) {
+            first_invalid = element;
+          }
+        }
+      });
+
+      if (valid) {
         /* apparently, the submit event is not triggered in most browsers on
          * the submit() method, so we do it manually here to model a natural
          * submit as closely as possible. */
@@ -694,6 +705,9 @@
         if (!submit_event.defaultPrevented) {
           event.target.form.submit();
         }
+      } else if (first_invalid) {
+        /* focus the first invalid element, if validation went south */
+        first_invalid.focus();
       }
     }
 
