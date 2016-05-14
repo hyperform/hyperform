@@ -163,6 +163,15 @@ What parts of the high-level API are finished?
     <input data-validation-message="We need this field!">
     ```
 
+* :new_moon: Idea: Add a means of linking two `<input>`s together so they get
+    validated synchronously:
+
+    ```js
+    hyperform.link(element1, element2);
+    element1.reportValidity();
+    // element2.reportValidity gets triggered automatically
+    ```
+
 Do you have a wish or an idea? [File an issue and let us discuss
 it!](https://github.com/hyperform/hyperform/issues/new)
 
