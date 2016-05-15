@@ -50,7 +50,7 @@ hyperform.willValidate = willValidate;
 
 hyperform.set_language = set_language;
 hyperform.add_translation = add_translation;
-hyperform.add_renderer = Renderer.set;
+hyperform.set_renderer = Renderer.set;
 hyperform.register = Registry.set;
 
 /* publish globally */
