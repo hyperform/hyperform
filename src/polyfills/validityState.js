@@ -52,8 +52,8 @@ const validity_state_checkers = {
     if (custom_validators.length) {
       for (const validator of custom_validators) {
         const result = validator(element);
-        valid &= (result === undefined || result);
-        if (! valid) {
+        if (result !== undefined && ! result) {
+          valid = false;
           /* break on first invalid response */
           break;
         }
@@ -272,8 +272,8 @@ for (let prop in validity_state_checkers) {
   Object.defineProperty(ValidityStatePrototype, prop, {
     configurable: true,
     enumerable: true,
-    get: (function(func) {
-      return function() { return func(this.element); };
+    get: (func => function() {
+      return func(this.element);
     })(validity_state_checkers[prop]),
     set: undefined,
   });

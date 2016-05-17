@@ -18,17 +18,16 @@ test('checkValidity', t => {
   t.true(input.checkValidity());
 });
 
-/* just have to come to grips with Promise */
-test.skip('checkValidity invalid event', async t => {
+test('checkValidity invalid event', async t => {
   var input = document.createElement('input');
-  input.type = 'text';
+  input.setAttribute('required', 'required');
   input.value = '';
 
-  let event_called = Promise();
+  let event_called = false;
 
-  t.true(await event_called);
-  el.addEventListener('invalid', function() {
-    event_called.resolve();
+  input.addEventListener('invalid', function() {
+    event_called = true;
   });
   checkValidity(input);
+  t.true(event_called);
 });

@@ -1546,8 +1546,8 @@ define(function () { 'use strict';
               var validator = _step.value;
 
               var result = validator(element);
-              valid &= result === undefined || result;
-              if (!valid) {
+              if (result !== undefined && !result) {
+                valid = false;
                 /* break on first invalid response */
                 break;
               }
