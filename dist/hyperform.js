@@ -1506,11 +1506,16 @@
           // TODO we could allow a setting 'phone_regex' to be evaluated here.
           break;
         case 'email':
-          // TODO can we do this at all? Punycode conversion would be done by
-          // the browser or not at all. If not, typeMismatch will catch that
-          // altogether. And I hesitate a bit to pull in a heavy punycode lib
-          // for basically no gain.
           break;
+      }
+
+      /* the browser hides some bad input from the DOM, e.g. malformed numbers,
+       * email addresses with invalid punycode representation, ... We try to resort
+       * to the original method here. The assumption is, that a browser hiding
+       * bad input will hopefully also always support a proper
+       * ValidityState.badInput */
+      if (result && '_original_validity' in element) {
+        result = !element._original_validity.badInput;
       }
 
       return result;

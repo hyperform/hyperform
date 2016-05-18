@@ -83,30 +83,30 @@ What parts of the [HTML5 validation
 API](https://html.spec.whatwg.org/multipage/forms.html#constraints) are ready
 for prime time?
 
-| feature                      | status             | comment            |
-| ---------------------------- | ------------------ | ------------------ |
-| `willValidate`               | :full_moon:        | :heavy_check_mark: |
-| `setCustomValidity(message)` | :full_moon:        | :heavy_check_mark: |
-| `validity.valueMissing`      | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.typeMismatch`      | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.patternMismatch`   | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.tooLong`           | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.tooShort`          | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.rangeUnderflow`    | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.rangeOverflow`     | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.stepMismatch`      | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.badInput`          | :waxing_gibbous_moon: | works for all but `type=email`, which'd need Punycode support. See comment in [src/validators/bad_input.js](src/validators/bad_input.js). (access via `hyperform.validityState`) |
-| `validity.customError`       | :full_moon:        | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.valid`             | :full_moon:        | :heavy_check_mark: (with restriction from `validity.badInput` above. Access via `hyperform.validityState`) |
-| `checkValidity()`            | :full_moon:        | :heavy_check_mark: (with restriction from `validity.badInput` above) |
-| `reportValidity()`           | :full_moon:        | :heavy_check_mark: (with restriction from `validity.badInput` above) |
-| `validationMessage`          | :full_moon:        | :heavy_check_mark: |
-| `valueAsDate`                | :full_moon:        | :heavy_check_mark: |
-| `valueAsNumber`              | :full_moon:        | :heavy_check_mark: |
-| `valueLow` / `valueHigh`     | :new_moon:         | not started, yet   |
-| `stepUp(n)` / `stepDown(n)`  | :full_moon:        | :heavy_check_mark: |
-| `accept` attribute           | :full_moon:        | :heavy_check_mark: for `type=file` inputs. It’s useful to implement a check because there are browsers without support, that implement the File API. |
-| support for `novalidate`     | :full_moon:        | :heavy_check_mark: |
+| feature                      | status      | comment            |
+| ---------------------------- | ----------- | ------------------ |
+| `willValidate`               | :full_moon: | :heavy_check_mark: |
+| `setCustomValidity(message)` | :full_moon: | :heavy_check_mark: |
+| `validity.valueMissing`      | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.typeMismatch`      | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.patternMismatch`   | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.tooLong`           | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.tooShort`          | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.rangeUnderflow`    | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.rangeOverflow`     | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.stepMismatch`      | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.badInput`          | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.customError`       | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.valid`             | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `checkValidity()`            | :full_moon: | :heavy_check_mark: |
+| `reportValidity()`           | :full_moon: | :heavy_check_mark: |
+| `validationMessage`          | :full_moon: | :heavy_check_mark: |
+| `valueAsDate`                | :full_moon: | :heavy_check_mark: |
+| `valueAsNumber`              | :full_moon: | :heavy_check_mark: |
+| `valueLow` / `valueHigh`     | :new_moon:  | not started, yet   |
+| `stepUp(n)` / `stepDown(n)`  | :full_moon: | :heavy_check_mark: |
+| `accept` attribute           | :full_moon: | :heavy_check_mark: for `type=file` inputs. It’s useful to implement a check because there are browsers without support, that implement the File API. |
+| support for `novalidate`     | :full_moon: | :heavy_check_mark: |
 
 What parts of the high-level API are finished?
 
