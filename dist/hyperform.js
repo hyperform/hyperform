@@ -1121,7 +1121,7 @@
       if (element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement) {
 
         var type = get_type(element);
-        /* it's type must be in the whitelist or missing (select, textarea) */
+        /* its type must be in the whitelist or missing (select, textarea) */
         if (!type || non_inputs.indexOf(type) > -1 || validation_candidates.indexOf(type) > -1) {
 
           /* it mustn't be disabled or readonly */
@@ -1878,7 +1878,7 @@
 
     mark(checkValidity);
 
-    var version = '0.6.2';
+    var version = '0.6.3';
 
     /**
      * public hyperform interface:
