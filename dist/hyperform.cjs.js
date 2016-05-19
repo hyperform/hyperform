@@ -551,7 +551,7 @@ var message_store = {
     var is_custom = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
 
     if (element instanceof window.HTMLFieldSetElement) {
-      var wrapped_form = Wrapper.get_wrapped(element);
+      var wrapped_form = get_wrapper(element);
       if (wrapped_form && wrapped_form.settings.strict) {
         /* make this a no-op for <fieldset> in strict mode */
         return message_store;
@@ -591,6 +591,26 @@ var message_store = {
   }
 };
 
+/**
+ * counter that will be incremented with every call
+ *
+ * Will enforce uniqueness, as long as no more than 1 hyperform scripts
+ * are loaded. (In that case we still have the "random" part below.)
+ */
+
+var uid = 0;
+
+/**
+ * generate a random ID
+ *
+ * @see https://gist.github.com/gordonbrander/2230317
+ */
+function generate_id () {
+  var prefix = arguments.length <= 0 || arguments[0] === undefined ? 'hf_' : arguments[0];
+
+  return prefix + uid++ + Math.random().toString(36).substr(2);
+}
+
 var warnings_cache = new WeakMap();
 
 var Renderer = {
@@ -598,21 +618,28 @@ var Renderer = {
   show_warning: function show_warning(element) {
     var sub_radio = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
-    var msg = message_store.get(element);
+    var msg = message_store.get(element).toString();
     var warning = warnings_cache.get(element);
+
     if (msg) {
       if (!warning) {
+        var wrapper = get_wrapper(element);
         warning = document.createElement('div');
-        warning.className = 'hf-warning';
+        warning.className = wrapper && wrapper.settings.classes.warning || 'hf-warning';
+        warning.id = generate_id();
         warnings_cache.set(element, warning);
       }
+
+      element.setAttribute('aria-errormessage', warning.id);
       warning.textContent = msg;
       /* should also work, if element is last,
        * http://stackoverflow.com/a/4793630/113195 */
       element.parentNode.insertBefore(warning, element.nextSibling);
     } else if (warning && warning.parentNode) {
+      element.removeAttribute('aria-errormessage');
       warning.parentNode.removeChild(warning);
     }
+
     if (!sub_radio && element.type === 'radio' && element.form) {
       /* render warnings for all other same-name radios, too */
       Array.prototype.filter.call(document.getElementsByName(element.name), function (radio) {
@@ -645,7 +672,7 @@ function reportValidity(element) {
   var valid = ValidityState(element).valid;
   var event;
   if (valid) {
-    var wrapped_form = Wrapper.get_wrapped(element);
+    var wrapped_form = get_wrapper(element);
     if (wrapped_form && wrapped_form.settings.valid_event) {
       event = trigger_event(element, 'valid', { cancelable: true });
     }
@@ -1005,7 +1032,7 @@ var Wrapper = function () {
     _classCallCheck(this, Wrapper);
 
     this.form = form;
-    this.settings = settings || {};
+    this.settings = settings;
 
     instances.set(form, this);
 
@@ -1074,41 +1101,32 @@ var Wrapper = function () {
         willValidate.install(els[i]);
       }
     }
-
-    /**
-     * try to get the appropriate wrapper for a specific element by looking up
-     * its parent chain
-     *
-     * @return Wrapper | undefined
-     */
-
-  }], [{
-    key: 'get_wrapped',
-    value: function get_wrapped(element) {
-      var wrapped;
-
-      if (element.form) {
-        /* try a shortcut with the element's <form> */
-        wrapped = instances.get(element.form);
-      }
-
-      /* walk up the parent nodes until document (including) */
-      while (!wrapped && element) {
-        wrapped = instances.get(element);
-        element = element.parentNode;
-      }
-
-      if (!wrapped) {
-        /* try the global instance, if exists. This may also be undefined. */
-        wrapped = instances.get(window);
-      }
-
-      return wrapped;
-    }
   }]);
 
   return Wrapper;
 }();
+
+function get_wrapper(element) {
+  var wrapped;
+
+  if (element.form) {
+    /* try a shortcut with the element's <form> */
+    wrapped = instances.get(element.form);
+  }
+
+  /* walk up the parent nodes until document (including) */
+  while (!wrapped && element) {
+    wrapped = instances.get(element);
+    element = element.parentNode;
+  }
+
+  if (!wrapped) {
+    /* try the global instance, if exists. This may also be undefined. */
+    wrapped = instances.get(window);
+  }
+
+  return wrapped;
+}
 
 /**
  * check if an element is a candidate for constraint validation
@@ -1126,7 +1144,7 @@ function is_validation_candidate (element) {
       /* it mustn't be disabled or readonly */
       if (!element.hasAttribute('disabled') && !element.hasAttribute('readonly')) {
 
-        var wrapped_form = Wrapper.get_wrapped(element);
+        var wrapped_form = get_wrapper(element);
         /* it hasn't got the (non-standard) attribute 'novalidate' or its
          * parent form has got the strict parameter */
         if (wrapped_form && wrapped_form.settings.strict || !element.hasAttribute('novalidate') || !element.noValidate) {
@@ -1805,13 +1823,18 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
   configurable: true,
   enumerable: true,
   get: function get() {
-    this.element.classList.add('hf-validated');
+    var wrapper = get_wrapper(this.element);
+    var validClass = wrapper && wrapper.settings.classes.valid || 'hf-valid';
+    var invalidClass = wrapper && wrapper.settings.classes.invalid || 'hf-invalid';
+    var validatedClass = wrapper && wrapper.settings.classes.invalid || 'hf-validated';
+
+    this.element.classList.add(validatedClass);
 
     if (is_validation_candidate(this.element)) {
       for (var _prop in validity_state_checkers) {
         if (validity_state_checkers[_prop](this.element)) {
-          this.element.classList.add('hf-invalid');
-          this.element.classList.remove('hf-valid');
+          this.element.classList.add(invalidClass);
+          this.element.classList.remove(validClass);
           this.element.setAttribute('aria-invalid', 'true');
           return false;
         }
@@ -1819,8 +1842,8 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
     }
 
     message_store.delete(this.element);
-    this.element.classList.remove('hf-invalid');
-    this.element.classList.add('hf-valid');
+    this.element.classList.remove(invalidClass);
+    this.element.classList.add(validClass);
     this.element.setAttribute('aria-invalid', 'false');
     return true;
   },
@@ -1854,7 +1877,7 @@ function checkValidity(element) {
   /* default is true, also for elements that are no validation candidates */
   var valid = ValidityState(element).valid;
   if (valid) {
-    var wrapped_form = Wrapper.get_wrapped(element);
+    var wrapped_form = get_wrapper(element);
     if (wrapped_form && wrapped_form.settings.valid_event) {
       trigger_event(element, 'valid');
     }
@@ -1893,6 +1916,8 @@ function hyperform(form) {
   var revalidate = _ref$revalidate === undefined ? 'oninput' : _ref$revalidate;
   var _ref$valid_event = _ref.valid_event;
   var valid_event = _ref$valid_event === undefined ? true : _ref$valid_event;
+  var _ref$classes = _ref.classes;
+  var classes = _ref$classes === undefined ? {} : _ref$classes;
 
   if (form instanceof window.NodeList || form instanceof window.HTMLCollection || form instanceof Array) {
     return Array.prototype.map.call(form, function (element) {
@@ -1900,7 +1925,7 @@ function hyperform(form) {
     });
   }
 
-  return new Wrapper(form, { strict: strict, revalidate: revalidate, valid_event: valid_event });
+  return new Wrapper(form, { strict: strict, revalidate: revalidate, valid_event: valid_event, classes: classes });
 }
 
 var set_renderer = Renderer.set;

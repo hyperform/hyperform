@@ -19,6 +19,7 @@ import unicode_string_length from '../tools/unicode_string_length';
 import _ from '../components/localization';
 import message_store from '../components/message_store';
 import Registry from '../components/registry';
+import { get_wrapper } from '../components/wrapper';
 import test_max from '../validators/max';
 import test_maxlength from '../validators/maxlength';
 import test_min from '../validators/min';
@@ -300,13 +301,18 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
   configurable: true,
   enumerable: true,
   get: function() {
-    this.element.classList.add('hf-validated');
+    const wrapper = get_wrapper(this.element);
+    const validClass = wrapper && wrapper.settings.classes.valid || 'hf-valid';
+    const invalidClass = wrapper && wrapper.settings.classes.invalid || 'hf-invalid';
+    const validatedClass = wrapper && wrapper.settings.classes.invalid || 'hf-validated';
+
+    this.element.classList.add(validatedClass);
 
     if (is_validation_candidate(this.element)) {
       for (let prop in validity_state_checkers) {
         if (validity_state_checkers[prop](this.element)) {
-          this.element.classList.add('hf-invalid');
-          this.element.classList.remove('hf-valid');
+          this.element.classList.add(invalidClass);
+          this.element.classList.remove(validClass);
           this.element.setAttribute('aria-invalid', 'true');
           return false;
         }
@@ -314,8 +320,8 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
     }
 
     message_store.delete(this.element);
-    this.element.classList.remove('hf-invalid');
-    this.element.classList.add('hf-valid');
+    this.element.classList.remove(invalidClass);
+    this.element.classList.add(validClass);
     this.element.setAttribute('aria-invalid', 'false');
     return true;
   },
