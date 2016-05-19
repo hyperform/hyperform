@@ -1826,7 +1826,7 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
     var wrapper = get_wrapper(this.element);
     var validClass = wrapper && wrapper.settings.classes.valid || 'hf-valid';
     var invalidClass = wrapper && wrapper.settings.classes.invalid || 'hf-invalid';
-    var validatedClass = wrapper && wrapper.settings.classes.invalid || 'hf-validated';
+    var validatedClass = wrapper && wrapper.settings.classes.validated || 'hf-validated';
 
     this.element.classList.add(validatedClass);
 
