@@ -1,4 +1,4 @@
-define(function () { 'use strict';
+define(['exports'], function (exports) { 'use strict';
 
     /**
      * mark an object with a 'hyperform=true' property
@@ -1901,25 +1901,26 @@ define(function () { 'use strict';
       return new Wrapper(form, { strict: strict, revalidate: revalidate, valid_event: valid_event });
     }
 
-    hyperform.version = version;
-
-    hyperform.checkValidity = checkValidity;
-    hyperform.reportValidity = reportValidity;
-    hyperform.setCustomValidity = setCustomValidity;
-    hyperform.stepDown = stepDown;
-    hyperform.stepUp = stepUp;
-    hyperform.validationMessage = validationMessage;
-    hyperform.ValidityState = ValidityState;
-    hyperform.valueAsDate = valueAsDate;
-    hyperform.valueAsNumber = valueAsNumber;
-    hyperform.willValidate = willValidate;
-
-    hyperform.set_language = set_language;
-    hyperform.add_translation = add_translation;
-    hyperform.set_renderer = Renderer.set;
-    hyperform.register = registry.set;
-
     /* publish globally */
-    window.hyperform = hyperform;
+    exports = hyperform;
+    /* jspm will place these on the above "exports" variable */
+    var set_renderer = Renderer.set;
+    var register = registry.set;
+
+    exports.version = version;
+    exports.checkValidity = checkValidity;
+    exports.reportValidity = reportValidity;
+    exports.setCustomValidity = setCustomValidity;
+    exports.stepDown = stepDown;
+    exports.stepUp = stepUp;
+    exports.validationMessage = validationMessage;
+    exports.ValidityState = ValidityState;
+    exports.valueAsDate = valueAsDate;
+    exports.valueAsNumber = valueAsNumber;
+    exports.willValidate = willValidate;
+    exports.set_language = set_language;
+    exports.add_translation = add_translation;
+    exports.set_renderer = set_renderer;
+    exports.register = register;
 
 });

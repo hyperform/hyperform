@@ -35,23 +35,26 @@ function hyperform(form, {
   return new Wrapper(form, { strict, revalidate, valid_event, });
 }
 
-hyperform.version = version;
-
-hyperform.checkValidity = checkValidity;
-hyperform.reportValidity = reportValidity;
-hyperform.setCustomValidity = setCustomValidity;
-hyperform.stepDown = stepDown;
-hyperform.stepUp = stepUp;
-hyperform.validationMessage = validationMessage;
-hyperform.ValidityState = ValidityState;
-hyperform.valueAsDate = valueAsDate;
-hyperform.valueAsNumber = valueAsNumber;
-hyperform.willValidate = willValidate;
-
-hyperform.set_language = set_language;
-hyperform.add_translation = add_translation;
-hyperform.set_renderer = Renderer.set;
-hyperform.register = Registry.set;
-
 /* publish globally */
-window.hyperform = hyperform;
+exports = hyperform;
+/* jspm will place these on the above "exports" variable */
+let set_renderer = Renderer.set;
+let register = Registry.set;
+export {
+  version,
+  checkValidity,
+  reportValidity,
+  setCustomValidity,
+  stepDown,
+  stepUp,
+  validationMessage,
+  ValidityState,
+  valueAsDate,
+  valueAsNumber,
+  willValidate,
+
+  set_language,
+  add_translation,
+  set_renderer,
+  register,
+};

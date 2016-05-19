@@ -11,10 +11,12 @@ all: js
 .PHONY: all
 
 js: dist/hyperform.js dist/hyperform.min.js \
-    dist/hyperform.amd.js dist/hyperform.amd.min.js
+    dist/hyperform.amd.js dist/hyperform.amd.min.js \
+    dist/hyperform.cjs.js dist/hyperform.cjs.min.js
 .PHONY: js
 
 dist/hyperform.amd.min.js \
+dist/hyperform.cjs.min.js \
 dist/hyperform.min.js: dist/%.min.js : dist/%.js
 	@echo "* build $@"
 	@<"$<" $(UGLIFYJS) $(UGLIFYJS_ARGS) >"$@"
@@ -23,6 +25,11 @@ dist/hyperform.amd.js: src/hyperform.js src/*.js src/*/*.js
 	@echo "* build $@"
 	@mkdir -p dist
 	@$(JSPM) build "$<" "$@" $(JSPM_ARGS) --format amd
+
+dist/hyperform.cjs.js: src/hyperform.js src/*.js src/*/*.js
+	@echo "* build $@"
+	@mkdir -p dist
+	@$(JSPM) build "$<" "$@" $(JSPM_ARGS) --format cjs
 
 dist/hyperform.js: src/hyperform.js src/*.js src/*/*.js
 	@echo "* build $@"
