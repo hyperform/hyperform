@@ -98,32 +98,32 @@ export default class Wrapper {
     }
   }
 
-  /**
-   * try to get the appropriate wrapper for a specific element by looking up
-   * its parent chain
-   *
-   * @return Wrapper | undefined
-   */
-  static get_wrapped(element) {
-    var wrapped;
+}
 
-    if (element.form) {
-      /* try a shortcut with the element's <form> */
-      wrapped = instances.get(element.form);
-    }
+/**
+ * try to get the appropriate wrapper for a specific element by looking up
+ * its parent chain
+ *
+ * @return Wrapper | undefined
+ */
+export function get_wrapper(element) {
+  var wrapped;
 
-    /* walk up the parent nodes until document (including) */
-    while (! wrapped && element) {
-      wrapped = instances.get(element);
-      element = element.parentNode;
-    }
-
-    if (! wrapped) {
-      /* try the global instance, if exists. This may also be undefined. */
-      wrapped = instances.get(window);
-    }
-
-    return wrapped;
+  if (element.form) {
+    /* try a shortcut with the element's <form> */
+    wrapped = instances.get(element.form);
   }
 
+  /* walk up the parent nodes until document (including) */
+  while (! wrapped && element) {
+    wrapped = instances.get(element);
+    element = element.parentNode;
+  }
+
+  if (! wrapped) {
+    /* try the global instance, if exists. This may also be undefined. */
+    wrapped = instances.get(window);
+  }
+
+  return wrapped;
 }

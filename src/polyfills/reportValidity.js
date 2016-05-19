@@ -6,7 +6,7 @@ import installer from '../tools/property_installer';
 import trigger_event from '../tools/trigger_event';
 import renderer from '../components/renderer';
 import ValidityState from './validityState';
-import Wrapper from '../components/wrapper';
+import get_wrapper from '../components/wrapper';
 
 
 /**
@@ -25,7 +25,7 @@ function reportValidity(element) {
   var valid = ValidityState(element).valid;
   var event;
   if (valid) {
-    const wrapped_form = Wrapper.get_wrapped(element);
+    const wrapped_form = get_wrapper(element);
     if (wrapped_form && wrapped_form.settings.valid_event) {
       event = trigger_event(element, 'valid', { cancelable: true });
     }

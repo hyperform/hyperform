@@ -1,7 +1,7 @@
 'use strict';
 
 
-import Wrapper from './wrapper';
+import get_wrapper from './wrapper';
 import mark from '../tools/mark';
 
 
@@ -16,7 +16,7 @@ var message_store = {
 
   set(element, message, is_custom=false) {
     if (element instanceof window.HTMLFieldSetElement) {
-      const wrapped_form = Wrapper.get_wrapped(element);
+      const wrapped_form = get_wrapper(element);
       if (wrapped_form && wrapped_form.settings.strict) {
         /* make this a no-op for <fieldset> in strict mode */
         return message_store;
