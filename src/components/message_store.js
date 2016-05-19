@@ -1,7 +1,7 @@
 'use strict';
 
 
-import get_wrapper from './wrapper';
+import { get_wrapper } from './wrapper';
 import mark from '../tools/mark';
 
 

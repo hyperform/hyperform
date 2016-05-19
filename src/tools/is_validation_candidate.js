@@ -2,7 +2,7 @@
 
 
 import { validation_candidates, non_inputs } from '../components/types';
-import get_wrapper from '../components/wrapper';
+import { get_wrapper } from '../components/wrapper';
 import get_type from '../tools/get_type';
 
 

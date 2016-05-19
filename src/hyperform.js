@@ -25,6 +25,7 @@ function hyperform(form, {
                      strict=false,
                      revalidate='oninput',
                      valid_event=true,
+                     classes={},
                    }={}) {
   if (form instanceof window.NodeList ||
       form instanceof window.HTMLCollection ||
@@ -32,7 +33,7 @@ function hyperform(form, {
     return Array.prototype.map.call(form, element => hyperform(element));
   }
 
-  return new Wrapper(form, { strict, revalidate, valid_event, });
+  return new Wrapper(form, { strict, revalidate, valid_event, classes, });
 }
 
 let set_renderer = Renderer.set;

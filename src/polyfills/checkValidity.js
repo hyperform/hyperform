@@ -5,7 +5,7 @@ import mark from '../tools/mark';
 import installer from '../tools/property_installer';
 import trigger_event from '../tools/trigger_event';
 import ValidityState from './validityState';
-import get_wrapper from '../components/wrapper';
+import { get_wrapper } from '../components/wrapper';
 
 
 /**

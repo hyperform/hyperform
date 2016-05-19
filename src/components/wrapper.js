@@ -25,7 +25,7 @@ export default class Wrapper {
 
   constructor(form, settings) {
     this.form = form;
-    this.settings = settings || {};
+    this.settings = settings;
 
     instances.set(form, this);
 
