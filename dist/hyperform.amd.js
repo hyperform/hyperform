@@ -1,4 +1,4 @@
-define(['exports'], function (exports) { 'use strict';
+define(function () { 'use strict';
 
     /**
      * mark an object with a 'hyperform=true' property
@@ -1596,21 +1596,22 @@ define(['exports'], function (exports) { 'use strict';
 
       rangeOverflow: function rangeOverflow(element) {
         var invalid = !test_max(element);
+        var type = get_type(element);
 
         if (invalid) {
           var msg = void 0;
-          switch (get_type(element)) {
+          switch (type) {
             case 'date':
             case 'datetime':
             case 'datetime-local':
-              msg = sprintf(_('DateRangeOverflow'), element.value);
+              msg = sprintf(_('DateRangeOverflow'), string_to_date(element.getAttribute('max'), type));
               break;
             case 'time':
-              msg = sprintf(_('TimeRangeOverflow'), element.value);
+              msg = sprintf(_('TimeRangeOverflow'), string_to_date(element.getAttribute('max'), type));
               break;
             // case 'number':
             default:
-              msg = sprintf(_('NumberRangeOverflow'), element.value);
+              msg = sprintf(_('NumberRangeOverflow'), string_to_number(element.getAttribute('max'), type));
               break;
           }
           message_store.set(element, msg);
@@ -1621,21 +1622,22 @@ define(['exports'], function (exports) { 'use strict';
 
       rangeUnderflow: function rangeUnderflow(element) {
         var invalid = !test_min(element);
+        var type = get_type(element);
 
         if (invalid) {
           var msg = void 0;
-          switch (get_type(element)) {
+          switch (type) {
             case 'date':
             case 'datetime':
             case 'datetime-local':
-              msg = sprintf(_('DateRangeUnderflow'), element.value);
+              msg = sprintf(_('DateRangeUnderflow'), string_to_date(element.getAttribute('max'), type));
               break;
             case 'time':
-              msg = sprintf(_('TimeRangeUnderflow'), element.value);
+              msg = sprintf(_('TimeRangeUnderflow'), string_to_date(element.getAttribute('max'), type));
               break;
             // case 'number':
             default:
-              msg = sprintf(_('NumberRangeUnderflow'), element.value);
+              msg = sprintf(_('NumberRangeUnderflow'), string_to_number(element.getAttribute('max'), type));
               break;
           }
           message_store.set(element, msg);
@@ -1901,28 +1903,27 @@ define(['exports'], function (exports) { 'use strict';
       return new Wrapper(form, { strict: strict, revalidate: revalidate, valid_event: valid_event });
     }
 
-    /* publish globally */
-    /* global exports:true */
-    exports = hyperform;
-
-    /* jspm will place these on the above "exports" variable */
     var set_renderer = Renderer.set;
     var register = registry.set;
 
-    exports.version = version;
-    exports.checkValidity = checkValidity;
-    exports.reportValidity = reportValidity;
-    exports.setCustomValidity = setCustomValidity;
-    exports.stepDown = stepDown;
-    exports.stepUp = stepUp;
-    exports.validationMessage = validationMessage;
-    exports.ValidityState = ValidityState;
-    exports.valueAsDate = valueAsDate;
-    exports.valueAsNumber = valueAsNumber;
-    exports.willValidate = willValidate;
-    exports.set_language = set_language;
-    exports.add_translation = add_translation;
-    exports.set_renderer = set_renderer;
-    exports.register = register;
+    hyperform.version = version;
+
+    hyperform.checkValidity = checkValidity;
+    hyperform.reportValidity = reportValidity;
+    hyperform.setCustomValidity = setCustomValidity;
+    hyperform.stepDown = stepDown;
+    hyperform.stepUp = stepUp;
+    hyperform.validationMessage = validationMessage;
+    hyperform.ValidityState = ValidityState;
+    hyperform.valueAsDate = valueAsDate;
+    hyperform.valueAsNumber = valueAsNumber;
+    hyperform.willValidate = willValidate;
+
+    hyperform.set_language = set_language;
+    hyperform.add_translation = add_translation;
+    hyperform.set_renderer = set_renderer;
+    hyperform.register = register;
+
+    return hyperform;
 
 });

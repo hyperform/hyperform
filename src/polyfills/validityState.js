@@ -13,6 +13,8 @@ import installer from '../tools/property_installer';
 import is_validation_candidate from '../tools/is_validation_candidate';
 import mark from '../tools/mark';
 import sprintf from '../tools/sprintf';
+import string_to_number from '../tools/string_to_number';
+import string_to_date from '../tools/string_to_date';
 import unicode_string_length from '../tools/unicode_string_length';
 import _ from '../components/localization';
 import message_store from '../components/message_store';
@@ -84,21 +86,25 @@ const validity_state_checkers = {
 
   rangeOverflow: element => {
     const invalid = ! test_max(element);
+    const type = get_type(element);
 
     if (invalid) {
       let msg;
-      switch (get_type(element)) {
+      switch (type) {
         case 'date':
         case 'datetime':
         case 'datetime-local':
-          msg = sprintf(_('DateRangeOverflow'), element.value);
+          msg = sprintf(_('DateRangeOverflow'),
+                        string_to_date(element.getAttribute('max'), type));
           break;
         case 'time':
-          msg = sprintf(_('TimeRangeOverflow'), element.value);
+          msg = sprintf(_('TimeRangeOverflow'),
+                        string_to_date(element.getAttribute('max'), type));
           break;
         // case 'number':
         default:
-          msg = sprintf(_('NumberRangeOverflow'), element.value);
+          msg = sprintf(_('NumberRangeOverflow'),
+                        string_to_number(element.getAttribute('max'), type));
           break;
       }
       message_store.set(element, msg);
@@ -109,21 +115,25 @@ const validity_state_checkers = {
 
   rangeUnderflow: element => {
     const invalid = ! test_min(element);
+    const type = get_type(element);
 
     if (invalid) {
       let msg;
-      switch (get_type(element)) {
+      switch (type) {
         case 'date':
         case 'datetime':
         case 'datetime-local':
-          msg = sprintf(_('DateRangeUnderflow'), element.value);
+          msg = sprintf(_('DateRangeUnderflow'),
+                        string_to_date(element.getAttribute('max'), type));
           break;
         case 'time':
-          msg = sprintf(_('TimeRangeUnderflow'), element.value);
+          msg = sprintf(_('TimeRangeUnderflow'),
+                        string_to_date(element.getAttribute('max'), type));
           break;
         // case 'number':
         default:
-          msg = sprintf(_('NumberRangeUnderflow'), element.value);
+          msg = sprintf(_('NumberRangeUnderflow'),
+                        string_to_number(element.getAttribute('max'), type));
           break;
       }
       message_store.set(element, msg);
