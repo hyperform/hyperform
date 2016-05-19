@@ -615,6 +615,16 @@ var warnings_cache = new WeakMap();
 
 var Renderer = {
 
+  attach_warning: function attach_warning(warning, element) {
+    /* should also work, if element is last,
+     * http://stackoverflow.com/a/4793630/113195 */
+    element.parentNode.insertBefore(warning, element.nextSibling);
+  },
+
+  detach_warning: function detach_warning(warning, element) {
+    warning.parentNode.removeChild(warning);
+  },
+
   show_warning: function show_warning(element) {
     var sub_radio = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
@@ -632,12 +642,10 @@ var Renderer = {
 
       element.setAttribute('aria-errormessage', warning.id);
       warning.textContent = msg;
-      /* should also work, if element is last,
-       * http://stackoverflow.com/a/4793630/113195 */
-      element.parentNode.insertBefore(warning, element.nextSibling);
+      Renderer.attach_warning(warning, element);
     } else if (warning && warning.parentNode) {
       element.removeAttribute('aria-errormessage');
-      warning.parentNode.removeChild(warning);
+      Renderer.detach_warning(warning, element);
     }
 
     if (!sub_radio && element.type === 'radio' && element.form) {
