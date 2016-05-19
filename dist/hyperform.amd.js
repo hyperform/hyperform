@@ -1475,8 +1475,21 @@ define(function () { 'use strict';
     function test_bad_input (element) {
       var type = get_type(element);
 
-      if (!is_validation_candidate(element) || !element.value || input_checked.indexOf(type) === -1) {
+      if (!is_validation_candidate(element) || input_checked.indexOf(type) === -1) {
         /* we're not interested, thanks! */
+        return true;
+      }
+
+      /* the browser hides some bad input from the DOM, e.g. malformed numbers,
+       * email addresses with invalid punycode representation, ... We try to resort
+       * to the original method here. The assumption is, that a browser hiding
+       * bad input will hopefully also always support a proper
+       * ValidityState.badInput */
+      if (!element.value) {
+        if ('_original_validity' in element) {
+          return !element._original_validity.badInput;
+        }
+        /* no value and no original badInput: Assume all's right. */
         return true;
       }
 
@@ -1506,15 +1519,6 @@ define(function () { 'use strict';
           break;
         case 'email':
           break;
-      }
-
-      /* the browser hides some bad input from the DOM, e.g. malformed numbers,
-       * email addresses with invalid punycode representation, ... We try to resort
-       * to the original method here. The assumption is, that a browser hiding
-       * bad input will hopefully also always support a proper
-       * ValidityState.badInput */
-      if (result && '_original_validity' in element) {
-        result = !element._original_validity.badInput;
       }
 
       return result;

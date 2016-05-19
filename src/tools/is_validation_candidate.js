@@ -22,7 +22,7 @@ export default function(element) {
       element instanceof window.HTMLInputElement) {
 
     const type = get_type(element);
-    /* it's type must be in the whitelist or missing (select, textarea) */
+    /* its type must be in the whitelist or missing (select, textarea) */
     if (! type ||
         non_inputs.indexOf(type) > -1 ||
         validation_candidates.indexOf(type) > -1) {
