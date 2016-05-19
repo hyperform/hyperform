@@ -1910,7 +1910,7 @@ define(function () { 'use strict';
 
     mark(checkValidity);
 
-    var version = '0.7.2';
+    var version = '0.7.3';
 
     /**
      * public hyperform interface:
