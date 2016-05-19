@@ -36,12 +36,15 @@ function hyperform(form, {
 }
 
 /* publish globally */
+/* global exports:true */
 exports = hyperform;
+
 /* jspm will place these on the above "exports" variable */
 let set_renderer = Renderer.set;
 let register = Registry.set;
 export {
   version,
+
   checkValidity,
   reportValidity,
   setCustomValidity,
@@ -56,5 +59,5 @@ export {
   set_language,
   add_translation,
   set_renderer,
-  register,
+  register
 };

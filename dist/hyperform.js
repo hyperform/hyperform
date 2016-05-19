@@ -1903,7 +1903,9 @@
     }
 
     /* publish globally */
+    /* global exports:true */
     exports = hyperform;
+
     /* jspm will place these on the above "exports" variable */
     var set_renderer = Renderer.set;
     var register = registry.set;
