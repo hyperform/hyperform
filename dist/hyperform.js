@@ -1903,7 +1903,7 @@ var hyperform = (function () {
 
     mark(checkValidity);
 
-    var version = '0.7.1';
+    var version = '0.7.2';
 
     /**
      * public hyperform interface:
