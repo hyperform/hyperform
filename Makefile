@@ -1,5 +1,5 @@
 JSPM := node_modules/.bin/jspm
-JSPM_ARGS := --format global --global-name hyperform --skip-source-maps --quiet
+JSPM_ARGS := --format global --global-name hyperform --skip-source-maps
 
 UGLIFYJS := node_modules/.bin/uglifyjs
 UGLIFYJS_ARGS := --mangle --compress
