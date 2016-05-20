@@ -1049,8 +1049,12 @@ var Wrapper = function () {
     if (form === window || form instanceof window.HTMLDocument) {
       /* install on the prototypes, when called for the whole document */
       this.install([window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype]);
+      this.install_form(window.HTMLFormElement);
     } else if (form instanceof window.HTMLFormElement || form instanceof window.HTMLFieldSetElement) {
       this.install(form.elements);
+      if (form instanceof window.HTMLFormElement) {
+        this.install_form(form);
+      }
     }
 
     if (settings.revalidate === 'oninput') {
@@ -1108,6 +1112,17 @@ var Wrapper = function () {
         valueAsNumber.install(els[i]);
         willValidate.install(els[i]);
       }
+    }
+
+    /**
+     * install necessary polyfills on HTML <form> elements
+     */
+
+  }, {
+    key: 'install_form',
+    value: function install_form(form) {
+      checkValidity.install(form);
+      reportValidity.install(form);
     }
   }]);
 

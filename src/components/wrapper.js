@@ -40,9 +40,13 @@ export default class Wrapper {
         window.HTMLTextAreaElement.prototype,
         window.HTMLFieldSetElement.prototype,
       ]);
+      this.install_form(window.HTMLFormElement);
     } else if (form instanceof window.HTMLFormElement ||
               form instanceof window.HTMLFieldSetElement) {
       this.install(form.elements);
+      if (form instanceof window.HTMLFormElement) {
+        this.install_form(form);
+      }
     }
 
     if (settings.revalidate === 'oninput') {
@@ -96,6 +100,14 @@ export default class Wrapper {
       valueAsNumber.install(els[i]);
       willValidate.install(els[i]);
     }
+  }
+
+  /**
+   * install necessary polyfills on HTML <form> elements
+   */
+  install_form(form) {
+    checkValidity.install(form);
+    reportValidity.install(form);
   }
 
 }
