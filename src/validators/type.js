@@ -7,7 +7,10 @@ import is_validation_candidate from '../tools/is_validation_candidate';
 import { type_checked } from '../components/types';
 
 
-/* we use a dummy <a> where we set the href to test URL validity */
+/* we use a dummy <a> where we set the href to test URL validity
+ * TODO: move that out of the "global" scope so that JSDOM can be instantiated
+ * after loading Hyperform. (Web Platform tests)
+ */
 const url_canary = document.createElement('a');
 
 /* see https://html.spec.whatwg.org/multipage/forms.html#valid-e-mail-address */

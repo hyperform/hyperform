@@ -13,7 +13,7 @@ test('message_store', t => {
 
   // test chaining
   t.is(message_store.set(el, msg), message_store);
-  t.true(msg.hyperform);
+  t.true(msg.__hyperform);
 
   t.is(message_store.get(el), msg);
   t.true(message_store.delete(el));
