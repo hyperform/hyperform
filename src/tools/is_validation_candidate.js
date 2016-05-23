@@ -45,6 +45,13 @@ export default function(element) {
                 p.hasAttribute('disabled')) {
               /* quick return, if it's a child of a disabled fieldset */
               return false;
+            } else if (p.nodeName.toUpperCase() === 'DATALIST') {
+              /* quick return, if it's a child of a datalist
+               * Do not use HTMLDataListElement to support older browsers,
+               * too.
+               * @see https://html.spec.whatwg.org/multipage/forms.html#the-datalist-element:barred-from-constraint-validation
+               */
+              return false;
             } else if (p === element.form) {
               /* the outer boundary. We can stop looking for relevant
                * fieldsets. */

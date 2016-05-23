@@ -1,17 +1,19 @@
 define(function () { 'use strict';
 
     /**
-     * mark an object with a 'hyperform=true' property
+     * mark an object with a '__hyperform=true' property
      *
      * We use this to distinguish our properties from the native ones. Usage:
      * js> mark(obj);
-     * js> assert(obj.hyperform === true)
+     * js> assert(obj.__hyperform === true)
      */
 
     function mark (obj) {
       if (['object', 'function'].indexOf(typeof obj) > -1) {
-        delete obj.hyperform;
-        Object.defineProperty(obj, 'hyperform', {
+        delete obj.__hyperform;
+        Object.defineProperty(obj, '__hyperform', {
+          configurable: true,
+          enumerable: false,
           value: true
         });
       }
@@ -20,7 +22,7 @@ define(function () { 'use strict';
     }
 
     /**
-     * return a function, that adds property to an element
+     * return a function, that adds `property` to an element
      *
      * js> installer('foo', { value: 'bar' })(element);
      * js> assert(element.foo === 'bar');
@@ -29,10 +31,18 @@ define(function () { 'use strict';
     function installer (property, descriptor) {
       return function (element) {
         var original_descriptor = Object.getOwnPropertyDescriptor(element, property);
-        if (original_descriptor && !(original_descriptor.get && original_descriptor.get.hyperform || original_descriptor.value && original_descriptor.value.hyperform)) {
+
+        if (original_descriptor) {
+
+          /* we already installed that property... */
+          if (original_descriptor.get && original_descriptor.get.__hyperform || original_descriptor.value && original_descriptor.value.__hyperform) {
+            return;
+          }
+
           /* publish existing property under new name, if it's not from us */
           Object.defineProperty(element, '_original_' + property, original_descriptor);
         }
+
         delete element[property];
         Object.defineProperty(element, property, descriptor);
       };
@@ -1178,6 +1188,13 @@ define(function () { 'use strict';
                 if (p instanceof window.HTMLFieldSetElement && p.hasAttribute('disabled')) {
                   /* quick return, if it's a child of a disabled fieldset */
                   return false;
+                } else if (p.nodeName.toUpperCase() === 'DATALIST') {
+                  /* quick return, if it's a child of a datalist
+                   * Do not use HTMLDataListElement to support older browsers,
+                   * too.
+                   * @see https://html.spec.whatwg.org/multipage/forms.html#the-datalist-element:barred-from-constraint-validation
+                   */
+                  return false;
                 } else if (p === element.form) {
                   /* the outer boundary. We can stop looking for relevant
                    * fieldsets. */
@@ -1427,7 +1444,10 @@ define(function () { 'use strict';
       });
     }
 
-    /* we use a dummy <a> where we set the href to test URL validity */
+    /* we use a dummy <a> where we set the href to test URL validity
+     * TODO: move that out of the "global" scope so that JSDOM can be instantiated
+     * after loading Hyperform. (Web Platform tests)
+     */
     var url_canary = document.createElement('a');
 
     /* see https://html.spec.whatwg.org/multipage/forms.html#valid-e-mail-address */
