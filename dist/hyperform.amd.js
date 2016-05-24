@@ -1445,10 +1445,10 @@ define(function () { 'use strict';
     }
 
     /* we use a dummy <a> where we set the href to test URL validity
-     * TODO: move that out of the "global" scope so that JSDOM can be instantiated
-     * after loading Hyperform. (Web Platform tests)
+     * The definition is out of the "global" scope so that JSDOM can be instantiated
+     * after loading Hyperform for tests.
      */
-    var url_canary = document.createElement('a');
+    var url_canary;
 
     /* see https://html.spec.whatwg.org/multipage/forms.html#valid-e-mail-address */
     var email_pattern = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
@@ -1468,6 +1468,9 @@ define(function () { 'use strict';
 
       switch (type) {
         case 'url':
+          if (!url_canary) {
+            url_canary = document.createElement('a');
+          }
           url_canary.href = element.value;
           is_valid = url_canary.href === element.value || url_canary.href === element.value + '/';
           break;
