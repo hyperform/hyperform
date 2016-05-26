@@ -25,7 +25,8 @@ export default function(element) {
    * bad input will hopefully also always support a proper
    * ValidityState.badInput */
   if (! element.value) {
-    if ('_original_validity' in element) {
+    if ('_original_validity' in element &&
+        ! element._original_validity.__hyperform) {
       return ! element._original_validity.badInput;
     }
     /* no value and no original badInput: Assume all's right. */
