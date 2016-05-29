@@ -4,6 +4,7 @@
 import comma_split from '../tools/comma_split';
 import get_type from '../tools/get_type';
 import is_validation_candidate from '../tools/is_validation_candidate';
+import trim from '../tools/trim';
 import { type_checked } from '../components/types';
 
 
@@ -36,16 +37,17 @@ export default function(element) {
         if (! url_canary) {
           url_canary = document.createElement('a');
         }
-        url_canary.href = element.value;
-        is_valid = (url_canary.href === element.value ||
-                    url_canary.href === element.value+'/');
+        const value = trim(element.value);
+        url_canary.href = value;
+        is_valid = (url_canary.href === value ||
+                    url_canary.href === value+'/');
         break;
     case 'email':
         if (element.hasAttribute('multiple')) {
           is_valid = comma_split(element.value)
                        .every(value => email_pattern.test(value));
         } else {
-          is_valid = email_pattern.test(element.value);
+          is_valid = email_pattern.test(trim(element.value));
         }
         break;
     case 'file':

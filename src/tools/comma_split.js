@@ -1,6 +1,9 @@
 'use strict';
 
 
+import trim from './trim';
+
+
 /**
  * split a string on comma and trim the components
  *
@@ -12,8 +15,6 @@
  */
 export default function(str) {
   return str.split(',')
-            .map(
-                item => item/*.trim()*/.replace(
-                          /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, ''))
+            .map(item => trim(item))
             .filter(b=>b);
 }
