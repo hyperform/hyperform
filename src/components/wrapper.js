@@ -12,6 +12,7 @@ import ValidityState from '../polyfills/validityState';
 import valueAsDate from '../polyfills/valueAsDate';
 import valueAsNumber from '../polyfills/valueAsNumber';
 import willValidate from '../polyfills/willValidate';
+import { install_properties } from '../polyfills/properties';
 
 
 const instances = new WeakMap();
@@ -99,6 +100,7 @@ export default class Wrapper {
       valueAsDate.install(els[i]);
       valueAsNumber.install(els[i]);
       willValidate.install(els[i]);
+      install_properties(els[i]);
     }
   }
 
