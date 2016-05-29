@@ -1038,6 +1038,73 @@ willValidate.install = installer('willValidate', {
 
 mark(willValidate);
 
+function install_properties(element) {
+  /* jshint -W083 */
+  var _arr = ['accept', 'max', 'min', 'pattern', 'placeholder', 'step'];
+  for (var _i = 0; _i < _arr.length; _i++) {
+    var prop = _arr[_i];
+    Object.defineProperty(element, prop, {
+      configurable: true,
+      enumerable: true,
+      get: function (prop) {
+        return function () {
+          return this.getAttribute(prop);
+        };
+      }(prop),
+      set: function (prop) {
+        return function (value) {
+          this.setAttribute(prop, value);
+        };
+      }(prop)
+    });
+  }
+
+  var _arr2 = ['multiple', 'required', 'readOnly'];
+  for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
+    var _prop = _arr2[_i2];
+    Object.defineProperty(element, _prop, {
+      configurable: true,
+      enumerable: true,
+      get: function (prop) {
+        return function () {
+          return this.hasAttribute(prop);
+        };
+      }(_prop.toLowerCase()),
+      set: function (prop) {
+        return function (value) {
+          if (value) {
+            this.setAttribute(prop, prop);
+          } else {
+            this.removeAttribute(prop, prop);
+          }
+        };
+      }(_prop.toLowerCase())
+    });
+  }
+
+  var _arr3 = ['minLength', 'maxLength'];
+  for (var _i3 = 0; _i3 < _arr3.length; _i3++) {
+    var _prop2 = _arr3[_i3];
+    Object.defineProperty(element, _prop2, {
+      configurable: true,
+      enumerable: true,
+      get: function (prop) {
+        return function () {
+          return Math.max(0, Number(this.getAttribute(prop)));
+        };
+      }(_prop2.toLowerCase()),
+      set: function (prop) {
+        return function (value) {
+          if (/^[0-9]+$/.test(value)) {
+            this.setAttribute(prop, value);
+          }
+        };
+      }(_prop2.toLowerCase())
+    });
+  }
+  /* jshint +W083 */
+}
+
 var instances = new WeakMap();
 
 /**
@@ -1121,6 +1188,7 @@ var Wrapper = function () {
         valueAsDate.install(els[i]);
         valueAsNumber.install(els[i]);
         willValidate.install(els[i]);
+        install_properties(els[i]);
       }
     }
 
@@ -1426,6 +1494,17 @@ function test_step (element) {
   result > step * scale - 0.00000001;
 }
 
+var ws_on_start_or_end = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
+
+/**
+ * trim a string of whitespace
+ *
+ * We don't use String.trim() to remove the need to polyfill it.
+ */
+function trim (str) {
+  return str.replace(ws_on_start_or_end, '');
+}
+
 /**
  * split a string on comma and trim the components
  *
@@ -1435,10 +1514,9 @@ function test_step (element) {
  *
  * We don't use String.trim() to remove the need to polyfill it.
  */
-
 function comma_split (str) {
   return str.split(',').map(function (item) {
-    return item /*.trim()*/.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+    return trim(item);
   }).filter(function (b) {
     return b;
   });
@@ -1471,8 +1549,9 @@ function test_type (element) {
       if (!url_canary) {
         url_canary = document.createElement('a');
       }
-      url_canary.href = element.value;
-      is_valid = url_canary.href === element.value || url_canary.href === element.value + '/';
+      var value = trim(element.value);
+      url_canary.href = value;
+      is_valid = url_canary.href === value || url_canary.href === value + '/';
       break;
     case 'email':
       if (element.hasAttribute('multiple')) {
@@ -1480,7 +1559,7 @@ function test_type (element) {
           return email_pattern.test(value);
         });
       } else {
-        is_valid = email_pattern.test(element.value);
+        is_valid = email_pattern.test(trim(element.value));
       }
       break;
     case 'file':
@@ -1550,7 +1629,7 @@ function test_bad_input (element) {
    * bad input will hopefully also always support a proper
    * ValidityState.badInput */
   if (!element.value) {
-    if ('_original_validity' in element) {
+    if ('_original_validity' in element && !element._original_validity.__hyperform) {
       return !element._original_validity.badInput;
     }
     /* no value and no original badInput: Assume all's right. */
@@ -1745,10 +1824,6 @@ var validity_state_checkers = {
     if (invalid) {
       message_store.set(element, sprintf(_('TextTooLong'), element.getAttribute('maxlength'), unicode_string_length(element.value)));
     }
-  console.log(invalid);
-  console.log(element.getAttribute('maxlength'));
-  console.log(unicode_string_length(element.value));
-  console.log(element.value);
 
     return invalid;
   },
