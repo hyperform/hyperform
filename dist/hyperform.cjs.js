@@ -562,7 +562,7 @@ var message_store = {
 
     if (element instanceof window.HTMLFieldSetElement) {
       var wrapped_form = get_wrapper(element);
-      if (wrapped_form && wrapped_form.settings.strict) {
+      if (wrapped_form && !wrapped_form.settings.extend_fieldset) {
         /* make this a no-op for <fieldset> in strict mode */
         return message_store;
       }
@@ -1272,7 +1272,7 @@ function is_validation_candidate (element) {
         var wrapped_form = get_wrapper(element);
         /* it hasn't got the (non-standard) attribute 'novalidate' or its
          * parent form has got the strict parameter */
-        if (wrapped_form && wrapped_form.settings.strict || !element.hasAttribute('novalidate') || !element.noValidate) {
+        if (wrapped_form && wrapped_form.settings.novalidate_on_elements || !element.hasAttribute('novalidate') || !element.noValidate) {
 
           /* it isn't part of a <fieldset disabled> */
           var p = element.parentNode;
@@ -2061,20 +2061,38 @@ function hyperform(form) {
 
   var _ref$strict = _ref.strict;
   var strict = _ref$strict === undefined ? false : _ref$strict;
-  var _ref$revalidate = _ref.revalidate;
-  var revalidate = _ref$revalidate === undefined ? 'oninput' : _ref$revalidate;
-  var _ref$valid_event = _ref.valid_event;
-  var valid_event = _ref$valid_event === undefined ? true : _ref$valid_event;
-  var _ref$classes = _ref.classes;
-  var classes = _ref$classes === undefined ? {} : _ref$classes;
+  var revalidate = _ref.revalidate;
+  var valid_event = _ref.valid_event;
+  var extend_fieldset = _ref.extend_fieldset;
+  var novalidate_on_elements = _ref.novalidate_on_elements;
+  var classes = _ref.classes;
+
+
+  if (revalidate === undefined) {
+    revalidate = strict ? 'onsubmit' : 'oninput';
+  }
+  if (valid_event === undefined) {
+    valid_event = !strict;
+  }
+  if (extend_fieldset === undefined) {
+    extend_fieldset = !strict;
+  }
+  if (novalidate_on_elements === undefined) {
+    novalidate_on_elements = !strict;
+  }
+  if (!classes) {
+    classes = {};
+  }
+
+  var settings = { strict: strict, revalidate: revalidate, valid_event: valid_event, extend_fieldset: extend_fieldset, classes: classes };
 
   if (form instanceof window.NodeList || form instanceof window.HTMLCollection || form instanceof Array) {
     return Array.prototype.map.call(form, function (element) {
-      return hyperform(element);
+      return hyperform(element, settings);
     });
   }
 
-  return new Wrapper(form, { strict: strict, revalidate: revalidate, valid_event: valid_event, classes: classes });
+  return new Wrapper(form, settings);
 }
 
 var set_renderer = Renderer.set;
