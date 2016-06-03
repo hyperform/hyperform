@@ -4,7 +4,7 @@
 import mark from '../tools/mark';
 import installer from '../tools/property_installer';
 import trigger_event from '../tools/trigger_event';
-import renderer from '../components/renderer';
+import Renderer from '../components/renderer';
 import ValidityState from './validityState';
 import { get_wrapper } from '../components/wrapper';
 
@@ -34,7 +34,7 @@ function reportValidity(element) {
   }
 
   if (! event || ! event.defaultPrevented) {
-    renderer.show_warning(element);
+    Renderer.show_warning(element);
   }
 
   return valid;
