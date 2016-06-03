@@ -1,7 +1,7 @@
 'use strict';
 
 
-import catch_submit from '../tools/catch_submit';
+import { catch_submit, uncatch_submit } from '../tools/catch_submit';
 import checkValidity from '../polyfills/checkValidity';
 import reportValidity from '../polyfills/reportValidity';
 import setCustomValidity from '../polyfills/setCustomValidity';
@@ -53,9 +53,17 @@ export default class Wrapper {
     if (settings.revalidate === 'oninput') {
       /* in a perfect world we'd just bind to "input", but support here is
        * abysmal: http://caniuse.com/#feat=input-event */
-      form.addEventListener('keyup', this.revalidate.bind(this));
-      form.addEventListener('change', this.revalidate.bind(this));
+      form.addEventListener('keyup', this.revalidate);
+      form.addEventListener('change', this.revalidate);
     }
+  }
+
+  destroy() {
+    uncatch_submit(this.form);
+    instances.delete(this.form);
+    this.form.removeEventListener('keyup', this.revalidate);
+    this.form.removeEventListener('change', this.revalidate);
+    // TODO: "uninstall" properties from this.install
   }
 
   /**

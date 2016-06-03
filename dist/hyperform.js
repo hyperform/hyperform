@@ -757,40 +757,55 @@ var hyperform = (function () {
     }
 
     /**
-     * catch all relevant events _prior_ to a form being submitted
+     * catch explicit submission by click on a button
      */
-    function catch_submit (listening_node) {
-      /* catch explicit submission (click on button) */
-      listening_node.addEventListener('click', function (event) {
-        if (!event.defaultPrevented && (event.target.nodeName === 'INPUT' || event.target.nodeName === 'BUTTON') && (event.target.type === 'image' || event.target.type === 'submit') && !event.target.hasAttribute('formnovalidate') && event.target.form && !event.target.form.hasAttribute('novalidate')) {
+    function click_handler(event) {
+      if (!event.defaultPrevented && (event.target.nodeName === 'INPUT' || event.target.nodeName === 'BUTTON') && (event.target.type === 'image' || event.target.type === 'submit') && !event.target.hasAttribute('formnovalidate') && event.target.form && !event.target.form.hasAttribute('novalidate')) {
 
+        check(event);
+      }
+    }
+
+    /**
+     * catch implicit submission by pressing <Enter> in some situations
+     */
+    function keypress_handler(event) {
+      if (!event.defaultPrevented && event.keyCode === 13 && event.target.nodeName === 'INPUT' && text_types.indexOf(event.target.type) > -1 && event.target.form && !event.target.form.hasAttribute('novalidate')) {
+
+        /* check, that there is no submit button in the form. Otherwise
+         * that should be clicked. */
+        var submit,
+            el = event.target.form.elements.length;
+        for (var i = 0; i < el; i++) {
+          if (['image', 'submit'].indexOf(event.target.form.elements[i].type) > -1) {
+            submit = event.target.form.elements[i];
+            break;
+          }
+        }
+
+        if (submit) {
+          event.preventDefault();
+          submit.click();
+        } else {
           check(event);
         }
-      });
+      }
+    }
 
-      /* catch implicit submission */
-      listening_node.addEventListener('keypress', function (event) {
-        if (!event.defaultPrevented && event.keyCode === 13 && event.target.nodeName === 'INPUT' && text_types.indexOf(event.target.type) > -1 && event.target.form && !event.target.form.hasAttribute('novalidate')) {
+    /**
+     * catch all relevant events _prior_ to a form being submitted
+     */
+    function catch_submit(listening_node) {
+      listening_node.addEventListener('click', click_handler);
+      listening_node.addEventListener('keypress', keypress_handler);
+    }
 
-          /* check, that there is no submit button in the form. Otherwise
-           * that should be clicked. */
-          var submit,
-              el = event.target.form.elements.length;
-          for (var i = 0; i < el; i++) {
-            if (['image', 'submit'].indexOf(event.target.form.elements[i].type) > -1) {
-              submit = event.target.form.elements[i];
-              break;
-            }
-          }
-
-          if (submit) {
-            event.preventDefault();
-            submit.click();
-          } else {
-            check(event);
-          }
-        }
-      });
+    /**
+     * decommission the event listeners again
+     */
+    function uncatch_submit(listening_node) {
+      listening_node.removeEventListener('click', click_handler);
+      listening_node.removeEventListener('keypress', keypress_handler);
     }
 
     /**
@@ -1138,17 +1153,26 @@ var hyperform = (function () {
         if (settings.revalidate === 'oninput') {
           /* in a perfect world we'd just bind to "input", but support here is
            * abysmal: http://caniuse.com/#feat=input-event */
-          form.addEventListener('keyup', this.revalidate.bind(this));
-          form.addEventListener('change', this.revalidate.bind(this));
+          form.addEventListener('keyup', this.revalidate);
+          form.addEventListener('change', this.revalidate);
         }
       }
 
-      /**
-       * revalidate an input element
-       */
-
-
       _createClass(Wrapper, [{
+        key: 'destroy',
+        value: function destroy() {
+          uncatch_submit(this.form);
+          instances.delete(this.form);
+          this.form.removeEventListener('keyup', this.revalidate);
+          this.form.removeEventListener('change', this.revalidate);
+          // TODO: "uninstall" properties from this.install
+        }
+
+        /**
+         * revalidate an input element
+         */
+
+      }, {
         key: 'revalidate',
         value: function revalidate(event) {
           if (event.target instanceof window.HTMLButtonElement || event.target instanceof window.HTMLTextAreaElement || event.target instanceof window.HTMLSelectElement || event.target instanceof window.HTMLInputElement) {
