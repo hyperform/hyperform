@@ -23,17 +23,39 @@ import version from './version';
  */
 function hyperform(form, {
                      strict=false,
-                     revalidate='oninput',
-                     valid_event=true,
-                     classes={},
+                     revalidate,
+                     valid_event,
+                     extend_fieldset,
+                     novalidate_on_elements,
+                     classes,
                    }={}) {
+
+  if (revalidate === undefined) {
+    revalidate = strict? 'onsubmit' : 'oninput';
+  }
+  if (valid_event === undefined) {
+    valid_event = ! strict;
+  }
+  if (extend_fieldset === undefined) {
+    extend_fieldset = ! strict;
+  }
+  if (novalidate_on_elements === undefined) {
+    novalidate_on_elements = ! strict;
+  }
+  if (! classes) {
+    classes = {};
+  }
+
+  const settings = { strict, revalidate, valid_event, extend_fieldset, classes, };
+
   if (form instanceof window.NodeList ||
       form instanceof window.HTMLCollection ||
       form instanceof Array) {
-    return Array.prototype.map.call(form, element => hyperform(element));
+    return Array.prototype.map.call(form,
+                                    element => hyperform(element, settings));
   }
 
-  return new Wrapper(form, { strict, revalidate, valid_event, classes, });
+  return new Wrapper(form, settings);
 }
 
 let set_renderer = Renderer.set;
