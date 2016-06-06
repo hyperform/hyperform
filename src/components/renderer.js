@@ -31,6 +31,7 @@ const Renderer = {
         warning = document.createElement('div');
         warning.className = wrapper && wrapper.settings.classes.warning || 'hf-warning';
         warning.id = generate_id();
+        warning.setAttribute('aria-live', 'polite');
         warnings_cache.set(element, warning);
       }
 
