@@ -15,7 +15,7 @@ function get(attributes) {
 }
 
 test('valueAsNumber getter (number)', t => {
-  t.is(valueAsNumber.call(get({
+  t.is(valueAsNumber(get({
     type: 'number',
     value: '1',
   })), 1);
@@ -26,12 +26,12 @@ test('valueAsNumber setter (number)', t => {
     type: 'number',
     value: '',
   });
-  valueAsNumber.call(el, 1);
-  t.is(valueAsNumber.call(el), 1);
+  valueAsNumber(el, 1);
+  t.is(valueAsNumber(el), 1);
 });
 
 test('valueAsNumber getter (month)', t => {
-  t.is(valueAsNumber.call(get({
+  t.is(valueAsNumber(get({
     type: 'month',
     value: '2015-01',
   })), +(new Date(Date.UTC(2015, 0, 1))));
@@ -42,26 +42,26 @@ test('valueAsNumber setter (month)', t => {
     type: 'month',
     value: '',
   });
-  valueAsNumber.call(el, +(new Date(Date.UTC(2015, 0, 1))));
-  t.is(valueAsNumber.call(el), +(new Date(Date.UTC(2015, 0, 1))));
+  valueAsNumber(el, +(new Date(Date.UTC(2015, 0, 1))));
+  t.is(valueAsNumber(el), +(new Date(Date.UTC(2015, 0, 1))));
 });
 
 test('valueAsNumber setter with wrong type', t => {
-  t.throws(() => valueAsNumber.call(get({
+  t.throws(() => valueAsNumber(get({
     type: 'number',
     value: '',
   }), '1'), window.DOMException);
 });
 
 test('valueAsNumber getter for non-applicable type', t => {
-  t.true(isNaN(valueAsNumber.call(get({
+  t.true(isNaN(valueAsNumber(get({
     type: 'text',
     value: '1',
   }))));
 });
 
 test('valueAsNumber setter for non-applicable type', t => {
-  t.throws(() => valueAsNumber.call(get({
+  t.throws(() => valueAsNumber(get({
     type: 'text',
     value: '',
   }), 1), window.DOMException);
