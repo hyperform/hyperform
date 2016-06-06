@@ -898,7 +898,7 @@ var hyperform = (function () {
           } else if (typeof value === 'number' && window.isFinite(value)) {
             try {
               /* try setting as a date, but... */
-              valueAsDate.call(element, new Date(value));
+              valueAsDate(element, new Date(value));
             } catch (e) {
               /* ... when valueAsDate is not responsible, ... */
               if (!(e instanceof window.DOMException)) {
@@ -953,7 +953,7 @@ var hyperform = (function () {
 
 
       if (prev !== null) {
-        valueAsNumber.call(element, prev);
+        valueAsNumber(element, prev);
       }
     }
 
@@ -987,7 +987,7 @@ var hyperform = (function () {
 
 
       if (next !== null) {
-        valueAsNumber.call(element, next);
+        valueAsNumber(element, next);
       }
     }
 

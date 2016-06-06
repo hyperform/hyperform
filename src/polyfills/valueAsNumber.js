@@ -29,7 +29,7 @@ function valueAsNumber(element, value=undefined) {
       } else if (typeof value === 'number' && window.isFinite(value)) {
         try {
           /* try setting as a date, but... */
-          valueAsDate.call(element, new Date(value));
+          valueAsDate(element, new Date(value));
         } catch (e) {
           /* ... when valueAsDate is not responsible, ... */
           if (! (e instanceof window.DOMException)) {

@@ -25,7 +25,7 @@ function stepUp(element, n=1) {
   var { prev, next } = get_next_valid(element, n);
 
   if (next !== null) {
-    valueAsNumber.call(element, next);
+    valueAsNumber(element, next);
   }
 }
 

@@ -897,7 +897,7 @@ function valueAsNumber(element) {
       } else if (typeof value === 'number' && window.isFinite(value)) {
         try {
           /* try setting as a date, but... */
-          valueAsDate.call(element, new Date(value));
+          valueAsDate(element, new Date(value));
         } catch (e) {
           /* ... when valueAsDate is not responsible, ... */
           if (!(e instanceof window.DOMException)) {
@@ -952,7 +952,7 @@ function stepDown(element) {
 
 
   if (prev !== null) {
-    valueAsNumber.call(element, prev);
+    valueAsNumber(element, prev);
   }
 }
 
@@ -986,7 +986,7 @@ function stepUp(element) {
 
 
   if (next !== null) {
-    valueAsNumber.call(element, next);
+    valueAsNumber(element, next);
   }
 }
 

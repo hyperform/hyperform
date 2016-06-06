@@ -25,7 +25,7 @@ function stepDown(element, n=1) {
   var { prev, next } = get_next_valid(element, n);
 
   if (prev !== null) {
-    valueAsNumber.call(element, prev);
+    valueAsNumber(element, prev);
   }
 }
 
