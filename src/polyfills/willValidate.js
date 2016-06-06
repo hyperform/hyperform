@@ -20,10 +20,7 @@ function willValidate() {
  * publish a convenience function to replace the native element.willValidate
  */
 willValidate.install = installer('willValidate', {
-  configurable: true,
-  enumerable: true,
   get: willValidate,
-  set: undefined,
 });
 
 mark(willValidate);

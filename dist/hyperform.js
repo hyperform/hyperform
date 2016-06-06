@@ -30,6 +30,9 @@ var hyperform = (function () {
      */
 
     function installer (property, descriptor) {
+      descriptor.configurable = true;
+      descriptor.enumerable = true;
+
       return function (element) {
         var original_descriptor = Object.getOwnPropertyDescriptor(element, property);
 
@@ -648,6 +651,7 @@ var hyperform = (function () {
             warning = document.createElement('div');
             warning.className = wrapper && wrapper.settings.classes.warning || 'hf-warning';
             warning.id = generate_id();
+            warning.setAttribute('aria-live', 'polite');
             warnings_cache.set(element, warning);
           }
 
@@ -710,8 +714,6 @@ var hyperform = (function () {
      * publish a convenience function to replace the native element.reportValidity
      */
     reportValidity.install = installer('reportValidity', {
-      configurable: true,
-      enumerable: true,
       value: function value() {
         return reportValidity(this);
       },
@@ -821,8 +823,6 @@ var hyperform = (function () {
      * publish a convenience function to replace the native element.setCustomValidity
      */
     setCustomValidity.install = installer('setCustomValidity', {
-      configurable: true,
-      enumerable: true,
       value: setCustomValidity,
       writable: true
     });
@@ -868,8 +868,6 @@ var hyperform = (function () {
     }
 
     valueAsDate.install = installer('valueAsDate', {
-      configurable: true,
-      enumerable: true,
       get: valueAsDate,
       set: valueAsDate
     });
@@ -925,8 +923,6 @@ var hyperform = (function () {
     }
 
     valueAsNumber.install = installer('valueAsNumber', {
-      configurable: true,
-      enumerable: true,
       get: valueAsNumber,
       set: valueAsNumber
     });
@@ -958,8 +954,6 @@ var hyperform = (function () {
     }
 
     stepDown.install = installer('stepDown', {
-      configurable: true,
-      enumerable: true,
       value: function value() {
         var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
         return stepDown(this, n);
@@ -994,8 +988,6 @@ var hyperform = (function () {
     }
 
     stepUp.install = installer('stepUp', {
-      configurable: true,
-      enumerable: true,
       value: function value() {
         var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
         return stepUp(this, n);
@@ -1025,10 +1017,7 @@ var hyperform = (function () {
      * publish a convenience function to replace the native element.validationMessage
      */
     validationMessage.install = installer('validationMessage', {
-      configurable: true,
-      enumerable: true,
-      get: validationMessage,
-      set: undefined
+      get: validationMessage
     });
 
     mark(validationMessage);
@@ -1046,10 +1035,7 @@ var hyperform = (function () {
      * publish a convenience function to replace the native element.willValidate
      */
     willValidate.install = installer('willValidate', {
-      configurable: true,
-      enumerable: true,
-      get: willValidate,
-      set: undefined
+      get: willValidate
     });
 
     mark(willValidate);
@@ -2006,8 +1992,6 @@ var hyperform = (function () {
      * publish a convenience function to replace the native element.validity
      */
     ValidityState.install = installer('validity', {
-      configurable: true,
-      enumerable: true,
       get: function get() {
         return ValidityState(this);
       }
@@ -2042,8 +2026,6 @@ var hyperform = (function () {
      * publish a convenience function to replace the native element.checkValidity
      */
     checkValidity.install = installer('checkValidity', {
-      configurable: true,
-      enumerable: true,
       value: function value() {
         return checkValidity(this);
       },

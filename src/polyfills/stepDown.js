@@ -30,8 +30,6 @@ function stepDown(element, n=1) {
 }
 
 stepDown.install = installer('stepDown', {
-  configurable: true,
-  enumerable: true,
   value: function(n=1) { return stepDown(this, n); },
   writable: true,
 });

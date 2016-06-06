@@ -45,8 +45,6 @@ function reportValidity(element) {
  * publish a convenience function to replace the native element.reportValidity
  */
 reportValidity.install = installer('reportValidity', {
-  configurable: true,
-  enumerable: true,
   value: function() { return reportValidity(this); },
   writable: true,
 });

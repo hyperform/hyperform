@@ -8,6 +8,9 @@
  * js> assert(element.foo === 'bar');
  */
 export default function(property, descriptor) {
+  descriptor.configurable = true;
+  descriptor.enumerable = true;
+
   return function(element) {
     const original_descriptor = Object.getOwnPropertyDescriptor(element, property);
 

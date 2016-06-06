@@ -20,8 +20,6 @@ function setCustomValidity(msg) {
  * publish a convenience function to replace the native element.setCustomValidity
  */
 setCustomValidity.install = installer('setCustomValidity', {
-  configurable: true,
-  enumerable: true,
   value: setCustomValidity,
   writable: true,
 });

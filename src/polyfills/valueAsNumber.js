@@ -61,8 +61,6 @@ function valueAsNumber(value=undefined) {
 
 
 valueAsNumber.install = installer('valueAsNumber', {
-  configurable: true,
-  enumerable: true,
   get: valueAsNumber,
   set: valueAsNumber,
 });

@@ -30,8 +30,6 @@ function stepUp(element, n=1) {
 }
 
 stepUp.install = installer('stepUp', {
-  configurable: true,
-  enumerable: true,
   value: function(n=1) { return stepUp(this, n); },
   writable: true,
 });

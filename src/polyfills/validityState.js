@@ -335,8 +335,6 @@ mark(ValidityStatePrototype);
  * publish a convenience function to replace the native element.validity
  */
 ValidityState.install = installer('validity', {
-  configurable: true,
-  enumerable: true,
   get: function() { return ValidityState(this); },
 });
 

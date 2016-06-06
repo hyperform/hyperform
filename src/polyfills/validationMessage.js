@@ -27,10 +27,7 @@ function validationMessage() {
  * publish a convenience function to replace the native element.validationMessage
  */
 validationMessage.install = installer('validationMessage', {
-  configurable: true,
-  enumerable: true,
   get: validationMessage,
-  set: undefined,
 });
 
 mark(validationMessage);

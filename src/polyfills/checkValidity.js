@@ -38,8 +38,6 @@ function checkValidity(element) {
  * publish a convenience function to replace the native element.checkValidity
  */
 checkValidity.install = installer('checkValidity', {
-  configurable: true,
-  enumerable: true,
   value: function() { return checkValidity(this); },
   writable: true,
 });
