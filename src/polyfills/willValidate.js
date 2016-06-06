@@ -9,10 +9,8 @@ import is_validation_candidate from '../tools/is_validation_candidate';
 /**
  * check, if an element will be subject to HTML5 validation
  */
-function willValidate() {
-  /* jshint -W040 */
-  return is_validation_candidate(this);
-  /* jshint +W040 */
+function willValidate(element) {
+  return is_validation_candidate(element);
 }
 
 
@@ -20,7 +18,7 @@ function willValidate() {
  * publish a convenience function to replace the native element.willValidate
  */
 willValidate.install = installer('willValidate', {
-  get: willValidate,
+  get: function() { return willValidate(this); },
 });
 
 mark(willValidate);

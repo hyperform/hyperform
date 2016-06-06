@@ -10,10 +10,8 @@ import message_store from '../components/message_store';
  * get the validation message for an element, empty string, if the element
  * satisfies all constraints.
  */
-function validationMessage() {
-  /* jshint -W040 */
-  const msg = message_store.get(this);
-  /* jshint +W040 */
+function validationMessage(element) {
+  const msg = message_store.get(element);
   if (! msg) {
     return '';
   }
@@ -27,7 +25,7 @@ function validationMessage() {
  * publish a convenience function to replace the native element.validationMessage
  */
 validationMessage.install = installer('validationMessage', {
-  get: validationMessage,
+  get: function() { return validationMessage(this); },
 });
 
 mark(validationMessage);
