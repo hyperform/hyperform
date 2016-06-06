@@ -14,11 +14,10 @@ import valueAsDate from './valueAsDate';
  *
  * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasnumber
  */
-function valueAsNumber(value=undefined) {
-  /* jshint -W040 */
-  const type = get_type(this);
+function valueAsNumber(element, value=undefined) {
+  const type = get_type(element);
   if (numbers.indexOf(type) > -1) {
-    if (type === 'range' && this.hasAttribute('multiple')) {
+    if (type === 'range' && element.hasAttribute('multiple')) {
       /* @see https://html.spec.whatwg.org/multipage/forms.html#do-not-apply */
       return NaN;
     }
@@ -26,18 +25,18 @@ function valueAsNumber(value=undefined) {
     if (value !== undefined) {
       /* setter: value must be NaN or a finite number */
       if (isNaN(value)) {
-        this.value = '';
+        element.value = '';
       } else if (typeof value === 'number' && window.isFinite(value)) {
         try {
           /* try setting as a date, but... */
-          valueAsDate.call(this, new Date(value));
+          valueAsDate.call(element, new Date(value));
         } catch (e) {
           /* ... when valueAsDate is not responsible, ... */
           if (! (e instanceof window.DOMException)) {
             throw e;
           }
           /* ... set it via Number.toString(). */
-          this.value = value.toString();
+          element.value = value.toString();
         }
       } else {
         throw new window.DOMException(
@@ -46,7 +45,7 @@ function valueAsNumber(value=undefined) {
       return;
     }
 
-    return string_to_number(this.value, type);
+    return string_to_number(element.value, type);
 
   } else if (value !== undefined) {
     /* trying to set a number on a not-number input fails */
@@ -54,15 +53,14 @@ function valueAsNumber(value=undefined) {
       'valueAsNumber setter cannot set number on this element',
       'InvalidStateError');
   }
-  /* jshint +W040 */
 
   return NaN;
 }
 
 
 valueAsNumber.install = installer('valueAsNumber', {
-  get: valueAsNumber,
-  set: valueAsNumber,
+  get: function() { return valueAsNumber(this); },
+  set: function(value) { valueAsNumber(this, value); },
 });
 
 mark(valueAsNumber);

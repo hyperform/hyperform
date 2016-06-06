@@ -812,17 +812,17 @@ function uncatch_submit(listening_node) {
 /**
  *
  */
-function setCustomValidity(msg) {
-  /* jshint -W040 */
-  message_store.set(this, msg, true);
-  /* jshint +W040 */
+function setCustomValidity(element, msg) {
+  message_store.set(element, msg, true);
 }
 
 /**
  * publish a convenience function to replace the native element.setCustomValidity
  */
 setCustomValidity.install = installer('setCustomValidity', {
-  value: setCustomValidity,
+  value: function value(msg) {
+    return setCustomValidity(this, msg);
+  },
   writable: true
 });
 
@@ -833,21 +833,20 @@ mark(setCustomValidity);
  *
  * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasdate
  */
-function valueAsDate() {
-  var value = arguments.length <= 0 || arguments[0] === undefined ? undefined : arguments[0];
+function valueAsDate(element) {
+  var value = arguments.length <= 1 || arguments[1] === undefined ? undefined : arguments[1];
 
-  /* jshint -W040 */
-  var type = get_type(this);
+  var type = get_type(element);
   if (dates.indexOf(type) > -1) {
     if (value !== undefined) {
       /* setter: value must be null or a Date() */
       if (value === null) {
-        this.value = '';
+        element.value = '';
       } else if (value instanceof Date) {
         if (isNaN(value.getTime())) {
-          this.value = '';
+          element.value = '';
         } else {
-          this.value = date_to_string(value, type);
+          element.value = date_to_string(value, type);
         }
       } else {
         throw new window.DOMException('valueAsDate setter encountered invalid value', 'TypeError');
@@ -855,20 +854,23 @@ function valueAsDate() {
       return;
     }
 
-    var value_date = string_to_date(this.value, type);
+    var value_date = string_to_date(element.value, type);
     return value_date instanceof Date ? value_date : null;
   } else if (value !== undefined) {
     /* trying to set a date on a not-date input fails */
     throw new window.DOMException('valueAsDate setter cannot set date on this element', 'InvalidStateError');
   }
-  /* jshint +W040 */
 
   return null;
 }
 
 valueAsDate.install = installer('valueAsDate', {
-  get: valueAsDate,
-  set: valueAsDate
+  get: function get() {
+    return valueAsDate(this);
+  },
+  set: function set(value) {
+    valueAsDate(this, value);
+  }
 });
 
 mark(valueAsDate);
@@ -878,13 +880,12 @@ mark(valueAsDate);
  *
  * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasnumber
  */
-function valueAsNumber() {
-  var value = arguments.length <= 0 || arguments[0] === undefined ? undefined : arguments[0];
+function valueAsNumber(element) {
+  var value = arguments.length <= 1 || arguments[1] === undefined ? undefined : arguments[1];
 
-  /* jshint -W040 */
-  var type = get_type(this);
+  var type = get_type(element);
   if (numbers.indexOf(type) > -1) {
-    if (type === 'range' && this.hasAttribute('multiple')) {
+    if (type === 'range' && element.hasAttribute('multiple')) {
       /* @see https://html.spec.whatwg.org/multipage/forms.html#do-not-apply */
       return NaN;
     }
@@ -892,18 +893,18 @@ function valueAsNumber() {
     if (value !== undefined) {
       /* setter: value must be NaN or a finite number */
       if (isNaN(value)) {
-        this.value = '';
+        element.value = '';
       } else if (typeof value === 'number' && window.isFinite(value)) {
         try {
           /* try setting as a date, but... */
-          valueAsDate.call(this, new Date(value));
+          valueAsDate.call(element, new Date(value));
         } catch (e) {
           /* ... when valueAsDate is not responsible, ... */
           if (!(e instanceof window.DOMException)) {
             throw e;
           }
           /* ... set it via Number.toString(). */
-          this.value = value.toString();
+          element.value = value.toString();
         }
       } else {
         throw new window.DOMException('valueAsNumber setter encountered invalid value', 'TypeError');
@@ -911,19 +912,22 @@ function valueAsNumber() {
       return;
     }
 
-    return string_to_number(this.value, type);
+    return string_to_number(element.value, type);
   } else if (value !== undefined) {
     /* trying to set a number on a not-number input fails */
     throw new window.DOMException('valueAsNumber setter cannot set number on this element', 'InvalidStateError');
   }
-  /* jshint +W040 */
 
   return NaN;
 }
 
 valueAsNumber.install = installer('valueAsNumber', {
-  get: valueAsNumber,
-  set: valueAsNumber
+  get: function get() {
+    return valueAsNumber(this);
+  },
+  set: function set(value) {
+    valueAsNumber(this, value);
+  }
 });
 
 mark(valueAsNumber);

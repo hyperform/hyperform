@@ -9,10 +9,8 @@ import message_store from '../components/message_store';
 /**
  *
  */
-function setCustomValidity(msg) {
-  /* jshint -W040 */
-  message_store.set(this, msg, true);
-  /* jshint +W040 */
+function setCustomValidity(element, msg) {
+  message_store.set(element, msg, true);
 }
 
 
@@ -20,7 +18,7 @@ function setCustomValidity(msg) {
  * publish a convenience function to replace the native element.setCustomValidity
  */
 setCustomValidity.install = installer('setCustomValidity', {
-  value: setCustomValidity,
+  value: function (msg) { return setCustomValidity(this, msg); },
   writable: true,
 });
 
