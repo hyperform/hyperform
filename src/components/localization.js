@@ -1,6 +1,11 @@
 'use strict';
 
 
+/**
+ * the following validation messages are from Firefox source,
+ * http://mxr.mozilla.org/mozilla-central/source/dom/locales/en-US/chrome/dom/dom.properties
+ * released under MPL license, http://mozilla.org/MPL/2.0/.
+ */
 const catalog = {
   en: {
     /**
