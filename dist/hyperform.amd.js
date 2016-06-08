@@ -1080,6 +1080,20 @@ define(function () { 'use strict';
       /* jshint +W083 */
     }
 
+    /**
+     * remove `property` from element and restore _original_property, if present
+     */
+
+    function _uninstall (element, property) {
+      delete element[property];
+
+      var original_descriptor = Object.getOwnPropertyDescriptor(element, '_original_' + property);
+
+      if (original_descriptor) {
+        Object.defineProperty(element, property, original_descriptor);
+      }
+    }
+
     var instances = new WeakMap();
 
     /**
@@ -1124,7 +1138,17 @@ define(function () { 'use strict';
           instances.delete(this.form);
           this.form.removeEventListener('keyup', this.revalidate);
           this.form.removeEventListener('change', this.revalidate);
-          // TODO: "uninstall" properties from this.install
+          if (this.form === window || this.form instanceof window.HTMLDocument) {
+            this.uninstall([window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype]);
+            _uninstall(window.HTMLFormElement, 'checkValidity');
+            _uninstall(window.HTMLFormElement, 'reportValidity');
+          } else if (this.form instanceof window.HTMLFormElement || this.form instanceof window.HTMLFieldSetElement) {
+            this.uninstall(this.form.elements);
+            if (this.form instanceof window.HTMLFormElement) {
+              _uninstall(this.form, 'checkValidity');
+              _uninstall(this.form, 'reportValidity');
+            }
+          }
         }
 
         /**
@@ -1185,6 +1209,29 @@ define(function () { 'use strict';
         value: function install_form(form) {
           checkValidity.install(form);
           reportValidity.install(form);
+        }
+      }, {
+        key: 'uninstall',
+        value: function uninstall(els) {
+          if (els instanceof window.HTMLElement) {
+            els = [els];
+          }
+
+          var els_length = els.length;
+
+          for (var i = 0; i < els_length; i++) {
+            _uninstall(els[i], 'checkValidity');
+            _uninstall(els[i], 'reportValidity');
+            _uninstall(els[i], 'setCustomValidity');
+            _uninstall(els[i], 'stepDown');
+            _uninstall(els[i], 'stepUp');
+            _uninstall(els[i], 'validationMessage');
+            _uninstall(els[i], 'ValidityState');
+            _uninstall(els[i], 'valueAsDate');
+            _uninstall(els[i], 'valueAsNumber');
+            _uninstall(els[i], 'willValidate');
+            // TODO uninstall our versions of property getters
+          }
         }
       }]);
 

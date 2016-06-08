@@ -13,6 +13,7 @@ import valueAsDate from '../polyfills/valueAsDate';
 import valueAsNumber from '../polyfills/valueAsNumber';
 import willValidate from '../polyfills/willValidate';
 import { install_properties } from '../polyfills/properties';
+import uninstall from '../tools/property_uninstaller';
 
 
 const instances = new WeakMap();
@@ -63,7 +64,24 @@ export default class Wrapper {
     instances.delete(this.form);
     this.form.removeEventListener('keyup', this.revalidate);
     this.form.removeEventListener('change', this.revalidate);
-    // TODO: "uninstall" properties from this.install
+    if (this.form === window || this.form instanceof window.HTMLDocument) {
+      this.uninstall([
+        window.HTMLButtonElement.prototype,
+        window.HTMLInputElement.prototype,
+        window.HTMLSelectElement.prototype,
+        window.HTMLTextAreaElement.prototype,
+        window.HTMLFieldSetElement.prototype,
+      ]);
+      uninstall(window.HTMLFormElement, 'checkValidity');
+      uninstall(window.HTMLFormElement, 'reportValidity');
+    } else if (this.form instanceof window.HTMLFormElement ||
+              this.form instanceof window.HTMLFieldSetElement) {
+      this.uninstall(this.form.elements);
+      if (this.form instanceof window.HTMLFormElement) {
+        uninstall(this.form, 'checkValidity');
+        uninstall(this.form, 'reportValidity');
+      }
+    }
   }
 
   /**
@@ -118,6 +136,28 @@ export default class Wrapper {
   install_form(form) {
     checkValidity.install(form);
     reportValidity.install(form);
+  }
+
+  uninstall(els) {
+    if (els instanceof window.HTMLElement) {
+      els = [ els ];
+    }
+
+    const els_length = els.length;
+
+    for (let i = 0; i < els_length; i++) {
+      uninstall(els[i], 'checkValidity');
+      uninstall(els[i], 'reportValidity');
+      uninstall(els[i], 'setCustomValidity');
+      uninstall(els[i], 'stepDown');
+      uninstall(els[i], 'stepUp');
+      uninstall(els[i], 'validationMessage');
+      uninstall(els[i], 'ValidityState');
+      uninstall(els[i], 'valueAsDate');
+      uninstall(els[i], 'valueAsNumber');
+      uninstall(els[i], 'willValidate');
+      // TODO uninstall our versions of property getters
+    }
   }
 
 }
