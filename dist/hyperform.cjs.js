@@ -1226,7 +1226,7 @@ var Wrapper = function () {
         _uninstall(els[i], 'stepDown');
         _uninstall(els[i], 'stepUp');
         _uninstall(els[i], 'validationMessage');
-        _uninstall(els[i], 'ValidityState');
+        _uninstall(els[i], 'validity');
         _uninstall(els[i], 'valueAsDate');
         _uninstall(els[i], 'valueAsNumber');
         _uninstall(els[i], 'willValidate');

@@ -152,7 +152,7 @@ export default class Wrapper {
       uninstall(els[i], 'stepDown');
       uninstall(els[i], 'stepUp');
       uninstall(els[i], 'validationMessage');
-      uninstall(els[i], 'ValidityState');
+      uninstall(els[i], 'validity');
       uninstall(els[i], 'valueAsDate');
       uninstall(els[i], 'valueAsNumber');
       uninstall(els[i], 'willValidate');
