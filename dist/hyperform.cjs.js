@@ -1338,6 +1338,61 @@ var registry = {
 };
 
 /**
+ * test whether the element suffers from bad input
+ */
+function test_bad_input (element) {
+  var type = get_type(element);
+
+  if (!is_validation_candidate(element) || input_checked.indexOf(type) === -1) {
+    /* we're not interested, thanks! */
+    return true;
+  }
+
+  /* the browser hides some bad input from the DOM, e.g. malformed numbers,
+   * email addresses with invalid punycode representation, ... We try to resort
+   * to the original method here. The assumption is, that a browser hiding
+   * bad input will hopefully also always support a proper
+   * ValidityState.badInput */
+  if (!element.value) {
+    if ('_original_validity' in element && !element._original_validity.__hyperform) {
+      return !element._original_validity.badInput;
+    }
+    /* no value and no original badInput: Assume all's right. */
+    return true;
+  }
+
+  var result = true;
+  switch (type) {
+    case 'color':
+      result = /^#[a-f0-9]{6}$/.test(element.value);
+      break;
+    case 'number':
+    case 'range':
+      result = !isNaN(Number(element.value));
+      break;
+    case 'datetime':
+    case 'date':
+    case 'month':
+    case 'week':
+    case 'time':
+      result = string_to_date(element.value, type) !== null;
+      break;
+    case 'datetime-local':
+      result = /^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(element.value);
+      break;
+    case 'tel':
+      /* spec says No! Phone numbers can have all kinds of formats, so this
+       * is expected to be a free-text field. */
+      // TODO we could allow a setting 'phone_regex' to be evaluated here.
+      break;
+    case 'email':
+      break;
+  }
+
+  return result;
+}
+
+/**
  * test the max attribute
  *
  * we use Number() instead of parseFloat(), because an invalid attribute
@@ -1632,282 +1687,231 @@ function test_type (element) {
   return is_valid;
 }
 
-/**
- * test whether the element suffers from bad input
- */
-function test_bad_input (element) {
-  var type = get_type(element);
-
-  if (!is_validation_candidate(element) || input_checked.indexOf(type) === -1) {
-    /* we're not interested, thanks! */
-    return true;
+function badInput(element) {
+  var invalid = !test_bad_input(element);
+  if (invalid) {
+    message_store.set(element, _('Please match the requested type.'));
   }
-
-  /* the browser hides some bad input from the DOM, e.g. malformed numbers,
-   * email addresses with invalid punycode representation, ... We try to resort
-   * to the original method here. The assumption is, that a browser hiding
-   * bad input will hopefully also always support a proper
-   * ValidityState.badInput */
-  if (!element.value) {
-    if ('_original_validity' in element && !element._original_validity.__hyperform) {
-      return !element._original_validity.badInput;
-    }
-    /* no value and no original badInput: Assume all's right. */
-    return true;
-  }
-
-  var result = true;
-  switch (type) {
-    case 'color':
-      result = /^#[a-f0-9]{6}$/.test(element.value);
-      break;
-    case 'number':
-    case 'range':
-      result = !isNaN(Number(element.value));
-      break;
-    case 'datetime':
-    case 'date':
-    case 'month':
-    case 'week':
-    case 'time':
-      result = string_to_date(element.value, type) !== null;
-      break;
-    case 'datetime-local':
-      result = /^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(element.value);
-      break;
-    case 'tel':
-      /* spec says No! Phone numbers can have all kinds of formats, so this
-       * is expected to be a free-text field. */
-      // TODO we could allow a setting 'phone_regex' to be evaluated here.
-      break;
-    case 'email':
-      break;
-  }
-
-  return result;
+  return invalid;
 }
 
-/**
- * Implement constraint checking functionality defined in the HTML5 standard
- *
- * @see https://html.spec.whatwg.org/multipage/forms.html#dom-cva-validity
- * @return bool true if the test fails [!], false otherwise
- */
-var validity_state_checkers = {
-  badInput: function badInput(element) {
-    var invalid = !test_bad_input(element);
-    if (invalid) {
-      message_store.set(element, _('Please match the requested type.'));
-    }
-    return invalid;
-  },
+function customError(element) {
+  /* check, if there are custom validators in the registry, and call
+   * them. */
+  var custom_validators = registry.get(element);
+  var valid = true;
 
-  customError: function customError(element) {
-    /* check, if there are custom validators in the registry, and call
-     * them. */
-    var custom_validators = registry.get(element);
-    var valid = true;
+  if (custom_validators.length) {
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
 
-    if (custom_validators.length) {
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+    try {
+      for (var _iterator = custom_validators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var validator = _step.value;
 
+        var result = validator(element);
+        if (result !== undefined && !result) {
+          valid = false;
+          /* break on first invalid response */
+          break;
+        }
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
       try {
-        for (var _iterator = custom_validators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var validator = _step.value;
-
-          var result = validator(element);
-          if (result !== undefined && !result) {
-            valid = false;
-            /* break on first invalid response */
-            break;
-          }
+        if (!_iteratorNormalCompletion && _iterator.return) {
+          _iterator.return();
         }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
       } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
+        if (_didIteratorError) {
+          throw _iteratorError;
         }
       }
     }
-
-    /* check, if there are other validity messages already */
-    if (valid) {
-      var msg = message_store.get(element);
-      valid = !(msg.toString() && 'is_custom' in msg);
-    }
-
-    return !valid;
-  },
-
-  patternMismatch: function patternMismatch(element) {
-    var invalid = !test_pattern(element);
-    if (invalid) {
-      message_store.set(element, element.title ? sprintf(_('PatternMismatchWithTitle'), element.title) : _('PatternMismatch'));
-    }
-    return invalid;
-  },
-
-  rangeOverflow: function rangeOverflow(element) {
-    var invalid = !test_max(element);
-    var type = get_type(element);
-
-    if (invalid) {
-      var msg = void 0;
-      switch (type) {
-        case 'date':
-        case 'datetime':
-        case 'datetime-local':
-          msg = sprintf(_('DateRangeOverflow'), string_to_date(element.getAttribute('max'), type));
-          break;
-        case 'time':
-          msg = sprintf(_('TimeRangeOverflow'), string_to_date(element.getAttribute('max'), type));
-          break;
-        // case 'number':
-        default:
-          msg = sprintf(_('NumberRangeOverflow'), string_to_number(element.getAttribute('max'), type));
-          break;
-      }
-      message_store.set(element, msg);
-    }
-
-    return invalid;
-  },
-
-  rangeUnderflow: function rangeUnderflow(element) {
-    var invalid = !test_min(element);
-    var type = get_type(element);
-
-    if (invalid) {
-      var msg = void 0;
-      switch (type) {
-        case 'date':
-        case 'datetime':
-        case 'datetime-local':
-          msg = sprintf(_('DateRangeUnderflow'), string_to_date(element.getAttribute('max'), type));
-          break;
-        case 'time':
-          msg = sprintf(_('TimeRangeUnderflow'), string_to_date(element.getAttribute('max'), type));
-          break;
-        // case 'number':
-        default:
-          msg = sprintf(_('NumberRangeUnderflow'), string_to_number(element.getAttribute('max'), type));
-          break;
-      }
-      message_store.set(element, msg);
-    }
-
-    return invalid;
-  },
-
-  stepMismatch: function stepMismatch(element) {
-    var invalid = !test_step(element);
-
-    if (invalid) {
-      var _get_next_valid = get_next_valid(element);
-
-      var _get_next_valid2 = _slicedToArray(_get_next_valid, 2);
-
-      var min = _get_next_valid2[0];
-      var max = _get_next_valid2[1];
-
-      var sole = false;
-
-      if (min === null) {
-        sole = max;
-      } else if (max === null) {
-        sole = min;
-      }
-
-      if (sole !== false) {
-        message_store.set(element, sprintf(_('StepMismatchOneValue'), sole));
-      } else {
-        message_store.set(element, sprintf(_('StepMismatch'), min, max));
-      }
-    }
-
-    return invalid;
-  },
-
-  tooLong: function tooLong(element) {
-    var invalid = !test_maxlength(element);
-
-    if (invalid) {
-      message_store.set(element, sprintf(_('TextTooLong'), element.getAttribute('maxlength'), unicode_string_length(element.value)));
-    }
-
-    return invalid;
-  },
-
-  tooShort: function tooShort(element) {
-    var invalid = !test_minlength(element);
-
-    if (invalid) {
-      message_store.set(element, sprintf(_('Please lengthen this text to %l characters or more (you are currently using %l characters).'), element.getAttribute('maxlength'), unicode_string_length(element.value)));
-    }
-
-    return invalid;
-  },
-
-  typeMismatch: function typeMismatch(element) {
-    var invalid = !test_type(element);
-
-    if (invalid) {
-      var msg = _('Please use the appropriate format.');
-      var type = get_type(element);
-
-      if (type === 'email') {
-        if (element.hasAttribute('multiple')) {
-          msg = _('Please enter a comma separated list of email addresses.');
-        } else {
-          msg = _('InvalidEmail');
-        }
-      } else if (type === 'url') {
-        msg = _('InvalidURL');
-      } else if (type === 'file') {
-        msg = _('Please select a file of the correct type.');
-      }
-      message_store.set(element, msg);
-    }
-
-    return invalid;
-  },
-
-  valueMissing: function valueMissing(element) {
-    var invalid = !test_required(element);
-
-    if (invalid) {
-      var msg = _('ValueMissing');
-      var type = get_type(element);
-
-      if (type === 'checkbox') {
-        msg = _('CheckboxMissing');
-      } else if (type === 'radio') {
-        msg = _('RadioMissing');
-      } else if (type === 'file') {
-        if (element.hasAttribute('multiple')) {
-          msg = _('Please select one or more files.');
-        } else {
-          msg = _('FileMissing');
-        }
-      } else if (element instanceof window.HTMLSelectElement) {
-        msg = _('SelectMissing');
-      }
-      message_store.set(element, msg);
-    }
-
-    return invalid;
   }
 
+  /* check, if there are other validity messages already */
+  if (valid) {
+    var msg = message_store.get(element);
+    valid = !(msg.toString() && 'is_custom' in msg);
+  }
+
+  return !valid;
+}
+
+function patternMismatch(element) {
+  var invalid = !test_pattern(element);
+  if (invalid) {
+    message_store.set(element, element.title ? sprintf(_('PatternMismatchWithTitle'), element.title) : _('PatternMismatch'));
+  }
+  return invalid;
+}
+
+function rangeOverflow(element) {
+  var invalid = !test_max(element);
+  var type = get_type(element);
+
+  if (invalid) {
+    var msg = void 0;
+    switch (type) {
+      case 'date':
+      case 'datetime':
+      case 'datetime-local':
+        msg = sprintf(_('DateRangeOverflow'), string_to_date(element.getAttribute('max'), type));
+        break;
+      case 'time':
+        msg = sprintf(_('TimeRangeOverflow'), string_to_date(element.getAttribute('max'), type));
+        break;
+      // case 'number':
+      default:
+        msg = sprintf(_('NumberRangeOverflow'), string_to_number(element.getAttribute('max'), type));
+        break;
+    }
+    message_store.set(element, msg);
+  }
+
+  return invalid;
+}
+
+function rangeUnderflow(element) {
+  var invalid = !test_min(element);
+  var type = get_type(element);
+
+  if (invalid) {
+    var msg = void 0;
+    switch (type) {
+      case 'date':
+      case 'datetime':
+      case 'datetime-local':
+        msg = sprintf(_('DateRangeUnderflow'), string_to_date(element.getAttribute('max'), type));
+        break;
+      case 'time':
+        msg = sprintf(_('TimeRangeUnderflow'), string_to_date(element.getAttribute('max'), type));
+        break;
+      // case 'number':
+      default:
+        msg = sprintf(_('NumberRangeUnderflow'), string_to_number(element.getAttribute('max'), type));
+        break;
+    }
+    message_store.set(element, msg);
+  }
+
+  return invalid;
+}
+
+function stepMismatch(element) {
+  var invalid = !test_step(element);
+
+  if (invalid) {
+    var _get_next_valid = get_next_valid(element);
+
+    var _get_next_valid2 = _slicedToArray(_get_next_valid, 2);
+
+    var min = _get_next_valid2[0];
+    var max = _get_next_valid2[1];
+
+    var sole = false;
+
+    if (min === null) {
+      sole = max;
+    } else if (max === null) {
+      sole = min;
+    }
+
+    if (sole !== false) {
+      message_store.set(element, sprintf(_('StepMismatchOneValue'), sole));
+    } else {
+      message_store.set(element, sprintf(_('StepMismatch'), min, max));
+    }
+  }
+
+  return invalid;
+}
+
+function tooLong(element) {
+  var invalid = !test_maxlength(element);
+
+  if (invalid) {
+    message_store.set(element, sprintf(_('TextTooLong'), element.getAttribute('maxlength'), unicode_string_length(element.value)));
+  }
+
+  return invalid;
+}
+
+function tooShort(element) {
+  var invalid = !test_minlength(element);
+
+  if (invalid) {
+    message_store.set(element, sprintf(_('Please lengthen this text to %l characters or more (you are currently using %l characters).'), element.getAttribute('maxlength'), unicode_string_length(element.value)));
+  }
+
+  return invalid;
+}
+
+function typeMismatch(element) {
+  var invalid = !test_type(element);
+
+  if (invalid) {
+    var msg = _('Please use the appropriate format.');
+    var type = get_type(element);
+
+    if (type === 'email') {
+      if (element.hasAttribute('multiple')) {
+        msg = _('Please enter a comma separated list of email addresses.');
+      } else {
+        msg = _('InvalidEmail');
+      }
+    } else if (type === 'url') {
+      msg = _('InvalidURL');
+    } else if (type === 'file') {
+      msg = _('Please select a file of the correct type.');
+    }
+    message_store.set(element, msg);
+  }
+
+  return invalid;
+}
+
+function valueMissing(element) {
+  var invalid = !test_required(element);
+
+  if (invalid) {
+    var msg = _('ValueMissing');
+    var type = get_type(element);
+
+    if (type === 'checkbox') {
+      msg = _('CheckboxMissing');
+    } else if (type === 'radio') {
+      msg = _('RadioMissing');
+    } else if (type === 'file') {
+      if (element.hasAttribute('multiple')) {
+        msg = _('Please select one or more files.');
+      } else {
+        msg = _('FileMissing');
+      }
+    } else if (element instanceof window.HTMLSelectElement) {
+      msg = _('SelectMissing');
+    }
+    message_store.set(element, msg);
+  }
+
+  return invalid;
+}
+
+var validity_state_checkers = {
+  badInput: badInput,
+  customError: customError,
+  patternMismatch: patternMismatch,
+  rangeOverflow: rangeOverflow,
+  rangeUnderflow: rangeUnderflow,
+  stepMismatch: stepMismatch,
+  tooLong: tooLong,
+  tooShort: tooShort,
+  typeMismatch: typeMismatch,
+  valueMissing: valueMissing
 };
 
 /**
