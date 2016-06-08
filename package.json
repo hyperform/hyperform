@@ -56,7 +56,8 @@
       "babel-register",
       "./test/helpers/setup-browser-env.js"
     ],
-    "babel": "inherit"
+    "babel": "inherit",
+    "concurrency": 5
   },
   "babel": {
     "presets": [
