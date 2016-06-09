@@ -11,6 +11,7 @@ import ValidityState from './polyfills/validityState';
 import valueAsDate from './polyfills/valueAsDate';
 import valueAsNumber from './polyfills/valueAsNumber';
 import willValidate from './polyfills/willValidate';
+import custom_messages from './components/custom_messages';
 import { set_language, add_translation } from './components/localization';
 import CustomValidatorRegistry from './components/registry';
 import Renderer from './components/renderer';
@@ -58,9 +59,6 @@ function hyperform(form, {
   return new Wrapper(form, settings);
 }
 
-let set_renderer = Renderer.set;
-let register = CustomValidatorRegistry.set;
-
 hyperform.version = version;
 
 hyperform.checkValidity = checkValidity;
@@ -76,7 +74,8 @@ hyperform.willValidate = willValidate;
 
 hyperform.set_language = set_language;
 hyperform.add_translation = add_translation;
-hyperform.set_renderer = set_renderer;
-hyperform.register = register;
+hyperform.set_renderer = Renderer.set;
+hyperform.register = CustomValidatorRegistry.set;
+hyperform.set_message = custom_messages.set;
 
 export default hyperform;

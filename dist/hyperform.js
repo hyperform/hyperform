@@ -1364,6 +1364,47 @@ var hyperform = (function () {
       return [].concat(_toConsumableArray(str)).length;
     }
 
+    /**
+     * internal storage for custom error messages
+     */
+
+    var store$1 = new WeakMap();
+
+    /**
+     * register custom error messages per element
+     */
+    var custom_messages = {
+      set: function set(element, validator, message) {
+        var messages = store$1.get(element) || {};
+        messages[validator] = message;
+        store$1.set(element, messages);
+        return custom_messages;
+      },
+      get: function get(element, validator) {
+        var _default = arguments.length <= 2 || arguments[2] === undefined ? undefined : arguments[2];
+
+        var messages = store$1.get(element);
+        if (messages === undefined || !(validator in messages)) {
+          return _default;
+        }
+        return messages[validator];
+      },
+      delete: function _delete(element) {
+        var validator = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+
+        if (!validator) {
+          return store$1.delete(element);
+        }
+        var messages = store$1.get(element) || {};
+        if (validator in messages) {
+          delete messages[validator];
+          store$1.set(element, messages);
+          return true;
+        }
+        return false;
+      }
+    };
+
     var internal_registry = new WeakMap();
 
     /**
@@ -1377,7 +1418,7 @@ var hyperform = (function () {
         var current = internal_registry.get(element) || [];
         current.push(validator);
         internal_registry.set(element, current);
-        return registry;
+        return custom_validator_registry;
       },
       get: function get(element) {
         return internal_registry.get(element) || [];
@@ -1750,8 +1791,15 @@ var hyperform = (function () {
       };
     }
 
+    /**
+     * create a common function to set error messages
+     */
+    function set_msg(element, msgtype, _default) {
+      message_store.set(element, custom_messages.get(element, msgtype, _default));
+    }
+
     var badInput = check$1(test_bad_input, function (element) {
-      message_store.set(element, _('Please match the requested type.'));
+      return set_msg(element, 'badInput', _('Please match the requested type.'));
     });
 
     function customError(element) {
@@ -1802,7 +1850,7 @@ var hyperform = (function () {
     }
 
     var patternMismatch = check$1(test_pattern, function (element) {
-      message_store.set(element, element.title ? sprintf(_('PatternMismatchWithTitle'), element.title) : _('PatternMismatch'));
+      set_msg(element, 'patternMismatch', element.title ? sprintf(_('PatternMismatchWithTitle'), element.title) : _('PatternMismatch'));
     });
 
     var rangeOverflow = check$1(test_max, function (element) {
@@ -1822,7 +1870,7 @@ var hyperform = (function () {
           msg = sprintf(_('NumberRangeOverflow'), string_to_number(element.getAttribute('max'), type));
           break;
       }
-      message_store.set(element, msg);
+      set_msg(element, 'rangeOverflow', msg);
     });
 
     var rangeUnderflow = check$1(test_min, function (element) {
@@ -1843,7 +1891,7 @@ var hyperform = (function () {
           msg = sprintf(_('NumberRangeUnderflow'), string_to_number(element.getAttribute('min'), type));
           break;
       }
-      message_store.set(element, msg);
+      set_msg(element, 'rangeUnderflow', msg);
     });
 
     var stepMismatch = check$1(test_step, function (element) {
@@ -1855,6 +1903,7 @@ var hyperform = (function () {
       var max = _get_next_valid2[1];
 
       var sole = false;
+      var msg = void 0;
 
       if (min === null) {
         sole = max;
@@ -1863,18 +1912,19 @@ var hyperform = (function () {
       }
 
       if (sole !== false) {
-        message_store.set(element, sprintf(_('StepMismatchOneValue'), sole));
+        msg = sprintf(_('StepMismatchOneValue'), sole);
       } else {
-        message_store.set(element, sprintf(_('StepMismatch'), min, max));
+        msg = sprintf(_('StepMismatch'), min, max);
       }
+      set_msg(element, 'stepMismatch', msg);
     });
 
     var tooLong = check$1(test_maxlength, function (element) {
-      message_store.set(element, sprintf(_('TextTooLong'), element.getAttribute('maxlength'), unicode_string_length(element.value)));
+      set_msg(element, 'tooLong', sprintf(_('TextTooLong'), element.getAttribute('maxlength'), unicode_string_length(element.value)));
     });
 
     var tooShort = check$1(test_minlength, function (element) {
-      message_store.set(element, sprintf(_('Please lengthen this text to %l characters or more (you are currently using %l characters).'), element.getAttribute('maxlength'), unicode_string_length(element.value)));
+      set_msg(element, 'tooShort', sprintf(_('Please lengthen this text to %l characters or more (you are currently using %l characters).'), element.getAttribute('maxlength'), unicode_string_length(element.value)));
     });
 
     var typeMismatch = check$1(test_type, function (element) {
@@ -1892,7 +1942,8 @@ var hyperform = (function () {
       } else if (type === 'file') {
         msg = _('Please select a file of the correct type.');
       }
-      message_store.set(element, msg);
+
+      set_msg(element, 'typeMismatch', msg);
     });
 
     var valueMissing = check$1(test_required, function (element) {
@@ -1912,7 +1963,8 @@ var hyperform = (function () {
       } else if (element instanceof window.HTMLSelectElement) {
         msg = _('SelectMissing');
       }
-      message_store.set(element, msg);
+
+      set_msg(element, 'valueMissing', msg);
     });
 
     var validity_state_checkers = {
@@ -2105,9 +2157,6 @@ var hyperform = (function () {
       return new Wrapper(form, settings);
     }
 
-    var set_renderer = Renderer.set;
-    var register = custom_validator_registry.set;
-
     hyperform.version = version;
 
     hyperform.checkValidity = checkValidity;
@@ -2123,8 +2172,9 @@ var hyperform = (function () {
 
     hyperform.set_language = set_language;
     hyperform.add_translation = add_translation;
-    hyperform.set_renderer = set_renderer;
-    hyperform.register = register;
+    hyperform.set_renderer = Renderer.set;
+    hyperform.register = custom_validator_registry.set;
+    hyperform.set_message = custom_messages.set;
 
     return hyperform;
 

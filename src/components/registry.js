@@ -16,7 +16,7 @@ var custom_validator_registry = {
     var current = internal_registry.get(element) || [];
     current.push(validator);
     internal_registry.set(element, current);
-    return registry;
+    return custom_validator_registry;
   },
 
   get(element) {

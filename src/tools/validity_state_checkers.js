@@ -14,6 +14,7 @@ import sprintf from '../tools/sprintf';
 import string_to_number from '../tools/string_to_number';
 import string_to_date from '../tools/string_to_date';
 import unicode_string_length from '../tools/unicode_string_length';
+import custom_messages from '../components/custom_messages';
 import _ from '../components/localization';
 import message_store from '../components/message_store';
 import CustomValidatorRegistry from '../components/registry';
@@ -42,9 +43,16 @@ function check(test, react) {
 }
 
 
-const badInput = check(test_bad_input, element => {
-  message_store.set(element, _('Please match the requested type.'));
-});
+/**
+ * create a common function to set error messages
+ */
+function set_msg(element, msgtype, _default) {
+  message_store.set(element, custom_messages.get(element, msgtype, _default));
+}
+
+
+const badInput = check(test_bad_input, element => set_msg(element, 'badInput',
+                       _('Please match the requested type.')));
 
 
 function customError(element) {
@@ -75,7 +83,7 @@ function customError(element) {
 
 
 const patternMismatch = check(test_pattern, element => {
-  message_store.set(element,
+  set_msg(element, 'patternMismatch',
     element.title?
       sprintf(_('PatternMismatchWithTitle'), element.title)
       :
@@ -104,7 +112,7 @@ const rangeOverflow = check(test_max, element => {
                     string_to_number(element.getAttribute('max'), type));
       break;
   }
-  message_store.set(element, msg);
+  set_msg(element, 'rangeOverflow', msg);
 });
 
 
@@ -129,13 +137,14 @@ const rangeUnderflow = check(test_min, element => {
                     string_to_number(element.getAttribute('min'), type));
       break;
   }
-  message_store.set(element, msg);
+  set_msg(element, 'rangeUnderflow', msg);
 });
 
 
 const stepMismatch = check(test_step, element => {
   let [min, max] = get_next_valid(element);
   let sole = false;
+  let msg;
 
   if (min === null) {
     sole = max;
@@ -144,25 +153,26 @@ const stepMismatch = check(test_step, element => {
   }
 
   if (sole !== false) {
-    message_store.set(element, sprintf(_('StepMismatchOneValue'), sole));
+    msg = sprintf(_('StepMismatchOneValue'), sole);
   } else {
-    message_store.set(element, sprintf(_('StepMismatch'), min, max));
+    msg = sprintf(_('StepMismatch'), min, max);
   }
+  set_msg(element, 'stepMismatch', msg);
 });
 
 
 const tooLong = check(test_maxlength, element => {
-  message_store.set(element,
-    sprintf(_('TextTooLong'), element.getAttribute('maxlength'),
-            unicode_string_length(element.value)));
+  set_msg(element, 'tooLong',
+          sprintf(_('TextTooLong'), element.getAttribute('maxlength'),
+                  unicode_string_length(element.value)));
 });
 
 
 const tooShort = check(test_minlength, element => {
-  message_store.set(element,
-    sprintf(_('Please lengthen this text to %l characters or more (you are currently using %l characters).'),
-            element.getAttribute('maxlength'),
-            unicode_string_length(element.value)));
+  set_msg(element, 'tooShort',
+          sprintf(_('Please lengthen this text to %l characters or more (you are currently using %l characters).'),
+                  element.getAttribute('maxlength'),
+                  unicode_string_length(element.value)));
 });
 
 
@@ -181,7 +191,8 @@ const typeMismatch = check(test_type, element => {
   } else if (type === 'file') {
     msg = _('Please select a file of the correct type.');
   }
-  message_store.set(element, msg);
+
+  set_msg(element, 'typeMismatch', msg);
 });
 
 
@@ -202,7 +213,8 @@ const valueMissing = check(test_required, element => {
   } else if (element instanceof window.HTMLSelectElement) {
     msg = _('SelectMissing');
   }
-  message_store.set(element, msg);
+
+  set_msg(element, 'valueMissing', msg);
 });
 
 
