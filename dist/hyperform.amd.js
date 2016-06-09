@@ -1366,10 +1366,12 @@ define(function () { 'use strict';
     var internal_registry = new WeakMap();
 
     /**
+     * A registry for custom validators
+     *
      * slim wrapper around a WeakMap to ensure the values are arrays
      * (hence allowing > 1 validators per element)
      */
-    var registry = {
+    var custom_validator_registry = {
       set: function set(element, validator) {
         var current = internal_registry.get(element) || [];
         current.push(validator);
@@ -1754,7 +1756,7 @@ define(function () { 'use strict';
     function customError(element) {
       /* check, if there are custom validators in the registry, and call
        * them. */
-      var custom_validators = registry.get(element);
+      var custom_validators = custom_validator_registry.get(element);
       var valid = true;
 
       if (custom_validators.length) {
@@ -2103,7 +2105,7 @@ define(function () { 'use strict';
     }
 
     var set_renderer = Renderer.set;
-    var register = registry.set;
+    var register = custom_validator_registry.set;
 
     hyperform.version = version;
 

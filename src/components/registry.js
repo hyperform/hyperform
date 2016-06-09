@@ -5,10 +5,12 @@ const internal_registry = new WeakMap();
 
 
 /**
+ * A registry for custom validators
+ *
  * slim wrapper around a WeakMap to ensure the values are arrays
  * (hence allowing > 1 validators per element)
  */
-var registry = {
+var custom_validator_registry = {
 
   set(element, validator) {
     var current = internal_registry.get(element) || [];
@@ -27,4 +29,4 @@ var registry = {
 
 };
 
-export default registry;
+export default custom_validator_registry;

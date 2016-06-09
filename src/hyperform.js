@@ -12,7 +12,7 @@ import valueAsDate from './polyfills/valueAsDate';
 import valueAsNumber from './polyfills/valueAsNumber';
 import willValidate from './polyfills/willValidate';
 import { set_language, add_translation } from './components/localization';
-import Registry from './components/registry';
+import CustomValidatorRegistry from './components/registry';
 import Renderer from './components/renderer';
 import Wrapper from './components/wrapper';
 import version from './version';
@@ -59,7 +59,7 @@ function hyperform(form, {
 }
 
 let set_renderer = Renderer.set;
-let register = Registry.set;
+let register = CustomValidatorRegistry.set;
 
 hyperform.version = version;
 

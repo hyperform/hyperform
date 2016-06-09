@@ -16,7 +16,7 @@ import string_to_date from '../tools/string_to_date';
 import unicode_string_length from '../tools/unicode_string_length';
 import _ from '../components/localization';
 import message_store from '../components/message_store';
-import Registry from '../components/registry';
+import CustomValidatorRegistry from '../components/registry';
 import test_bad_input from '../validators/bad_input';
 import test_max from '../validators/max';
 import test_maxlength from '../validators/maxlength';
@@ -50,7 +50,7 @@ const badInput = check(test_bad_input, element => {
 function customError(element) {
   /* check, if there are custom validators in the registry, and call
    * them. */
-  const custom_validators = Registry.get(element);
+  const custom_validators = CustomValidatorRegistry.get(element);
   var valid = true;
 
   if (custom_validators.length) {
