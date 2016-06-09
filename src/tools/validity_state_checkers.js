@@ -28,13 +28,23 @@ import test_step from '../validators/step';
 import test_type from '../validators/type';
 
 
-function badInput(element) {
-  const invalid = ! test_bad_input(element);
-  if (invalid) {
-    message_store.set(element, _('Please match the requested type.'));
-  }
-  return invalid;
+/**
+ * boilerplate function for all tests but customError
+ */
+function check(test, react) {
+  return element => {
+    const invalid = ! test(element);
+    if (invalid) {
+      react(element);
+    }
+    return invalid;
+  };
 }
+
+
+const badInput = check(test_bad_input, element => {
+  message_store.set(element, _('Please match the requested type.'));
+});
 
 
 function customError(element) {
@@ -64,181 +74,136 @@ function customError(element) {
 }
 
 
-function patternMismatch(element) {
-  const invalid = ! test_pattern(element);
-  if (invalid) {
-    message_store.set(element,
-      element.title?
-        sprintf(_('PatternMismatchWithTitle'), element.title)
-        :
-        _('PatternMismatch')
-    );
+const patternMismatch = check(test_pattern, element => {
+  message_store.set(element,
+    element.title?
+      sprintf(_('PatternMismatchWithTitle'), element.title)
+      :
+      _('PatternMismatch')
+  );
+});
+
+
+const rangeOverflow = check(test_max, element => {
+  const type = get_type(element);
+  let msg;
+  switch (type) {
+    case 'date':
+    case 'datetime':
+    case 'datetime-local':
+      msg = sprintf(_('DateRangeOverflow'),
+                    string_to_date(element.getAttribute('max'), type));
+      break;
+    case 'time':
+      msg = sprintf(_('TimeRangeOverflow'),
+                    string_to_date(element.getAttribute('max'), type));
+      break;
+    // case 'number':
+    default:
+      msg = sprintf(_('NumberRangeOverflow'),
+                    string_to_number(element.getAttribute('max'), type));
+      break;
   }
-  return invalid;
-}
+  message_store.set(element, msg);
+});
 
 
-function rangeOverflow(element) {
-  const invalid = ! test_max(element);
+const rangeUnderflow = check(test_min, element => {
   const type = get_type(element);
 
-  if (invalid) {
-    let msg;
-    switch (type) {
-      case 'date':
-      case 'datetime':
-      case 'datetime-local':
-        msg = sprintf(_('DateRangeOverflow'),
-                      string_to_date(element.getAttribute('max'), type));
-        break;
-      case 'time':
-        msg = sprintf(_('TimeRangeOverflow'),
-                      string_to_date(element.getAttribute('max'), type));
-        break;
-      // case 'number':
-      default:
-        msg = sprintf(_('NumberRangeOverflow'),
-                      string_to_number(element.getAttribute('max'), type));
-        break;
-    }
-    message_store.set(element, msg);
+  let msg;
+  switch (type) {
+    case 'date':
+    case 'datetime':
+    case 'datetime-local':
+      msg = sprintf(_('DateRangeUnderflow'),
+                    string_to_date(element.getAttribute('min'), type));
+      break;
+    case 'time':
+      msg = sprintf(_('TimeRangeUnderflow'),
+                    string_to_date(element.getAttribute('min'), type));
+      break;
+    // case 'number':
+    default:
+      msg = sprintf(_('NumberRangeUnderflow'),
+                    string_to_number(element.getAttribute('min'), type));
+      break;
+  }
+  message_store.set(element, msg);
+});
+
+
+const stepMismatch = check(test_step, element => {
+  let [min, max] = get_next_valid(element);
+  let sole = false;
+
+  if (min === null) {
+    sole = max;
+  } else if (max === null) {
+    sole = min;
   }
 
-  return invalid;
-}
+  if (sole !== false) {
+    message_store.set(element, sprintf(_('StepMismatchOneValue'), sole));
+  } else {
+    message_store.set(element, sprintf(_('StepMismatch'), min, max));
+  }
+});
 
 
-function rangeUnderflow(element) {
-  const invalid = ! test_min(element);
+const tooLong = check(test_maxlength, element => {
+  message_store.set(element,
+    sprintf(_('TextTooLong'), element.getAttribute('maxlength'),
+            unicode_string_length(element.value)));
+});
+
+
+const tooShort = check(test_minlength, element => {
+  message_store.set(element,
+    sprintf(_('Please lengthen this text to %l characters or more (you are currently using %l characters).'),
+            element.getAttribute('maxlength'),
+            unicode_string_length(element.value)));
+});
+
+
+const typeMismatch = check(test_type, element => {
+  let msg = _('Please use the appropriate format.');
   const type = get_type(element);
 
-  if (invalid) {
-    let msg;
-    switch (type) {
-      case 'date':
-      case 'datetime':
-      case 'datetime-local':
-        msg = sprintf(_('DateRangeUnderflow'),
-                      string_to_date(element.getAttribute('max'), type));
-        break;
-      case 'time':
-        msg = sprintf(_('TimeRangeUnderflow'),
-                      string_to_date(element.getAttribute('max'), type));
-        break;
-      // case 'number':
-      default:
-        msg = sprintf(_('NumberRangeUnderflow'),
-                      string_to_number(element.getAttribute('max'), type));
-        break;
-    }
-    message_store.set(element, msg);
-  }
-
-  return invalid;
-}
-
-
-function stepMismatch(element) {
-  const invalid = ! test_step(element);
-
-  if (invalid) {
-    let [min, max] = get_next_valid(element);
-    let sole = false;
-
-    if (min === null) {
-      sole = max;
-    } else if (max === null) {
-      sole = min;
-    }
-
-    if (sole !== false) {
-      message_store.set(element, sprintf(_('StepMismatchOneValue'), sole));
+  if (type === 'email') {
+    if (element.hasAttribute('multiple')) {
+      msg = _('Please enter a comma separated list of email addresses.');
     } else {
-      message_store.set(element, sprintf(_('StepMismatch'), min, max));
+      msg = _('InvalidEmail');
     }
+  } else if (type === 'url') {
+    msg = _('InvalidURL');
+  } else if (type === 'file') {
+    msg = _('Please select a file of the correct type.');
   }
-
-  return invalid;
-}
-
-
-function tooLong(element) {
-  const invalid = ! test_maxlength(element);
-
-  if (invalid) {
-    message_store.set(element,
-      sprintf(_('TextTooLong'), element.getAttribute('maxlength'),
-              unicode_string_length(element.value)));
-  }
-
-  return invalid;
-}
+  message_store.set(element, msg);
+});
 
 
-function tooShort(element) {
-  const invalid = ! test_minlength(element);
+const valueMissing = check(test_required, element => {
+  let msg = _('ValueMissing');
+  const type = get_type(element);
 
-  if (invalid) {
-    message_store.set(element,
-      sprintf(_('Please lengthen this text to %l characters or more (you are currently using %l characters).'),
-              element.getAttribute('maxlength'),
-              unicode_string_length(element.value)));
-  }
-
-  return invalid;
-}
-
-
-function typeMismatch(element) {
-  const invalid = ! test_type(element);
-
-  if (invalid) {
-    let msg = _('Please use the appropriate format.');
-    const type = get_type(element);
-
-    if (type === 'email') {
-      if (element.hasAttribute('multiple')) {
-        msg = _('Please enter a comma separated list of email addresses.');
-      } else {
-        msg = _('InvalidEmail');
-      }
-    } else if (type === 'url') {
-      msg = _('InvalidURL');
-    } else if (type === 'file') {
-      msg = _('Please select a file of the correct type.');
+  if (type === 'checkbox') {
+    msg = _('CheckboxMissing');
+  } else if (type === 'radio') {
+    msg = _('RadioMissing');
+  } else if (type === 'file') {
+    if (element.hasAttribute('multiple')) {
+      msg = _('Please select one or more files.');
+    } else {
+      msg = _('FileMissing');
     }
-    message_store.set(element, msg);
+  } else if (element instanceof window.HTMLSelectElement) {
+    msg = _('SelectMissing');
   }
-
-  return invalid;
-}
-
-
-function valueMissing(element) {
-  const invalid = ! test_required(element);
-
-  if (invalid) {
-    let msg = _('ValueMissing');
-    const type = get_type(element);
-
-    if (type === 'checkbox') {
-      msg = _('CheckboxMissing');
-    } else if (type === 'radio') {
-      msg = _('RadioMissing');
-    } else if (type === 'file') {
-      if (element.hasAttribute('multiple')) {
-        msg = _('Please select one or more files.');
-      } else {
-        msg = _('FileMissing');
-      }
-    } else if (element instanceof window.HTMLSelectElement) {
-      msg = _('SelectMissing');
-    }
-    message_store.set(element, msg);
-  }
-
-  return invalid;
-}
+  message_store.set(element, msg);
+});
 
 
 export default {
