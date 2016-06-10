@@ -68,14 +68,14 @@ hyperform(window, {
 If you only need a certain feature, you can access it directly by name:
 
 ```js
-hyperform.willValidate.call(form.elements[0]);
-var is_valid = hyperform.validityState(form.elements[0]).valid;
+if (hyperform.willValidate(form.elements[0])) {
+    var is_valid = hyperform.validityState(form.elements[0]).valid;
+}
 ```
 
 ## Examples
 
-Check out the files in the [`examples`
-folder](https://github.com/hyperform/hyperform/tree/master/examples).
+[Check out the awesome examples!](https://hyperform.js.org/examples.html)
 
 ## Status
 
@@ -110,7 +110,7 @@ for prime time?
 
 What parts of the high-level API are finished?
 
-* :full_moon: Trigger a `validate` event before validating a form:
+*   :full_moon: Trigger a `validate` event before validating a form:
 
     ```js
     form.addEventListener('validate', event => {
@@ -119,19 +119,21 @@ What parts of the high-level API are finished?
     });
     ```
 
-* :new_moon: Trigger an event before validating individual elements.
+*   :new_moon: Trigger an event before validating individual elements.
 
-* :full_moon: Trigger a `valid` event, when an input becomes valid, again:
+*   :full_moon: Trigger a `valid` event, when an input becomes valid, again:
 
     ```js
     input.addEventListener('valid', () => alert('Yay!'));
     ```
 
-* :new_moon: Allow functions to hook into the actual validations to accept or
+*   :new_moon: Allow functions to hook into the actual validations to accept or
     reject inputs.
-* :first_quarter_moon: Translate validation messages. We have some
-    partial translations ready: https://github.com/hyperform/hyperform-l10n
-* :full_moon: Provide a registry for user defined validators, that are called
+
+*   :first_quarter_moon: Translate validation messages. We have some partial
+    translations ready: https://github.com/hyperform/hyperform-l10n
+
+*   :full_moon: Provide a registry for user defined validators, that are called
     automatically in the `validity.customError` step:
 
     ```js
@@ -140,16 +142,19 @@ What parts of the high-level API are finished?
     });
     ```
 
-* :full_moon: Catch form submissions _before_ the `submit` event to do our own
-    validation (`click`s on submit buttons and `enter` keys in text inputs in
-    forms w/o submit buttons).
-* :full_moon: Add helper classes `hf-valid` and `hf-invalid` as well as proper
-    `aria-invalid` to elements to become independent of `:valid` / `:invalid`
-    pseudo-classes.
-* :first_quarter_moon: Allow specifying settings to customize the behavior of Hyperform
-    (e. g., specifying a renderer for error messages).
-* :full_moon: Take single `<input>` elements out of validation by supporting a
-    non-standard `novalidate` attribute and `noValidate` property for inputs:
+*   :full_moon: Catch form submissions _before_ the `submit` event to do our
+    own validation (`click`s on submit buttons and `enter` keys in text inputs
+    in forms w/o submit buttons).
+
+*   :full_moon: Add helper classes `hf-valid` and `hf-invalid` as well as
+    proper `aria-invalid` to elements to become independent of `:valid` /
+    `:invalid` pseudo-classes.
+
+*   :first_quarter_moon: Allow specifying settings to customize the behavior of
+    Hyperform (e. g., specifying a renderer for error messages).
+
+*   :full_moon: Take single `<input>` elements out of validation by supporting
+    a non-standard `novalidate` attribute and `noValidate` property for inputs:
 
     ```js
     var element = document.querySelector('input[name="foo"]');
@@ -157,13 +162,13 @@ What parts of the high-level API are finished?
     // done. element won't be validated.
     ```
 
-* :new_moon: Add support for declarative custom validation messages:
+*   :new_moon: Add support for declarative custom validation messages:
 
     ```html
     <input data-validation-message="We need this field!">
     ```
 
-* :new_moon: Idea: Add a means of linking two `<input>`s together so they get
+*   :new_moon: Idea: Add a means of linking two `<input>`s together so they get
     validated synchronously:
 
     ```js
