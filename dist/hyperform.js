@@ -1501,6 +1501,15 @@ var hyperform = (function () {
 
         var messages = store$1.get(element);
         if (messages === undefined || !(validator in messages)) {
+          var data_id = 'data-' + validator.replace(/[A-Z]/g, '-$&').toLowerCase();
+          if (element.hasAttribute(data_id)) {
+            /* if the element has a data-validator attribute, use this as fallback.
+             * E.g., if validator == 'valueMissing', the element can specify a
+             * custom validation message like this:
+             *     <input data-value-missing="Oh noes!">
+             */
+            return element.getAttribute(data_id);
+          }
           return _default;
         }
         return messages[validator];
