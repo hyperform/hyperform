@@ -1240,7 +1240,10 @@ define(function () { 'use strict';
           form.addEventListener('keyup', this.revalidate);
           form.addEventListener('change', this.revalidate);
         } else if (settings.revalidate === 'onblur') {
-          form.addEventListener('blur', this.revalidate);
+          /* useCapture=true, because `blur` doesn't bubble. See
+           * https://developer.mozilla.org/en-US/docs/Web/Events/blur#Event_delegation
+           * for a discussion */
+          form.addEventListener('blur', this.revalidate, true);
         }
       }
 
