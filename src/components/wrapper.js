@@ -31,7 +31,7 @@ export default class Wrapper {
 
     instances.set(form, this);
 
-    catch_submit(form);
+    catch_submit(form, settings.revalidate !== 'never');
 
     if (form === window || form instanceof window.HTMLDocument) {
       /* install on the prototypes, when called for the whole document */
