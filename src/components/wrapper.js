@@ -56,6 +56,8 @@ export default class Wrapper {
        * abysmal: http://caniuse.com/#feat=input-event */
       form.addEventListener('keyup', this.revalidate);
       form.addEventListener('change', this.revalidate);
+    } else if (settings.revalidate === 'onblur') {
+      form.addEventListener('blur', this.revalidate);
     }
   }
 

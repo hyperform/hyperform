@@ -32,7 +32,7 @@ function hyperform(form, {
                    }={}) {
 
   if (revalidate === undefined) {
-    /* other recognized values: 'oninput', 'never' */
+    /* other recognized values: 'oninput', 'onblur', 'never' */
     revalidate = 'onsubmit';
   }
   if (valid_event === undefined) {

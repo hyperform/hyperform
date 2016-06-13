@@ -1239,6 +1239,8 @@ define(function () { 'use strict';
            * abysmal: http://caniuse.com/#feat=input-event */
           form.addEventListener('keyup', this.revalidate);
           form.addEventListener('change', this.revalidate);
+        } else if (settings.revalidate === 'onblur') {
+          form.addEventListener('blur', this.revalidate);
         }
       }
 
@@ -2241,7 +2243,7 @@ define(function () { 'use strict';
 
 
       if (revalidate === undefined) {
-        /* other recognized values: 'oninput', 'never' */
+        /* other recognized values: 'oninput', 'onblur', 'never' */
         revalidate = 'onsubmit';
       }
       if (valid_event === undefined) {
