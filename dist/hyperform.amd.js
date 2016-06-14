@@ -773,28 +773,9 @@ define(function () { 'use strict';
       if (!(lang in catalog)) {
         catalog[lang] = {};
       }
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = Object.keys(new_catalog)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var key = _step.value;
-
+      for (var key in new_catalog) {
+        if (new_catalog.hasOwnProperty(key)) {
           catalog[lang][key] = new_catalog[key];
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
         }
       }
     }
@@ -1429,54 +1410,16 @@ define(function () { 'use strict';
       return false;
     }
 
-    function sliceIterator(arr, i) {
-      var _arr = [];
-      var _n = true;
-      var _d = false;
-      var _e = undefined;
-
-      try {
-        for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-          _arr.push(_s.value);
-
-          if (i && _arr.length === i) break;
-        }
-      } catch (err) {
-        _d = true;
-        _e = err;
-      } finally {
-        try {
-          if (!_n && _i["return"]) _i["return"]();
-        } finally {
-          if (_d) throw _e;
-        }
-      }
-
-      return _arr;
-    }
-
-    function _slicedToArray (arr, i) {
-      if (Array.isArray(arr)) {
-        return arr;
-      } else if (Symbol.iterator in Object(arr)) {
-        return sliceIterator(arr, i);
-      } else {
-        throw new TypeError("Invalid attempt to destructure non-iterable instance");
-      }
-    };
-
-    var _toConsumableArray = (function (arr) {
-      if (Array.isArray(arr)) {
-        for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
-          arr2[i] = arr[i];
-        }return arr2;
-      } else {
-        return Array.from(arr);
-      }
-    })
+    /**
+     * patch String.length to account for non-BMP characters
+     *
+     * @see https://mathiasbynens.be/notes/javascript-unicode
+     * We do not use the simple [...str].length, because it needs a ton of
+     * polyfills in older browsers.
+     */
 
     function unicode_string_length (str) {
-      return [].concat(_toConsumableArray(str)).length;
+      return str.match(/[\0-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/g).length;
     }
 
     /**
@@ -1801,8 +1744,6 @@ define(function () { 'use strict';
      * As specified at
      * https://html.spec.whatwg.org/multipage/infrastructure.html#split-a-string-on-commas
      * plus removing empty entries.
-     *
-     * We don't use String.trim() to remove the need to polyfill it.
      */
     function comma_split (str) {
       return str.split(',').map(function (item) {
@@ -1930,36 +1871,16 @@ define(function () { 'use strict';
       /* check, if there are custom validators in the registry, and call
        * them. */
       var custom_validators = custom_validator_registry.get(element);
+      var cvl = custom_validators.length;
       var valid = true;
 
-      if (custom_validators.length) {
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
-
-        try {
-          for (var _iterator = custom_validators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var validator = _step.value;
-
-            var result = validator(element);
-            if (result !== undefined && !result) {
-              valid = false;
-              /* break on first invalid response */
-              break;
-            }
-          }
-        } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion && _iterator.return) {
-              _iterator.return();
-            }
-          } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
-            }
+      if (cvl) {
+        for (var i = 0; i < cvl; i++) {
+          var result = custom_validators[i](element);
+          if (result !== undefined && !result) {
+            valid = false;
+            /* break on first invalid response */
+            break;
           }
         }
       }
@@ -2019,13 +1940,9 @@ define(function () { 'use strict';
     });
 
     var stepMismatch = check$1(test_step, function (element) {
-      var _get_next_valid = get_next_valid(element);
-
-      var _get_next_valid2 = _slicedToArray(_get_next_valid, 2);
-
-      var min = _get_next_valid2[0];
-      var max = _get_next_valid2[1];
-
+      var list = get_next_valid(element);
+      var min = list[0];
+      var max = list[1];
       var sole = false;
       var msg = void 0;
 

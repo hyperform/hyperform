@@ -59,11 +59,12 @@ function customError(element) {
   /* check, if there are custom validators in the registry, and call
    * them. */
   const custom_validators = CustomValidatorRegistry.get(element);
+  const cvl = custom_validators.length;
   var valid = true;
 
-  if (custom_validators.length) {
-    for (const validator of custom_validators) {
-      const result = validator(element);
+  if (cvl) {
+    for (let i = 0; i < cvl; i++) {
+      const result = custom_validators[i](element);
       if (result !== undefined && ! result) {
         valid = false;
         /* break on first invalid response */
@@ -142,7 +143,9 @@ const rangeUnderflow = check(test_min, element => {
 
 
 const stepMismatch = check(test_step, element => {
-  const [min, max] = get_next_valid(element);
+  const list = get_next_valid(element);
+  const min = list[0];
+  const max = list[1];
   let sole = false;
   let msg;
 

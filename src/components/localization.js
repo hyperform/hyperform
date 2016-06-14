@@ -48,8 +48,10 @@ export function add_translation(lang, new_catalog) {
   if (! (lang in catalog)) {
     catalog[lang] = {};
   }
-  for (let key of Object.keys(new_catalog)) {
-    catalog[lang][key] = new_catalog[key];
+  for (let key in new_catalog) {
+    if (new_catalog.hasOwnProperty(key)) {
+      catalog[lang][key] = new_catalog[key];
+    }
   }
 }
 
