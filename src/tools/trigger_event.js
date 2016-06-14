@@ -6,7 +6,7 @@ export default function(element, event, {
                           cancelable=false,
                         }={}) {
   if (! (event instanceof window.Event)) {
-      let _event = document.createEvent('Event');
+      const _event = document.createEvent('Event');
       _event.initEvent(event, bubbles, cancelable);
       event = _event;
   }

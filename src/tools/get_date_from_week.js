@@ -7,7 +7,7 @@
  * @see http://stackoverflow.com/a/16591175/113195
  */
 export default function(week, year) {
-  var date = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
+  const date = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
 
   if (date.getUTCDay() <= 4/* thursday */) {
     date.setUTCDate(date.getUTCDate() - date.getUTCDay() + 1);

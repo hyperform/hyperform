@@ -8,7 +8,7 @@ import get_date_from_week from './get_date_from_week';
  * calculate a date from a string according to HTML5
  */
 export default function(string, element_type) {
-  var date = new Date(0);
+  const date = new Date(0);
   var ms;
   switch (element_type) {
     case 'datetime':

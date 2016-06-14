@@ -12,7 +12,7 @@ const store = new WeakMap();
 
 
 /* jshint -W053 */
-var message_store = {
+const message_store = {
 
   set(element, message, is_custom=false) {
     if (element instanceof window.HTMLFieldSetElement) {

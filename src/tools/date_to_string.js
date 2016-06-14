@@ -49,7 +49,7 @@ export default function date_to_string(date, element_type) {
                      pad(date.getUTCMonth() + 1));
 
     case 'week':
-      let params = get_week_of_year(date);
+      const params = get_week_of_year(date);
       return sprintf.call(null, '%s-W%s', params[0], pad(params[1]));
 
     case 'time':

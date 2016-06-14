@@ -12,7 +12,7 @@ import validity_state_checkers from '../tools/validity_state_checkers';
 /**
  * the validity state constructor
  */
-var ValidityState = function(element) {
+const ValidityState = function(element) {
   if (! (element instanceof window.HTMLElement)) {
     throw new Error('cannot create a ValidityState for a non-element');
   }
@@ -35,7 +35,7 @@ var ValidityState = function(element) {
 /**
  * the prototype for new validityState instances
  */
-var ValidityStatePrototype = {};
+const ValidityStatePrototype = {};
 ValidityState.prototype = ValidityStatePrototype;
 
 ValidityState.cache = new WeakMap();

@@ -142,7 +142,7 @@ const rangeUnderflow = check(test_min, element => {
 
 
 const stepMismatch = check(test_step, element => {
-  let [min, max] = get_next_valid(element);
+  const [min, max] = get_next_valid(element);
   let sole = false;
   let msg;
 

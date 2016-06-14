@@ -16,31 +16,31 @@ import { dates } from '../components/types';
 export default function(element, n=1) {
   const type = get_type(element);
 
-  let aMin = element.getAttribute('min');
+  const aMin = element.getAttribute('min');
   let min = default_min[type] || NaN;
   if (aMin) {
-    let pMin = string_to_number(aMin, type);
+    const pMin = string_to_number(aMin, type);
     if (! isNaN(pMin)) {
       min = pMin;
     }
   }
 
-  let aMax = element.getAttribute('max');
+  const aMax = element.getAttribute('max');
   let max = default_max[type] || NaN;
   if (aMax) {
-    let pMax = string_to_number(aMax, type);
+    const pMax = string_to_number(aMax, type);
     if (! isNaN(pMax)) {
       max = pMax;
     }
   }
 
-  let aStep = element.getAttribute('step');
+  const aStep = element.getAttribute('step');
   let step = default_step[type] || 1;
   if (aStep && aStep.toLowerCase() === 'any') {
     /* quick return: we cannot calculate prev and next */
     return [_('any value'), _('any value')];
   } else if (aStep) {
-    let pStep = string_to_number(aStep, type);
+    const pStep = string_to_number(aStep, type);
     if (! isNaN(pStep)) {
       step = pStep;
     }

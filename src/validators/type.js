@@ -53,7 +53,7 @@ export default function(element) {
     case 'file':
         if ('files' in element && element.files.length &&
             element.hasAttribute('accept')) {
-          let patterns = comma_split(element.getAttribute('accept'))
+          const patterns = comma_split(element.getAttribute('accept'))
             .map(pattern => {
               if (/^(audio|video|image)\/\*$/.test(pattern)) {
                 pattern = new RegExp('^'+RegExp.$1+'/.+$');
@@ -72,8 +72,8 @@ export default function(element) {
 
             patternloop:
             for (let j = 0; j < patterns.length; j++) {
-              let file = element.files[i];
-              let pattern = patterns[j];
+              const file = element.files[i];
+              const pattern = patterns[j];
 
               let fileprop = file.type;
 

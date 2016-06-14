@@ -418,8 +418,8 @@ var hyperform = (function () {
       if (is_submitting_keypress(event)) {
         /* check, that there is no submit button in the form. Otherwise
          * that should be clicked. */
-        var submit,
-            el = event.target.form.elements.length;
+        var el = event.target.form.elements.length;
+        var submit;
         for (var i = 0; i < el; i++) {
           if (['image', 'submit'].indexOf(event.target.form.elements[i].type) > -1) {
             submit = event.target.form.elements[i];
@@ -443,8 +443,8 @@ var hyperform = (function () {
       if (is_submitting_keypress(event)) {
         /* check, that there is no submit button in the form. Otherwise
          * that should be clicked. */
-        var submit,
-            el = event.target.form.elements.length;
+        var el = event.target.form.elements.length;
+        var submit;
         for (var i = 0; i < el; i++) {
           if (['image', 'submit'].indexOf(event.target.form.elements[i].type) > -1) {
             submit = event.target.form.elements[i];

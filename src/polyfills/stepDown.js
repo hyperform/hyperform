@@ -22,7 +22,7 @@ function stepDown(element, n=1) {
                                   'InvalidStateError');
   }
 
-  var { prev, next } = get_next_valid(element, n);
+  const { prev, next } = get_next_valid(element, n);
 
   if (prev !== null) {
     valueAsNumber(element, prev);

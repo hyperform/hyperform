@@ -22,7 +22,7 @@ function reportValidity(element) {
 
   /* we copy checkValidity() here, b/c we have to check if the "invalid"
    * event was canceled. */
-  var valid = ValidityState(element).valid;
+  const valid = ValidityState(element).valid;
   var event;
   if (valid) {
     const wrapped_form = get_wrapper(element);

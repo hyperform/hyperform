@@ -8,7 +8,7 @@ import string_to_date from './string_to_date';
  * calculate a date from a string according to HTML5
  */
 export default function(string, element_type) {
-    let rval = string_to_date(string, element_type);
+    const rval = string_to_date(string, element_type);
     if (rval !== null) {
       return +rval;
     }

@@ -10,10 +10,10 @@ const internal_registry = new WeakMap();
  * slim wrapper around a WeakMap to ensure the values are arrays
  * (hence allowing > 1 validators per element)
  */
-var custom_validator_registry = {
+const custom_validator_registry = {
 
   set(element, validator) {
-    var current = internal_registry.get(element) || [];
+    const current = internal_registry.get(element) || [];
     current.push(validator);
     internal_registry.set(element, current);
     return custom_validator_registry;

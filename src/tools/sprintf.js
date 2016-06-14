@@ -2,7 +2,7 @@
 
 
 export default function(str, ...args) {
-  var args_length = args.length;
+  const args_length = args.length;
   var global_index = 0;
 
   return str.replace(/%([0-9]+\$)?([sl])/g, (match, position, type) => {
