@@ -2155,7 +2155,7 @@ checkValidity.install = installer('checkValidity', {
 
 mark(checkValidity);
 
-var version = '0.7.3';
+var version = '0.7.4';
 
 /**
  * public hyperform interface:
