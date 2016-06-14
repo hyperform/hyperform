@@ -39,8 +39,9 @@
     "uglify-js": "^2.6.2"
   },
   "files": [
-    "src",
-    "dist"
+    "css",
+    "dist",
+    "src"
   ],
   "jshintConfig": {
     "esversion": 6,
