@@ -7,6 +7,8 @@ UGLIFYJS_ARGS := --mangle --compress
 JSHINT := node_modules/.bin/jshint
 JSHINT_ARGS :=
 
+BANNER := /*! hyperform.js.org */
+
 all: js
 .PHONY: all
 
@@ -19,22 +21,28 @@ dist/hyperform.amd.min.js \
 dist/hyperform.cjs.min.js \
 dist/hyperform.min.js: dist/%.min.js : dist/%.js
 	@echo "* build $@"
-	@<"$<" $(UGLIFYJS) $(UGLIFYJS_ARGS) >"$@"
+	@( \
+		echo '$(BANNER)'; \
+		<"$<" $(UGLIFYJS) $(UGLIFYJS_ARGS) ; \
+	) >"$@"
 
 dist/hyperform.amd.js: src/hyperform.js src/*.js src/*/*.js
 	@echo "* build $@"
 	@mkdir -p dist
 	@$(JSPM) build "$<" "$@" $(JSPM_ARGS) --format amd
+	@sed -i '1s#^#$(BANNER)\n#' "$@"
 
 dist/hyperform.cjs.js: src/hyperform.js src/*.js src/*/*.js
 	@echo "* build $@"
 	@mkdir -p dist
 	@$(JSPM) build "$<" "$@" $(JSPM_ARGS) --format cjs
+	@sed -i '1s#^#$(BANNER)\n#' "$@"
 
 dist/hyperform.js: src/hyperform.js src/*.js src/*/*.js
 	@echo "* build $@"
 	@mkdir -p dist
 	@$(JSPM) build "$<" "$@" $(JSPM_ARGS)
+	@sed -i '1s#^#$(BANNER)\n#' "$@"
 
 test:
 	@echo "* run tests"
