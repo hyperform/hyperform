@@ -195,18 +195,29 @@ define(function () { 'use strict';
 
     var warnings_cache = new WeakMap();
 
-    var Renderer = {
+    var DefaultRenderer = {
 
+      /**
+       * called when a warning should become visible
+       */
       attach_warning: function attach_warning(warning, element) {
         /* should also work, if element is last,
          * http://stackoverflow.com/a/4793630/113195 */
         element.parentNode.insertBefore(warning, element.nextSibling);
       },
 
+      /**
+       * called when a warning should vanish
+       */
       detach_warning: function detach_warning(warning, element) {
         warning.parentNode.removeChild(warning);
       },
 
+      /**
+       * called when feedback to an element's state should be handled
+       *
+       * i.e., showing and hiding warnings
+       */
       show_warning: function show_warning(element) {
         var sub_radio = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
@@ -239,9 +250,20 @@ define(function () { 'use strict';
             return Renderer.show_warning(radio, 'sub_radio');
           });
         }
-      },
+      }
+
+    };
+
+    var Renderer = {
+
+      attach_warning: DefaultRenderer.attach_warning,
+      detach_warning: DefaultRenderer.detach_warning,
+      show_warning: DefaultRenderer.show_warning,
 
       set: function set(renderer, action) {
+        if (!action) {
+          action = DefaultRenderer[renderer];
+        }
         Renderer[renderer] = action;
       }
 
