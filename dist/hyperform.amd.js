@@ -2235,11 +2235,21 @@ define(function () { 'use strict';
     hyperform.valueAsNumber = valueAsNumber;
     hyperform.willValidate = willValidate;
 
-    hyperform.set_language = set_language;
-    hyperform.add_translation = add_translation;
-    hyperform.set_renderer = Renderer.set;
-    hyperform.register = custom_validator_registry.set;
-    hyperform.set_message = custom_messages.set;
+    hyperform.set_language = function (lang) {
+      set_language(lang);return hyperform;
+    };
+    hyperform.add_translation = function (lang, catalog) {
+      add_translation(lang, catalog);return hyperform;
+    };
+    hyperform.set_renderer = function (renderer, action) {
+      Renderer.set(renderer, action);return hyperform;
+    };
+    hyperform.register = function (element, validator) {
+      custom_validator_registry.set(element, validator);return hyperform;
+    };
+    hyperform.set_message = function (element, validator, message) {
+      custom_messages.set(element, validator, message);return hyperform;
+    };
 
     return hyperform;
 
