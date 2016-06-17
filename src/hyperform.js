@@ -32,8 +32,8 @@ function hyperform(form, {
                    }={}) {
 
   if (revalidate === undefined) {
-    /* other recognized values: 'oninput', 'onblur', 'never' */
-    revalidate = 'onsubmit';
+    /* other recognized values: 'oninput', 'onblur', 'onsubmit' and 'never' */
+    revalidate = strict? 'onsubmit' : 'hybrid';
   }
   if (valid_event === undefined) {
     valid_event = ! strict;

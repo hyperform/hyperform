@@ -1222,6 +1222,7 @@ var Wrapper = function () {
 
     this.form = form;
     this.settings = settings;
+    this.revalidator = this.revalidate.bind(this);
 
     instances.set(form, this);
 
@@ -1238,16 +1239,17 @@ var Wrapper = function () {
       }
     }
 
-    if (settings.revalidate === 'oninput') {
+    if (settings.revalidate === 'oninput' || settings.revalidate === 'hybrid') {
       /* in a perfect world we'd just bind to "input", but support here is
        * abysmal: http://caniuse.com/#feat=input-event */
-      form.addEventListener('keyup', this.revalidate);
-      form.addEventListener('change', this.revalidate);
-    } else if (settings.revalidate === 'onblur') {
+      form.addEventListener('keyup', this.revalidator);
+      form.addEventListener('change', this.revalidator);
+    }
+    if (settings.revalidate === 'onblur' || settings.revalidate === 'hybrid') {
       /* useCapture=true, because `blur` doesn't bubble. See
        * https://developer.mozilla.org/en-US/docs/Web/Events/blur#Event_delegation
        * for a discussion */
-      form.addEventListener('blur', this.revalidate, true);
+      form.addEventListener('blur', this.revalidator, true);
     }
   }
 
@@ -1256,8 +1258,9 @@ var Wrapper = function () {
     value: function destroy() {
       uncatch_submit(this.form);
       instances.delete(this.form);
-      this.form.removeEventListener('keyup', this.revalidate);
-      this.form.removeEventListener('change', this.revalidate);
+      this.form.removeEventListener('keyup', this.revalidator);
+      this.form.removeEventListener('change', this.revalidator);
+      this.form.removeEventListener('blur', this.revalidator, true);
       if (this.form === window || this.form instanceof window.HTMLDocument) {
         this.uninstall([window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype]);
         _uninstall(window.HTMLFormElement, 'checkValidity');
@@ -1279,7 +1282,23 @@ var Wrapper = function () {
     key: 'revalidate',
     value: function revalidate(event) {
       if (event.target instanceof window.HTMLButtonElement || event.target instanceof window.HTMLTextAreaElement || event.target instanceof window.HTMLSelectElement || event.target instanceof window.HTMLInputElement) {
-        reportValidity(event.target);
+
+        if (this.settings.revalidate === 'hybrid') {
+          if (event.type === 'blur' && event.target.value !== event.target.defaultValue || event.target.validity.valid) {
+            /* on blur, update the report when the value has changed from the
+             * default or when the element is valid (possibly removing a still
+             * standing invalidity report). */
+            reportValidity(event.target);
+          } else if (event.type === 'keyup' || event.type === 'change') {
+            if (event.target.validity.valid) {
+              // report instantly, when an element becomes valid,
+              // postpone report to blur event, when an element is invalid
+              reportValidity(event.target);
+            }
+          }
+        } else {
+          reportValidity(event.target);
+        }
       }
     }
 
@@ -2195,8 +2214,8 @@ function hyperform(form) {
 
 
   if (revalidate === undefined) {
-    /* other recognized values: 'oninput', 'onblur', 'never' */
-    revalidate = 'onsubmit';
+    /* other recognized values: 'oninput', 'onblur', 'onsubmit' and 'never' */
+    revalidate = strict ? 'onsubmit' : 'hybrid';
   }
   if (valid_event === undefined) {
     valid_event = !strict;
