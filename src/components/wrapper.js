@@ -102,6 +102,9 @@ export default class Wrapper {
         event.target instanceof window.HTMLInputElement) {
 
       if (this.settings.revalidate === 'hybrid') {
+        /* "hybrid" somewhat simulates what browsers do. See for example
+         * Firefox's :-moz-ui-invalid pseudo-class:
+         * https://developer.mozilla.org/en-US/docs/Web/CSS/:-moz-ui-invalid */
         if (event.type === 'blur' &&
             event.target.value !== event.target.defaultValue ||
             event.target.validity.valid) {
