@@ -1,6 +1,10 @@
 'use strict';
 
 
+import install_property from '../tools/property_installer';
+import uninstall_property from '../tools/property_uninstaller';
+
+
 const gA = prop => function() {
   return this.getAttribute(prop);
 };
@@ -33,31 +37,32 @@ const sAn = prop => function(value) {
 
 function install_properties(element) {
   for (let prop of [ 'accept', 'max', 'min', 'pattern', 'placeholder', 'step', ]) {
-    Object.defineProperty(element, prop, {
-      configurable: true,
-      enumerable: true,
+    install_property(element, prop, {
       get: gA(prop),
       set: sA(prop),
     });
   }
 
   for (let prop of [ 'multiple', 'required', 'readOnly', ]) {
-    Object.defineProperty(element, prop, {
-      configurable: true,
-      enumerable: true,
+    install_property(element, prop, {
       get: gAb(prop.toLowerCase()),
       set: sAb(prop.toLowerCase()),
     });
   }
 
   for (let prop of [ 'minLength', 'maxLength', ]) {
-    Object.defineProperty(element, prop, {
-      configurable: true,
-      enumerable: true,
+    install_property(element, prop, {
       get: gAn(prop.toLowerCase()),
       set: sAn(prop.toLowerCase()),
     });
   }
 }
 
-export { install_properties };
+function uninstall_properties(element) {
+  for (let prop of [ 'accept', 'max', 'min', 'pattern', 'placeholder', 'step',
+       'multiple', 'required', 'readOnly', 'minLength', 'maxLength', ]) {
+    uninstall_property(element, prop);
+  }
+}
+
+export { install_properties, uninstall_properties };

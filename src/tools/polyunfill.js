@@ -2,6 +2,7 @@
 
 
 import uninstall_property from '../tools/property_uninstaller';
+import { uninstall_properties } from '../polyfills/properties';
 
 
 export default function(element) {
@@ -22,7 +23,7 @@ export default function(element) {
     uninstall_property(element, 'valueAsNumber');
     uninstall_property(element, 'willValidate');
 
-    // TODO uninstall other properties
+    uninstall_properties(element);
 
   } else if (element instanceof window.HTMLFormElement) {
     uninstall_property(element, 'checkValidity');

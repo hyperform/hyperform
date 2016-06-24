@@ -1118,9 +1118,7 @@ define(function () { 'use strict';
 
       for (var _i = 0; _i < _arr.length; _i++) {
         var prop = _arr[_i];
-        Object.defineProperty(element, prop, {
-          configurable: true,
-          enumerable: true,
+        install_property(element, prop, {
           get: gA(prop),
           set: sA(prop)
         });
@@ -1129,9 +1127,7 @@ define(function () { 'use strict';
       var _arr2 = ['multiple', 'required', 'readOnly'];
       for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
         var _prop = _arr2[_i2];
-        Object.defineProperty(element, _prop, {
-          configurable: true,
-          enumerable: true,
+        install_property(element, _prop, {
           get: gAb(_prop.toLowerCase()),
           set: sAb(_prop.toLowerCase())
         });
@@ -1140,12 +1136,19 @@ define(function () { 'use strict';
       var _arr3 = ['minLength', 'maxLength'];
       for (var _i3 = 0; _i3 < _arr3.length; _i3++) {
         var _prop2 = _arr3[_i3];
-        Object.defineProperty(element, _prop2, {
-          configurable: true,
-          enumerable: true,
+        install_property(element, _prop2, {
           get: gAn(_prop2.toLowerCase()),
           set: sAn(_prop2.toLowerCase())
         });
+      }
+    }
+
+    function uninstall_properties(element) {
+      var _arr4 = ['accept', 'max', 'min', 'pattern', 'placeholder', 'step', 'multiple', 'required', 'readOnly', 'minLength', 'maxLength'];
+
+      for (var _i4 = 0; _i4 < _arr4.length; _i4++) {
+        var prop = _arr4[_i4];
+        uninstall_property(element, prop);
       }
     }
 
@@ -1240,11 +1243,11 @@ define(function () { 'use strict';
         uninstall_property(element, 'valueAsNumber');
         uninstall_property(element, 'willValidate');
 
-        // TODO uninstall other properties
+        uninstall_properties(element);
       } else if (element instanceof window.HTMLFormElement) {
-          uninstall_property(element, 'checkValidity');
-          uninstall_property(element, 'reportValidity');
-        }
+        uninstall_property(element, 'checkValidity');
+        uninstall_property(element, 'reportValidity');
+      }
     }
 
     var instances = new WeakMap();
