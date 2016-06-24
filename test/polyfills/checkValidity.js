@@ -13,9 +13,6 @@ test('checkValidity', t => {
   t.false(checkValidity(input));
   input.value = 'abc';
   t.true(checkValidity(input));
-
-  checkValidity.install(input);
-  t.true(input.checkValidity());
 });
 
 test('checkValidity invalid event', async t => {

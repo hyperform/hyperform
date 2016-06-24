@@ -1201,7 +1201,7 @@ var hyperform = (function () {
           }
         });
 
-        install_properties;
+        install_properties(element);
       } else if (element instanceof window.HTMLFormElement) {
         install_property(element, 'checkValidity', {
           value: function value() {

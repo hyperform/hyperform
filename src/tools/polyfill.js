@@ -56,7 +56,7 @@ export default function(element) {
       get: function() { return willValidate(this); },
     });
 
-    install_properties;
+    install_properties(element);
 
   } else if (element instanceof window.HTMLFormElement) {
     install_property(element, 'checkValidity', {

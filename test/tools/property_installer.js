@@ -12,18 +12,18 @@ test('property_installer', t => {
   mark(ours);
   dummy.ours = ours
 
-  property_installer('foo', {
+  property_installer(dummy, 'foo', {
     configurable: true,
     value: 'baz',
-  })(dummy);
+  });
   t.is(dummy.foo, 'baz');
   t.is(dummy._original_foo, 'bar');
 
   /* do not overwrite our own marked properties */
-  property_installer('ours', {
+  property_installer(dummy, 'ours', {
     configurable: true,
     value: 'yay',
-  })(dummy);
+  });
   t.is(dummy.ours, ours);
   t.false('_original_ours' in dummy);
 });
