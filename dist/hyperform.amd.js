@@ -1071,24 +1071,58 @@ define(function () { 'use strict';
 
     mark(willValidate);
 
+    var gA = function gA(prop) {
+      return function () {
+        return this.getAttribute(prop);
+      };
+    };
+
+    var sA = function sA(prop) {
+      return function (value) {
+        this.setAttribute(prop, value);
+      };
+    };
+
+    var gAb = function gAb(prop) {
+      return function () {
+        return this.hasAttribute(prop);
+      };
+    };
+
+    var sAb = function sAb(prop) {
+      return function (value) {
+        if (value) {
+          this.setAttribute(prop, prop);
+        } else {
+          this.removeAttribute(prop);
+        }
+      };
+    };
+
+    var gAn = function gAn(prop) {
+      return function () {
+        return Math.max(0, Number(this.getAttribute(prop)));
+      };
+    };
+
+    var sAn = function sAn(prop) {
+      return function (value) {
+        if (/^[0-9]+$/.test(value)) {
+          this.setAttribute(prop, value);
+        }
+      };
+    };
+
     function install_properties(element) {
-      /* jshint -W083 */
       var _arr = ['accept', 'max', 'min', 'pattern', 'placeholder', 'step'];
+
       for (var _i = 0; _i < _arr.length; _i++) {
         var prop = _arr[_i];
         Object.defineProperty(element, prop, {
           configurable: true,
           enumerable: true,
-          get: function (prop) {
-            return function () {
-              return this.getAttribute(prop);
-            };
-          }(prop),
-          set: function (prop) {
-            return function (value) {
-              this.setAttribute(prop, value);
-            };
-          }(prop)
+          get: gA(prop),
+          set: sA(prop)
         });
       }
 
@@ -1098,20 +1132,8 @@ define(function () { 'use strict';
         Object.defineProperty(element, _prop, {
           configurable: true,
           enumerable: true,
-          get: function (prop) {
-            return function () {
-              return this.hasAttribute(prop);
-            };
-          }(_prop.toLowerCase()),
-          set: function (prop) {
-            return function (value) {
-              if (value) {
-                this.setAttribute(prop, prop);
-              } else {
-                this.removeAttribute(prop, prop);
-              }
-            };
-          }(_prop.toLowerCase())
+          get: gAb(_prop.toLowerCase()),
+          set: sAb(_prop.toLowerCase())
         });
       }
 
@@ -1121,21 +1143,10 @@ define(function () { 'use strict';
         Object.defineProperty(element, _prop2, {
           configurable: true,
           enumerable: true,
-          get: function (prop) {
-            return function () {
-              return Math.max(0, Number(this.getAttribute(prop)));
-            };
-          }(_prop2.toLowerCase()),
-          set: function (prop) {
-            return function (value) {
-              if (/^[0-9]+$/.test(value)) {
-                this.setAttribute(prop, value);
-              }
-            };
-          }(_prop2.toLowerCase())
+          get: gAn(_prop2.toLowerCase()),
+          set: sAn(_prop2.toLowerCase())
         });
       }
-      /* jshint +W083 */
     }
 
     function polyfill (element) {

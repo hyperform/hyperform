@@ -1,18 +1,43 @@
 'use strict';
 
 
+const gA = prop => function() {
+  return this.getAttribute(prop);
+};
+
+const sA = prop => function(value) {
+  this.setAttribute(prop, value);
+};
+
+const gAb = prop => function() {
+  return this.hasAttribute(prop);
+};
+
+const sAb = prop => function(value) {
+  if (value) {
+    this.setAttribute(prop, prop);
+  } else {
+    this.removeAttribute(prop);
+  }
+};
+
+const gAn = prop => function() {
+  return Math.max(0, Number(this.getAttribute(prop)));
+};
+
+const sAn = prop => function(value) {
+  if (/^[0-9]+$/.test(value)) {
+    this.setAttribute(prop, value);
+  }
+};
+
 function install_properties(element) {
-  /* jshint -W083 */
   for (let prop of [ 'accept', 'max', 'min', 'pattern', 'placeholder', 'step', ]) {
     Object.defineProperty(element, prop, {
       configurable: true,
       enumerable: true,
-      get: (prop => function() {
-        return this.getAttribute(prop);
-      })(prop),
-      set: (prop => function(value) {
-        this.setAttribute(prop, value);
-      })(prop),
+      get: gA(prop),
+      set: sA(prop),
     });
   }
 
@@ -20,16 +45,8 @@ function install_properties(element) {
     Object.defineProperty(element, prop, {
       configurable: true,
       enumerable: true,
-      get: (prop => function() {
-        return this.hasAttribute(prop);
-      })(prop.toLowerCase()),
-      set: (prop => function(value) {
-        if (value) {
-          this.setAttribute(prop, prop);
-        } else {
-          this.removeAttribute(prop, prop);
-        }
-      })(prop.toLowerCase()),
+      get: gAb(prop.toLowerCase()),
+      set: sAb(prop.toLowerCase()),
     });
   }
 
@@ -37,17 +54,10 @@ function install_properties(element) {
     Object.defineProperty(element, prop, {
       configurable: true,
       enumerable: true,
-      get: (prop => function() {
-        return Math.max(0, Number(this.getAttribute(prop)));
-      })(prop.toLowerCase()),
-      set: (prop => function(value) {
-        if (/^[0-9]+$/.test(value)) {
-          this.setAttribute(prop, value);
-        }
-      })(prop.toLowerCase()),
+      get: gAn(prop.toLowerCase()),
+      set: sAn(prop.toLowerCase()),
     });
   }
-  /* jshint +W083 */
 }
 
 export { install_properties };
