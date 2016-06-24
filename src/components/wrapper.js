@@ -2,19 +2,10 @@
 
 
 import { catch_submit, uncatch_submit } from '../tools/catch_submit';
-import checkValidity from '../polyfills/checkValidity';
 import reportValidity from '../polyfills/reportValidity';
-import setCustomValidity from '../polyfills/setCustomValidity';
-import stepDown from '../polyfills/stepDown';
-import stepUp from '../polyfills/stepUp';
-import validationMessage from '../polyfills/validationMessage';
-import ValidityState from '../polyfills/validityState';
-import valueAsDate from '../polyfills/valueAsDate';
-import valueAsNumber from '../polyfills/valueAsNumber';
-import willValidate from '../polyfills/willValidate';
-import { install_properties } from '../polyfills/properties';
 import uninstall from '../tools/property_uninstaller';
 import polyfill from '../tools/polyfill';
+import polyunfill from '../tools/polyunfill';
 
 
 const instances = new WeakMap();
@@ -44,12 +35,12 @@ export default class Wrapper {
         window.HTMLTextAreaElement.prototype,
         window.HTMLFieldSetElement.prototype,
       ]);
-      this.install_form(window.HTMLFormElement);
+      polyfill(window.HTMLFormElement);
     } else if (form instanceof window.HTMLFormElement ||
-              form instanceof window.HTMLFieldSetElement) {
+               form instanceof window.HTMLFieldSetElement) {
       this.install(form.elements);
       if (form instanceof window.HTMLFormElement) {
-        this.install_form(form);
+        polyfill(form);
       }
     }
 
@@ -81,14 +72,12 @@ export default class Wrapper {
         window.HTMLTextAreaElement.prototype,
         window.HTMLFieldSetElement.prototype,
       ]);
-      uninstall(window.HTMLFormElement, 'checkValidity');
-      uninstall(window.HTMLFormElement, 'reportValidity');
+      polyunfill(window.HTMLFormElement);
     } else if (this.form instanceof window.HTMLFormElement ||
-              this.form instanceof window.HTMLFieldSetElement) {
+               this.form instanceof window.HTMLFieldSetElement) {
       this.uninstall(this.form.elements);
       if (this.form instanceof window.HTMLFormElement) {
-        uninstall(this.form, 'checkValidity');
-        uninstall(this.form, 'reportValidity');
+        polyunfill(this.form);
       }
     }
   }
@@ -141,7 +130,7 @@ export default class Wrapper {
    * You can skip this, if you called hyperform on window or document.
    */
   install(els) {
-    if (els instanceof window.HTMLElement) {
+    if (els instanceof window.Element) {
       els = [ els ];
     }
 
@@ -152,33 +141,15 @@ export default class Wrapper {
     }
   }
 
-  /**
-   * install necessary polyfills on HTML <form> elements
-   */
-  install_form(form) {
-    checkValidity.install(form);
-    reportValidity.install(form);
-  }
-
   uninstall(els) {
-    if (els instanceof window.HTMLElement) {
+    if (els instanceof window.Element) {
       els = [ els ];
     }
 
     const els_length = els.length;
 
     for (let i = 0; i < els_length; i++) {
-      uninstall(els[i], 'checkValidity');
-      uninstall(els[i], 'reportValidity');
-      uninstall(els[i], 'setCustomValidity');
-      uninstall(els[i], 'stepDown');
-      uninstall(els[i], 'stepUp');
-      uninstall(els[i], 'validationMessage');
-      uninstall(els[i], 'validity');
-      uninstall(els[i], 'valueAsDate');
-      uninstall(els[i], 'valueAsNumber');
-      uninstall(els[i], 'willValidate');
-      // TODO uninstall our versions of property getters
+      polyunfill(els[i]);
     }
   }
 

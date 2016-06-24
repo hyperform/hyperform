@@ -242,10 +242,10 @@ define(function () { 'use strict';
     /**
      * check element's validity and report an error back to the user
      */
-    function reportValidity(element) {
+    function reportValidity$1(element) {
       /* if this is a <form>, report validity of all child inputs */
       if (element instanceof window.HTMLFormElement) {
-        return Array.prototype.map.call(element.elements, reportValidity).every(function (b) {
+        return Array.prototype.map.call(element.elements, reportValidity$1).every(function (b) {
           return b;
         });
       }
@@ -270,7 +270,7 @@ define(function () { 'use strict';
       return valid;
     }
 
-    mark(reportValidity);
+    mark(reportValidity$1);
 
     function check(event) {
       event.preventDefault();
@@ -286,7 +286,7 @@ define(function () { 'use strict';
       var valid = true;
       var first_invalid;
       Array.prototype.map.call(event.target.form.elements, function (element) {
-        if (!reportValidity(element)) {
+        if (!reportValidity$1(element)) {
           valid = false;
           if (!first_invalid && 'focus' in element) {
             first_invalid = element;
@@ -469,6 +469,51 @@ define(function () { 'use strict';
       listening_node.removeEventListener('keypress', ignored_keypress_handler);
       listening_node.removeEventListener('click', click_handler);
       listening_node.removeEventListener('keypress', keypress_handler);
+    }
+
+    /**
+     * remove `property` from element and restore _original_property, if present
+     */
+
+    function uninstall_property (element, property) {
+      delete element[property];
+
+      var original_descriptor = Object.getOwnPropertyDescriptor(element, '_original_' + property);
+
+      if (original_descriptor) {
+        Object.defineProperty(element, property, original_descriptor);
+      }
+    }
+
+    /**
+     * add `property` to an element
+     *
+     * js> installer(element, 'foo', { value: 'bar' });
+     * js> assert(element.foo === 'bar');
+     */
+
+    function install_property$1 (element, property, descriptor) {
+      descriptor.configurable = true;
+      descriptor.enumerable = true;
+      if ('value' in descriptor) {
+        descriptor.writable = true;
+      }
+
+      var original_descriptor = Object.getOwnPropertyDescriptor(element, property);
+
+      if (original_descriptor) {
+
+        /* we already installed that property... */
+        if (original_descriptor.get && original_descriptor.get.__hyperform || original_descriptor.value && original_descriptor.value.__hyperform) {
+          return;
+        }
+
+        /* publish existing property under new name, if it's not from us */
+        Object.defineProperty(element, '_original_' + property, original_descriptor);
+      }
+
+      delete element[property];
+      Object.defineProperty(element, property, descriptor);
     }
 
     /**
@@ -1093,92 +1138,47 @@ define(function () { 'use strict';
       /* jshint +W083 */
     }
 
-    /**
-     * remove `property` from element and restore _original_property, if present
-     */
-
-    function _uninstall (element, property) {
-      delete element[property];
-
-      var original_descriptor = Object.getOwnPropertyDescriptor(element, '_original_' + property);
-
-      if (original_descriptor) {
-        Object.defineProperty(element, property, original_descriptor);
-      }
-    }
-
-    /**
-     * add `property` to an element
-     *
-     * js> installer(element, 'foo', { value: 'bar' });
-     * js> assert(element.foo === 'bar');
-     */
-
-    function install_property (element, property, descriptor) {
-      descriptor.configurable = true;
-      descriptor.enumerable = true;
-      if ('value' in descriptor) {
-        descriptor.writable = true;
-      }
-
-      var original_descriptor = Object.getOwnPropertyDescriptor(element, property);
-
-      if (original_descriptor) {
-
-        /* we already installed that property... */
-        if (original_descriptor.get && original_descriptor.get.__hyperform || original_descriptor.value && original_descriptor.value.__hyperform) {
-          return;
-        }
-
-        /* publish existing property under new name, if it's not from us */
-        Object.defineProperty(element, '_original_' + property, original_descriptor);
-      }
-
-      delete element[property];
-      Object.defineProperty(element, property, descriptor);
-    }
-
     function polyfill (element) {
       if (element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement || element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLFieldSetElement) {
 
-        install_property(element, 'checkValidity', {
+        install_property$1(element, 'checkValidity', {
           value: function value() {
-            return checkValidity(this);
+            return checkValidity$1(this);
           }
         });
-        install_property(element, 'reportValidity', {
+        install_property$1(element, 'reportValidity', {
           value: function value() {
-            return reportValidity(this);
+            return reportValidity$1(this);
           }
         });
-        install_property(element, 'setCustomValidity', {
+        install_property$1(element, 'setCustomValidity', {
           value: function value(msg) {
             return setCustomValidity(this, msg);
           }
         });
-        install_property(element, 'stepDown', {
+        install_property$1(element, 'stepDown', {
           value: function value() {
             var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
             return stepDown(this, n);
           }
         });
-        install_property(element, 'stepUp', {
+        install_property$1(element, 'stepUp', {
           value: function value() {
             var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
             return stepUp(this, n);
           }
         });
-        install_property(element, 'validationMessage', {
+        install_property$1(element, 'validationMessage', {
           get: function get() {
             return validationMessage(this);
           }
         });
-        install_property(element, 'validity', {
+        install_property$1(element, 'validity', {
           get: function get() {
             return ValidityState(this);
           }
         });
-        install_property(element, 'valueAsDate', {
+        install_property$1(element, 'valueAsDate', {
           get: function get() {
             return valueAsDate(this);
           },
@@ -1186,7 +1186,7 @@ define(function () { 'use strict';
             valueAsDate(this, value);
           }
         });
-        install_property(element, 'valueAsNumber', {
+        install_property$1(element, 'valueAsNumber', {
           get: function get() {
             return valueAsNumber(this);
           },
@@ -1194,7 +1194,7 @@ define(function () { 'use strict';
             valueAsNumber(this, value);
           }
         });
-        install_property(element, 'willValidate', {
+        install_property$1(element, 'willValidate', {
           get: function get() {
             return willValidate(this);
           }
@@ -1202,17 +1202,46 @@ define(function () { 'use strict';
 
         install_properties;
       } else if (element instanceof window.HTMLFormElement) {
-        install_property(element, 'checkValidity', {
+        install_property$1(element, 'checkValidity', {
           value: function value() {
-            return checkValidity(this);
+            return checkValidity$1(this);
           }
         });
-        install_property(element, 'reportValidity', {
+        install_property$1(element, 'reportValidity', {
           value: function value() {
-            return reportValidity(this);
+            return reportValidity$1(this);
           }
         });
       }
+    }
+
+    function polyunfill (element) {
+      if (element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement || element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLFieldSetElement) {
+
+        uninstall_property(element, 'checkValidity');
+        uninstall_property(element, 'reportValidity');
+        uninstall_property(element, 'setCustomValidity');
+        uninstall_property(element, 'stepDown');
+        uninstall_property(element, 'stepUp');
+        uninstall_property(element, 'validationMessage');
+        uninstall_property(element, 'validity');
+        uninstall_property(element, 'valueAsDate');
+        uninstall_property(element, 'valueAsNumber');
+        uninstall_property(element, 'willValidate');
+
+        // TODO uninstall other properties
+      } else if (element instanceof window.HTMLFormElement) {
+          install_property(element, 'checkValidity', {
+            value: function value() {
+              return checkValidity(this);
+            }
+          });
+          install_property(element, 'reportValidity', {
+            value: function value() {
+              return reportValidity(this);
+            }
+          });
+        }
     }
 
     var instances = new WeakMap();
@@ -1237,11 +1266,11 @@ define(function () { 'use strict';
         if (form === window || form instanceof window.HTMLDocument) {
           /* install on the prototypes, when called for the whole document */
           this.install([window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype]);
-          this.install_form(window.HTMLFormElement);
+          polyfill(window.HTMLFormElement);
         } else if (form instanceof window.HTMLFormElement || form instanceof window.HTMLFieldSetElement) {
           this.install(form.elements);
           if (form instanceof window.HTMLFormElement) {
-            this.install_form(form);
+            polyfill(form);
           }
         }
 
@@ -1269,13 +1298,11 @@ define(function () { 'use strict';
           this.form.removeEventListener('blur', this.revalidator, true);
           if (this.form === window || this.form instanceof window.HTMLDocument) {
             this.uninstall([window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype]);
-            _uninstall(window.HTMLFormElement, 'checkValidity');
-            _uninstall(window.HTMLFormElement, 'reportValidity');
+            polyunfill(window.HTMLFormElement);
           } else if (this.form instanceof window.HTMLFormElement || this.form instanceof window.HTMLFieldSetElement) {
             this.uninstall(this.form.elements);
             if (this.form instanceof window.HTMLFormElement) {
-              _uninstall(this.form, 'checkValidity');
-              _uninstall(this.form, 'reportValidity');
+              polyunfill(this.form);
             }
           }
         }
@@ -1297,16 +1324,16 @@ define(function () { 'use strict';
                 /* on blur, update the report when the value has changed from the
                  * default or when the element is valid (possibly removing a still
                  * standing invalidity report). */
-                reportValidity(event.target);
+                reportValidity$1(event.target);
               } else if (event.type === 'keyup' || event.type === 'change') {
                 if (event.target.validity.valid) {
                   // report instantly, when an element becomes valid,
                   // postpone report to blur event, when an element is invalid
-                  reportValidity(event.target);
+                  reportValidity$1(event.target);
                 }
               }
             } else {
-              reportValidity(event.target);
+              reportValidity$1(event.target);
             }
           }
         }
@@ -1327,7 +1354,7 @@ define(function () { 'use strict';
       }, {
         key: 'install',
         value: function install(els) {
-          if (els instanceof window.HTMLElement) {
+          if (els instanceof window.Element) {
             els = [els];
           }
 
@@ -1337,38 +1364,17 @@ define(function () { 'use strict';
             polyfill(els[i]);
           }
         }
-
-        /**
-         * install necessary polyfills on HTML <form> elements
-         */
-
-      }, {
-        key: 'install_form',
-        value: function install_form(form) {
-          checkValidity.install(form);
-          reportValidity.install(form);
-        }
       }, {
         key: 'uninstall',
         value: function uninstall(els) {
-          if (els instanceof window.HTMLElement) {
+          if (els instanceof window.Element) {
             els = [els];
           }
 
           var els_length = els.length;
 
           for (var i = 0; i < els_length; i++) {
-            _uninstall(els[i], 'checkValidity');
-            _uninstall(els[i], 'reportValidity');
-            _uninstall(els[i], 'setCustomValidity');
-            _uninstall(els[i], 'stepDown');
-            _uninstall(els[i], 'stepUp');
-            _uninstall(els[i], 'validationMessage');
-            _uninstall(els[i], 'validity');
-            _uninstall(els[i], 'valueAsDate');
-            _uninstall(els[i], 'valueAsNumber');
-            _uninstall(els[i], 'willValidate');
-            // TODO uninstall our versions of property getters
+            polyunfill(els[i]);
           }
         }
       }]);
@@ -2152,10 +2158,10 @@ define(function () { 'use strict';
     /**
      * check an element's validity with respect to it's form
      */
-    function checkValidity(element) {
+    function checkValidity$1(element) {
       /* if this is a <form>, check validity of all child inputs */
       if (element instanceof window.HTMLFormElement) {
-        return Array.prototype.map.call(element.elements, checkValidity).every(function (b) {
+        return Array.prototype.map.call(element.elements, checkValidity$1).every(function (b) {
           return b;
         });
       }
@@ -2174,7 +2180,7 @@ define(function () { 'use strict';
       return valid;
     }
 
-    mark(checkValidity);
+    mark(checkValidity$1);
 
     var version = '0.7.4';
 
@@ -2223,8 +2229,8 @@ define(function () { 'use strict';
 
     hyperform.version = version;
 
-    hyperform.checkValidity = checkValidity;
-    hyperform.reportValidity = reportValidity;
+    hyperform.checkValidity = checkValidity$1;
+    hyperform.reportValidity = reportValidity$1;
     hyperform.setCustomValidity = setCustomValidity;
     hyperform.stepDown = stepDown;
     hyperform.stepUp = stepUp;
