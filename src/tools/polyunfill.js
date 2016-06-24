@@ -25,11 +25,7 @@ export default function(element) {
     // TODO uninstall other properties
 
   } else if (element instanceof window.HTMLFormElement) {
-    install_property(element, 'checkValidity', {
-      value: function() { return checkValidity(this); },
-    });
-    install_property(element, 'reportValidity', {
-      value: function() { return reportValidity(this); },
-    });
+    uninstall_property(element, 'checkValidity');
+    uninstall_property(element, 'reportValidity');
   }
 }

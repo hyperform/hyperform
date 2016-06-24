@@ -242,10 +242,10 @@ define(function () { 'use strict';
     /**
      * check element's validity and report an error back to the user
      */
-    function reportValidity$1(element) {
+    function reportValidity(element) {
       /* if this is a <form>, report validity of all child inputs */
       if (element instanceof window.HTMLFormElement) {
-        return Array.prototype.map.call(element.elements, reportValidity$1).every(function (b) {
+        return Array.prototype.map.call(element.elements, reportValidity).every(function (b) {
           return b;
         });
       }
@@ -270,7 +270,7 @@ define(function () { 'use strict';
       return valid;
     }
 
-    mark(reportValidity$1);
+    mark(reportValidity);
 
     function check(event) {
       event.preventDefault();
@@ -286,7 +286,7 @@ define(function () { 'use strict';
       var valid = true;
       var first_invalid;
       Array.prototype.map.call(event.target.form.elements, function (element) {
-        if (!reportValidity$1(element)) {
+        if (!reportValidity(element)) {
           valid = false;
           if (!first_invalid && 'focus' in element) {
             first_invalid = element;
@@ -492,7 +492,7 @@ define(function () { 'use strict';
      * js> assert(element.foo === 'bar');
      */
 
-    function install_property$1 (element, property, descriptor) {
+    function install_property (element, property, descriptor) {
       descriptor.configurable = true;
       descriptor.enumerable = true;
       if ('value' in descriptor) {
@@ -1141,44 +1141,44 @@ define(function () { 'use strict';
     function polyfill (element) {
       if (element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement || element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLFieldSetElement) {
 
-        install_property$1(element, 'checkValidity', {
+        install_property(element, 'checkValidity', {
           value: function value() {
-            return checkValidity$1(this);
+            return checkValidity(this);
           }
         });
-        install_property$1(element, 'reportValidity', {
+        install_property(element, 'reportValidity', {
           value: function value() {
-            return reportValidity$1(this);
+            return reportValidity(this);
           }
         });
-        install_property$1(element, 'setCustomValidity', {
+        install_property(element, 'setCustomValidity', {
           value: function value(msg) {
             return setCustomValidity(this, msg);
           }
         });
-        install_property$1(element, 'stepDown', {
+        install_property(element, 'stepDown', {
           value: function value() {
             var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
             return stepDown(this, n);
           }
         });
-        install_property$1(element, 'stepUp', {
+        install_property(element, 'stepUp', {
           value: function value() {
             var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
             return stepUp(this, n);
           }
         });
-        install_property$1(element, 'validationMessage', {
+        install_property(element, 'validationMessage', {
           get: function get() {
             return validationMessage(this);
           }
         });
-        install_property$1(element, 'validity', {
+        install_property(element, 'validity', {
           get: function get() {
             return ValidityState(this);
           }
         });
-        install_property$1(element, 'valueAsDate', {
+        install_property(element, 'valueAsDate', {
           get: function get() {
             return valueAsDate(this);
           },
@@ -1186,7 +1186,7 @@ define(function () { 'use strict';
             valueAsDate(this, value);
           }
         });
-        install_property$1(element, 'valueAsNumber', {
+        install_property(element, 'valueAsNumber', {
           get: function get() {
             return valueAsNumber(this);
           },
@@ -1194,7 +1194,7 @@ define(function () { 'use strict';
             valueAsNumber(this, value);
           }
         });
-        install_property$1(element, 'willValidate', {
+        install_property(element, 'willValidate', {
           get: function get() {
             return willValidate(this);
           }
@@ -1202,14 +1202,14 @@ define(function () { 'use strict';
 
         install_properties;
       } else if (element instanceof window.HTMLFormElement) {
-        install_property$1(element, 'checkValidity', {
+        install_property(element, 'checkValidity', {
           value: function value() {
-            return checkValidity$1(this);
+            return checkValidity(this);
           }
         });
-        install_property$1(element, 'reportValidity', {
+        install_property(element, 'reportValidity', {
           value: function value() {
-            return reportValidity$1(this);
+            return reportValidity(this);
           }
         });
       }
@@ -1231,16 +1231,8 @@ define(function () { 'use strict';
 
         // TODO uninstall other properties
       } else if (element instanceof window.HTMLFormElement) {
-          install_property(element, 'checkValidity', {
-            value: function value() {
-              return checkValidity(this);
-            }
-          });
-          install_property(element, 'reportValidity', {
-            value: function value() {
-              return reportValidity(this);
-            }
-          });
+          uninstall_property(element, 'checkValidity');
+          uninstall_property(element, 'reportValidity');
         }
     }
 
@@ -1324,16 +1316,16 @@ define(function () { 'use strict';
                 /* on blur, update the report when the value has changed from the
                  * default or when the element is valid (possibly removing a still
                  * standing invalidity report). */
-                reportValidity$1(event.target);
+                reportValidity(event.target);
               } else if (event.type === 'keyup' || event.type === 'change') {
                 if (event.target.validity.valid) {
                   // report instantly, when an element becomes valid,
                   // postpone report to blur event, when an element is invalid
-                  reportValidity$1(event.target);
+                  reportValidity(event.target);
                 }
               }
             } else {
-              reportValidity$1(event.target);
+              reportValidity(event.target);
             }
           }
         }
@@ -2158,10 +2150,10 @@ define(function () { 'use strict';
     /**
      * check an element's validity with respect to it's form
      */
-    function checkValidity$1(element) {
+    function checkValidity(element) {
       /* if this is a <form>, check validity of all child inputs */
       if (element instanceof window.HTMLFormElement) {
-        return Array.prototype.map.call(element.elements, checkValidity$1).every(function (b) {
+        return Array.prototype.map.call(element.elements, checkValidity).every(function (b) {
           return b;
         });
       }
@@ -2180,7 +2172,7 @@ define(function () { 'use strict';
       return valid;
     }
 
-    mark(checkValidity$1);
+    mark(checkValidity);
 
     var version = '0.7.4';
 
@@ -2229,8 +2221,8 @@ define(function () { 'use strict';
 
     hyperform.version = version;
 
-    hyperform.checkValidity = checkValidity$1;
-    hyperform.reportValidity = reportValidity$1;
+    hyperform.checkValidity = checkValidity;
+    hyperform.reportValidity = reportValidity;
     hyperform.setCustomValidity = setCustomValidity;
     hyperform.stepDown = stepDown;
     hyperform.stepUp = stepUp;
