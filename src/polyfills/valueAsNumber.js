@@ -3,7 +3,6 @@
 
 import get_type from '../tools/get_type';
 import mark from '../tools/mark';
-import installer from '../tools/property_installer';
 import string_to_number from '../tools/string_to_number';
 import { numbers } from '../components/types';
 import valueAsDate from './valueAsDate';
@@ -56,12 +55,6 @@ function valueAsNumber(element, value=undefined) {
 
   return NaN;
 }
-
-
-valueAsNumber.install = installer('valueAsNumber', {
-  get: function() { return valueAsNumber(this); },
-  set: function(value) { valueAsNumber(this, value); },
-});
 
 mark(valueAsNumber);
 

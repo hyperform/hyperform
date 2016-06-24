@@ -2,7 +2,6 @@
 
 
 import mark from '../tools/mark';
-import installer from '../tools/property_installer';
 import trigger_event from '../tools/trigger_event';
 import Renderer from '../components/renderer';
 import ValidityState from './validityState';
@@ -39,15 +38,6 @@ function reportValidity(element) {
 
   return valid;
 }
-
-
-/**
- * publish a convenience function to replace the native element.reportValidity
- */
-reportValidity.install = installer('reportValidity', {
-  value: function() { return reportValidity(this); },
-  writable: true,
-});
 
 mark(reportValidity);
 

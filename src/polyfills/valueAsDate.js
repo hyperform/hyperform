@@ -3,7 +3,6 @@
 
 import get_type from '../tools/get_type';
 import mark from '../tools/mark';
-import installer from '../tools/property_installer';
 import string_to_date from '../tools/string_to_date';
 import date_to_string from '../tools/date_to_string';
 import { dates } from '../components/types';
@@ -46,12 +45,6 @@ function valueAsDate(element, value=undefined) {
 
   return null;
 }
-
-
-valueAsDate.install = installer('valueAsDate', {
-  get: function() { return valueAsDate(this); },
-  set: function(value) { valueAsDate(this, value); },
-});
 
 mark(valueAsDate);
 

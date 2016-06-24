@@ -14,6 +14,7 @@ import valueAsNumber from '../polyfills/valueAsNumber';
 import willValidate from '../polyfills/willValidate';
 import { install_properties } from '../polyfills/properties';
 import uninstall from '../tools/property_uninstaller';
+import polyfill from '../tools/polyfill';
 
 
 const instances = new WeakMap();
@@ -147,17 +148,7 @@ export default class Wrapper {
     const els_length = els.length;
 
     for (let i = 0; i < els_length; i++) {
-      checkValidity.install(els[i]);
-      reportValidity.install(els[i]);
-      setCustomValidity.install(els[i]);
-      stepDown.install(els[i]);
-      stepUp.install(els[i]);
-      validationMessage.install(els[i]);
-      ValidityState.install(els[i]);
-      valueAsDate.install(els[i]);
-      valueAsNumber.install(els[i]);
-      willValidate.install(els[i]);
-      install_properties(els[i]);
+      polyfill(els[i]);
     }
   }
 

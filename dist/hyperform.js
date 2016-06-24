@@ -23,36 +23,6 @@ var hyperform = (function () {
       return obj;
     }
 
-    /**
-     * return a function, that adds `property` to an element
-     *
-     * js> installer('foo', { value: 'bar' })(element);
-     * js> assert(element.foo === 'bar');
-     */
-
-    function installer (property, descriptor) {
-      descriptor.configurable = true;
-      descriptor.enumerable = true;
-
-      return function (element) {
-        var original_descriptor = Object.getOwnPropertyDescriptor(element, property);
-
-        if (original_descriptor) {
-
-          /* we already installed that property... */
-          if (original_descriptor.get && original_descriptor.get.__hyperform || original_descriptor.value && original_descriptor.value.__hyperform) {
-            return;
-          }
-
-          /* publish existing property under new name, if it's not from us */
-          Object.defineProperty(element, '_original_' + property, original_descriptor);
-        }
-
-        delete element[property];
-        Object.defineProperty(element, property, descriptor);
-      };
-    }
-
     function trigger_event (element, event) {
         var _ref = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
@@ -301,16 +271,6 @@ var hyperform = (function () {
       return valid;
     }
 
-    /**
-     * publish a convenience function to replace the native element.reportValidity
-     */
-    reportValidity.install = installer('reportValidity', {
-      value: function value() {
-        return reportValidity(this);
-      },
-      writable: true
-    });
-
     mark(reportValidity);
 
     function check(event) {
@@ -518,16 +478,6 @@ var hyperform = (function () {
     function setCustomValidity(element, msg) {
       message_store.set(element, msg, true);
     }
-
-    /**
-     * publish a convenience function to replace the native element.setCustomValidity
-     */
-    setCustomValidity.install = installer('setCustomValidity', {
-      value: function value(msg) {
-        return setCustomValidity(this, msg);
-      },
-      writable: true
-    });
 
     mark(setCustomValidity);
 
@@ -950,15 +900,6 @@ var hyperform = (function () {
       return null;
     }
 
-    valueAsDate.install = installer('valueAsDate', {
-      get: function get() {
-        return valueAsDate(this);
-      },
-      set: function set(value) {
-        valueAsDate(this, value);
-      }
-    });
-
     mark(valueAsDate);
 
     /**
@@ -1007,15 +948,6 @@ var hyperform = (function () {
       return NaN;
     }
 
-    valueAsNumber.install = installer('valueAsNumber', {
-      get: function get() {
-        return valueAsNumber(this);
-      },
-      set: function set(value) {
-        valueAsNumber(this, value);
-      }
-    });
-
     mark(valueAsNumber);
 
     /**
@@ -1041,14 +973,6 @@ var hyperform = (function () {
         valueAsNumber(element, prev);
       }
     }
-
-    stepDown.install = installer('stepDown', {
-      value: function value() {
-        var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
-        return stepDown(this, n);
-      },
-      writable: true
-    });
 
     mark(stepDown);
 
@@ -1076,14 +1000,6 @@ var hyperform = (function () {
       }
     }
 
-    stepUp.install = installer('stepUp', {
-      value: function value() {
-        var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
-        return stepUp(this, n);
-      },
-      writable: true
-    });
-
     mark(stepUp);
 
     /**
@@ -1100,15 +1016,6 @@ var hyperform = (function () {
       return msg.toString();
     }
 
-    /**
-     * publish a convenience function to replace the native element.validationMessage
-     */
-    validationMessage.install = installer('validationMessage', {
-      get: function get() {
-        return validationMessage(this);
-      }
-    });
-
     mark(validationMessage);
 
     /**
@@ -1117,15 +1024,6 @@ var hyperform = (function () {
     function willValidate(element) {
       return is_validation_candidate(element);
     }
-
-    /**
-     * publish a convenience function to replace the native element.willValidate
-     */
-    willValidate.install = installer('willValidate', {
-      get: function get() {
-        return willValidate(this);
-      }
-    });
 
     mark(willValidate);
 
@@ -1210,6 +1108,114 @@ var hyperform = (function () {
       }
     }
 
+    /**
+     * add `property` to an element
+     *
+     * js> installer(element, 'foo', { value: 'bar' });
+     * js> assert(element.foo === 'bar');
+     */
+
+    function install_property (element, property, descriptor) {
+      descriptor.configurable = true;
+      descriptor.enumerable = true;
+      if ('value' in descriptor) {
+        descriptor.writable = true;
+      }
+
+      var original_descriptor = Object.getOwnPropertyDescriptor(element, property);
+
+      if (original_descriptor) {
+
+        /* we already installed that property... */
+        if (original_descriptor.get && original_descriptor.get.__hyperform || original_descriptor.value && original_descriptor.value.__hyperform) {
+          return;
+        }
+
+        /* publish existing property under new name, if it's not from us */
+        Object.defineProperty(element, '_original_' + property, original_descriptor);
+      }
+
+      delete element[property];
+      Object.defineProperty(element, property, descriptor);
+    }
+
+    function polyfill (element) {
+      if (element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement || element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLFieldSetElement) {
+
+        install_property(element, 'checkValidity', {
+          value: function value() {
+            return checkValidity(this);
+          }
+        });
+        install_property(element, 'reportValidity', {
+          value: function value() {
+            return reportValidity(this);
+          }
+        });
+        install_property(element, 'setCustomValidity', {
+          value: function value(msg) {
+            return setCustomValidity(this, msg);
+          }
+        });
+        install_property(element, 'stepDown', {
+          value: function value() {
+            var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+            return stepDown(this, n);
+          }
+        });
+        install_property(element, 'stepUp', {
+          value: function value() {
+            var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+            return stepUp(this, n);
+          }
+        });
+        install_property(element, 'validationMessage', {
+          get: function get() {
+            return validationMessage(this);
+          }
+        });
+        install_property(element, 'validity', {
+          get: function get() {
+            return ValidityState(this);
+          }
+        });
+        install_property(element, 'valueAsDate', {
+          get: function get() {
+            return valueAsDate(this);
+          },
+          set: function set(value) {
+            valueAsDate(this, value);
+          }
+        });
+        install_property(element, 'valueAsNumber', {
+          get: function get() {
+            return valueAsNumber(this);
+          },
+          set: function set(value) {
+            valueAsNumber(this, value);
+          }
+        });
+        install_property(element, 'willValidate', {
+          get: function get() {
+            return willValidate(this);
+          }
+        });
+
+        install_properties;
+      } else if (element instanceof window.HTMLFormElement) {
+        install_property(element, 'checkValidity', {
+          value: function value() {
+            return checkValidity(this);
+          }
+        });
+        install_property(element, 'reportValidity', {
+          value: function value() {
+            return reportValidity(this);
+          }
+        });
+      }
+    }
+
     var instances = new WeakMap();
 
     /**
@@ -1285,6 +1291,9 @@ var hyperform = (function () {
           if (event.target instanceof window.HTMLButtonElement || event.target instanceof window.HTMLTextAreaElement || event.target instanceof window.HTMLSelectElement || event.target instanceof window.HTMLInputElement) {
 
             if (this.settings.revalidate === 'hybrid') {
+              /* "hybrid" somewhat simulates what browsers do. See for example
+               * Firefox's :-moz-ui-invalid pseudo-class:
+               * https://developer.mozilla.org/en-US/docs/Web/CSS/:-moz-ui-invalid */
               if (event.type === 'blur' && event.target.value !== event.target.defaultValue || event.target.validity.valid) {
                 /* on blur, update the report when the value has changed from the
                  * default or when the element is valid (possibly removing a still
@@ -1326,17 +1335,7 @@ var hyperform = (function () {
           var els_length = els.length;
 
           for (var i = 0; i < els_length; i++) {
-            checkValidity.install(els[i]);
-            reportValidity.install(els[i]);
-            setCustomValidity.install(els[i]);
-            stepDown.install(els[i]);
-            stepUp.install(els[i]);
-            validationMessage.install(els[i]);
-            ValidityState.install(els[i]);
-            valueAsDate.install(els[i]);
-            valueAsNumber.install(els[i]);
-            willValidate.install(els[i]);
-            install_properties(els[i]);
+            polyfill(els[i]);
           }
         }
 
@@ -2152,15 +2151,6 @@ var hyperform = (function () {
     mark(ValidityStatePrototype);
 
     /**
-     * publish a convenience function to replace the native element.validity
-     */
-    ValidityState.install = installer('validity', {
-      get: function get() {
-        return ValidityState(this);
-      }
-    });
-
-    /**
      * check an element's validity with respect to it's form
      */
     function checkValidity(element) {
@@ -2184,16 +2174,6 @@ var hyperform = (function () {
 
       return valid;
     }
-
-    /**
-     * publish a convenience function to replace the native element.checkValidity
-     */
-    checkValidity.install = installer('checkValidity', {
-      value: function value() {
-        return checkValidity(this);
-      },
-      writable: true
-    });
 
     mark(checkValidity);
 

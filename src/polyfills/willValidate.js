@@ -2,7 +2,6 @@
 
 
 import mark from '../tools/mark';
-import installer from '../tools/property_installer';
 import is_validation_candidate from '../tools/is_validation_candidate';
 
 
@@ -12,14 +11,6 @@ import is_validation_candidate from '../tools/is_validation_candidate';
 function willValidate(element) {
   return is_validation_candidate(element);
 }
-
-
-/**
- * publish a convenience function to replace the native element.willValidate
- */
-willValidate.install = installer('willValidate', {
-  get: function() { return willValidate(this); },
-});
 
 mark(willValidate);
 

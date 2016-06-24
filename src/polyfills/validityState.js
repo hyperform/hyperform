@@ -1,7 +1,6 @@
 'use strict';
 
 
-import installer from '../tools/property_installer';
 import is_validation_candidate from '../tools/is_validation_candidate';
 import mark from '../tools/mark';
 import message_store from '../components/message_store';
@@ -94,14 +93,5 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
 });
 
 mark(ValidityStatePrototype);
-
-
-/**
- * publish a convenience function to replace the native element.validity
- */
-ValidityState.install = installer('validity', {
-  get: function() { return ValidityState(this); },
-});
-
 
 export default ValidityState;

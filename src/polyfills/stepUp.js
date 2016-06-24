@@ -4,7 +4,6 @@
 import get_next_valid from '../tools/get_next_valid';
 import get_type from '../tools/get_type';
 import mark from '../tools/mark';
-import installer from '../tools/property_installer';
 import { numbers } from '../components/types';
 import valueAsNumber from './valueAsNumber';
 
@@ -28,11 +27,6 @@ function stepUp(element, n=1) {
     valueAsNumber(element, next);
   }
 }
-
-stepUp.install = installer('stepUp', {
-  value: function(n=1) { return stepUp(this, n); },
-  writable: true,
-});
 
 mark(stepUp);
 
