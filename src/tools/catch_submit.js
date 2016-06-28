@@ -4,6 +4,40 @@
 import trigger_event from './trigger_event';
 import reportValidity from '../polyfills/reportValidity';
 import { text as text_types } from '../components/types';
+import { get_wrapper } from '../components/wrapper';
+
+
+function add_submit_field(button) {
+  /* if a submit button was clicked, add its name=value to the
+   * submitted data. */
+  if (['image', 'submit'].indexOf(button.type) > -1 && button.name) {
+    const wrapper = get_wrapper(button.form) || {};
+    var submit_helper = wrapper.submit_helper;
+    if (submit_helper) {
+      if (submit_helper.parentNode) {
+        submit_helper.parentNode.removeChild(submit_helper);
+      }
+    } else {
+      submit_helper = document.createElement('input');
+      submit_helper.type = 'hidden';
+      wrapper.submit_helper = submit_helper;
+    }
+    submit_helper.name = button.name;
+    submit_helper.value = button.value;
+    button.form.appendChild(submit_helper);
+  }
+}
+
+
+function remove_submit_field(button) {
+  if (['image', 'submit'].indexOf(button.type) > -1 && button.name) {
+    const wrapper = get_wrapper(button.form) || {};
+    const submit_helper = wrapper.submit_helper;
+    if (submit_helper && submit_helper.parentNode) {
+      submit_helper.parentNode.removeChild(submit_helper);
+    }
+  }
+}
 
 
 function check(event) {
@@ -36,7 +70,9 @@ function check(event) {
     const submit_event = trigger_event(event.target.form, 'submit',
                                        { cancelable: true });
     if (! submit_event.defaultPrevented) {
+      add_submit_field(event.target);
       event.target.form.submit();
+      remove_submit_field(event.target);
     }
   } else if (first_invalid) {
     /* focus the first invalid element, if validation went south */
@@ -139,7 +175,9 @@ function click_handler(event) {
  */
 function ignored_click_handler(event) {
   if (is_submitting_click(event)) {
+    add_submit_field(event.target);
     event.target.form.submit();
+    remove_submit_field(event.target);
   }
 }
 
@@ -190,7 +228,9 @@ function ignored_keypress_handler(event) {
       event.preventDefault();
       submit.click();
     } else {
+      add_submit_field(event.target);
       event.target.form.submit();
+      remove_submit_field(event.target);
     }
   }
 }
