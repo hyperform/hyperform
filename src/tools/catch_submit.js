@@ -7,6 +7,20 @@ import { text as text_types } from '../components/types';
 import { get_wrapper } from '../components/wrapper';
 
 
+function submit_form_via(element) {
+  /* apparently, the submit event is not triggered in most browsers on
+   * the submit() method, so we do it manually here to model a natural
+   * submit as closely as possible. */
+  const submit_event = trigger_event(element.form, 'submit',
+                                     { cancelable: true });
+  if (! submit_event.defaultPrevented) {
+    add_submit_field(element);
+    element.form.submit();
+    remove_submit_field(element);
+  }
+}
+
+
 function add_submit_field(button) {
   /* if a submit button was clicked, add its name=value to the
    * submitted data. */
@@ -64,16 +78,7 @@ function check(event) {
   });
 
   if (valid) {
-    /* apparently, the submit event is not triggered in most browsers on
-     * the submit() method, so we do it manually here to model a natural
-     * submit as closely as possible. */
-    const submit_event = trigger_event(event.target.form, 'submit',
-                                       { cancelable: true });
-    if (! submit_event.defaultPrevented) {
-      add_submit_field(event.target);
-      event.target.form.submit();
-      remove_submit_field(event.target);
-    }
+    submit_form_via(event.target);
   } else if (first_invalid) {
     /* focus the first invalid element, if validation went south */
     first_invalid.focus();
@@ -175,9 +180,7 @@ function click_handler(event) {
  */
 function ignored_click_handler(event) {
   if (is_submitting_click(event)) {
-    add_submit_field(event.target);
-    event.target.form.submit();
-    remove_submit_field(event.target);
+    submit_form_via(event.target);
   }
 }
 
@@ -228,9 +231,7 @@ function ignored_keypress_handler(event) {
       event.preventDefault();
       submit.click();
     } else {
-      add_submit_field(event.target);
-      event.target.form.submit();
-      remove_submit_field(event.target);
+      submit_form_via(event.target);
     }
   }
 }
