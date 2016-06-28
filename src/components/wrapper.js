@@ -17,6 +17,14 @@ const instances = new WeakMap();
  */
 export default function Wrapper(form, settings) {
 
+  /* do not allow more than one instance per form. Otherwise we'd end
+   * up with double event handlers, polyfills re-applied, ... */
+  var existing = instances.get(form);
+  if (existing) {
+    existing.settings = settings;
+    return existing;
+  }
+
   this.form = form;
   this.settings = settings;
   this.revalidator = this.revalidate.bind(this);

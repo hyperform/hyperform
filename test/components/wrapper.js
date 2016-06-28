@@ -16,6 +16,14 @@ test('wrapper', t => {
   t.is(wr.settings.revalidate, 'oninput');
   t.is(wr.form, form);
 
+  new Wrapper(form, {
+    revalidate: 'onblur',
+  });
+
+  /* when a new wrapper for the same form is created, make sure the old
+   * wrapper is updated instead. */
+  t.is(wr.settings.revalidate, 'onblur');
+
   /* make sure the form.elements get the poylfills installed */
   let polyfill = Object.getOwnPropertyDescriptor(input, 'checkValidity');
   t.true(polyfill.value.__hyperform);
