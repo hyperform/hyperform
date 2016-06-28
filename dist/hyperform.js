@@ -2138,7 +2138,7 @@ var hyperform = (function () {
       return valid;
     }
 
-    var version = '0.7.4';
+    var version = '0.7.5';
 
     /**
      * public hyperform interface:
