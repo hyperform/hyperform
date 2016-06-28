@@ -69,3 +69,10 @@ version:
 		sed -i '3c\  "version": "$(VERSION)",' bower.json; \
 	fi
 .PHONY: version
+
+cmpsize:
+	git log --pretty=format:%H | \
+	(while read x; do git show "$$x:dist/hyperform.min.js" | wc -c ; done ) | \
+	tac | \
+	gnuplot -p -e "plot '< cat -' using 1"
+.PHONY: cmpsize
