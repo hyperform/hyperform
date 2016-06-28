@@ -2,7 +2,6 @@
 
 
 import get_type from '../tools/get_type';
-import mark from '../tools/mark';
 import string_to_number from '../tools/string_to_number';
 import { numbers } from '../components/types';
 import valueAsDate from './valueAsDate';
@@ -13,7 +12,7 @@ import valueAsDate from './valueAsDate';
  *
  * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasnumber
  */
-function valueAsNumber(element, value=undefined) {
+export default function valueAsNumber(element, value=undefined) {
   const type = get_type(element);
   if (numbers.indexOf(type) > -1) {
     if (type === 'range' && element.hasAttribute('multiple')) {
@@ -55,7 +54,3 @@ function valueAsNumber(element, value=undefined) {
 
   return NaN;
 }
-
-mark(valueAsNumber);
-
-export default valueAsNumber;

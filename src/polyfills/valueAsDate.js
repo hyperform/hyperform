@@ -2,7 +2,6 @@
 
 
 import get_type from '../tools/get_type';
-import mark from '../tools/mark';
 import string_to_date from '../tools/string_to_date';
 import date_to_string from '../tools/date_to_string';
 import { dates } from '../components/types';
@@ -13,7 +12,7 @@ import { dates } from '../components/types';
  *
  * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasdate
  */
-function valueAsDate(element, value=undefined) {
+export default function valueAsDate(element, value=undefined) {
   const type = get_type(element);
   if (dates.indexOf(type) > -1) {
     if (value !== undefined) {
@@ -45,7 +44,3 @@ function valueAsDate(element, value=undefined) {
 
   return null;
 }
-
-mark(valueAsDate);
-
-export default valueAsDate;

@@ -8,11 +8,6 @@
  */
 const catalog = {
   en: {
-    /**
-     * these validation messages are from Firefox source,
-     * http://mxr.mozilla.org/mozilla-central/source/dom/locales/en-US/chrome/dom/dom.properties
-     * released under MPL license, http://mozilla.org/MPL/2.0/.
-     */
     TextTooLong: 'Please shorten this text to %l characters or less (you are currently using %l characters).',
     ValueMissing: 'Please fill out this field.',
     CheckboxMissing: 'Please check this box if you want to proceed.',

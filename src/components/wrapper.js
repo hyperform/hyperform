@@ -15,48 +15,50 @@ const instances = new WeakMap();
  * wrap <form>s, window or document, that get treated with the global
  * hyperform()
  */
-export default class Wrapper {
+export default function Wrapper(form, settings) {
 
-  constructor(form, settings) {
-    this.form = form;
-    this.settings = settings;
-    this.revalidator = this.revalidate.bind(this);
+  this.form = form;
+  this.settings = settings;
+  this.revalidator = this.revalidate.bind(this);
 
-    instances.set(form, this);
+  instances.set(form, this);
 
-    catch_submit(form, settings.revalidate === 'never');
+  catch_submit(form, settings.revalidate === 'never');
 
-    if (form === window || form instanceof window.HTMLDocument) {
-      /* install on the prototypes, when called for the whole document */
-      this.install([
-        window.HTMLButtonElement.prototype,
-        window.HTMLInputElement.prototype,
-        window.HTMLSelectElement.prototype,
-        window.HTMLTextAreaElement.prototype,
-        window.HTMLFieldSetElement.prototype,
-      ]);
-      polyfill(window.HTMLFormElement);
-    } else if (form instanceof window.HTMLFormElement ||
-               form instanceof window.HTMLFieldSetElement) {
-      this.install(form.elements);
-      if (form instanceof window.HTMLFormElement) {
-        polyfill(form);
-      }
-    }
-
-    if (settings.revalidate === 'oninput' || settings.revalidate === 'hybrid') {
-      /* in a perfect world we'd just bind to "input", but support here is
-       * abysmal: http://caniuse.com/#feat=input-event */
-      form.addEventListener('keyup', this.revalidator);
-      form.addEventListener('change', this.revalidator);
-    }
-    if (settings.revalidate === 'onblur' || settings.revalidate === 'hybrid') {
-      /* useCapture=true, because `blur` doesn't bubble. See
-       * https://developer.mozilla.org/en-US/docs/Web/Events/blur#Event_delegation
-       * for a discussion */
-      form.addEventListener('blur', this.revalidator, true);
+  if (form === window || form instanceof window.HTMLDocument) {
+    /* install on the prototypes, when called for the whole document */
+    this.install([
+      window.HTMLButtonElement.prototype,
+      window.HTMLInputElement.prototype,
+      window.HTMLSelectElement.prototype,
+      window.HTMLTextAreaElement.prototype,
+      window.HTMLFieldSetElement.prototype,
+    ]);
+    polyfill(window.HTMLFormElement);
+  } else if (form instanceof window.HTMLFormElement ||
+              form instanceof window.HTMLFieldSetElement) {
+    this.install(form.elements);
+    if (form instanceof window.HTMLFormElement) {
+      polyfill(form);
     }
   }
+
+  if (settings.revalidate === 'oninput' || settings.revalidate === 'hybrid') {
+    /* in a perfect world we'd just bind to "input", but support here is
+      * abysmal: http://caniuse.com/#feat=input-event */
+    form.addEventListener('keyup', this.revalidator);
+    form.addEventListener('change', this.revalidator);
+  }
+  if (settings.revalidate === 'onblur' || settings.revalidate === 'hybrid') {
+    /* useCapture=true, because `blur` doesn't bubble. See
+      * https://developer.mozilla.org/en-US/docs/Web/Events/blur#Event_delegation
+      * for a discussion */
+    form.addEventListener('blur', this.revalidator, true);
+  }
+}
+
+
+Wrapper.prototype = {
 
   destroy() {
     uncatch_submit(this.form);
@@ -80,7 +82,7 @@ export default class Wrapper {
         polyunfill(this.form);
       }
     }
-  }
+  },
 
   /**
    * revalidate an input element
@@ -115,7 +117,7 @@ export default class Wrapper {
       }
 
     }
-  }
+  },
 
   /**
    * install the polyfills on each given element
@@ -139,7 +141,7 @@ export default class Wrapper {
     for (let i = 0; i < els_length; i++) {
       polyfill(els[i]);
     }
-  }
+  },
 
   uninstall(els) {
     if (els instanceof window.Element) {
@@ -151,9 +153,10 @@ export default class Wrapper {
     for (let i = 0; i < els_length; i++) {
       polyunfill(els[i]);
     }
-  }
+  },
 
-}
+};
+
 
 /**
  * try to get the appropriate wrapper for a specific element by looking up

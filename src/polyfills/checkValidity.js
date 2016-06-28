@@ -1,7 +1,6 @@
 'use strict';
 
 
-import mark from '../tools/mark';
 import trigger_event from '../tools/trigger_event';
 import ValidityState from './validityState';
 import { get_wrapper } from '../components/wrapper';
@@ -10,7 +9,7 @@ import { get_wrapper } from '../components/wrapper';
 /**
  * check an element's validity with respect to it's form
  */
-function checkValidity(element) {
+export default function checkValidity(element) {
   /* if this is a <form>, check validity of all child inputs */
   if (element instanceof window.HTMLFormElement) {
     return (
@@ -31,7 +30,3 @@ function checkValidity(element) {
 
   return valid;
 }
-
-mark(checkValidity);
-
-export default checkValidity;

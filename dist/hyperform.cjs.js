@@ -1,27 +1,6 @@
 /*! hyperform.js.org */
 'use strict';
 
-/**
- * mark an object with a '__hyperform=true' property
- *
- * We use this to distinguish our properties from the native ones. Usage:
- * js> mark(obj);
- * js> assert(obj.__hyperform === true)
- */
-
-function mark (obj) {
-  if (['object', 'function'].indexOf(typeof obj) > -1) {
-    delete obj.__hyperform;
-    Object.defineProperty(obj, '__hyperform', {
-      configurable: true,
-      enumerable: false,
-      value: true
-    });
-  }
-
-  return obj;
-}
-
 function trigger_event (element, event) {
     var _ref = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
@@ -70,27 +49,26 @@ var inputs = ['button', 'hidden', 'reset'].concat(validation_candidates);
 /* apparently <select> and <textarea> have types of their own */
 var non_inputs = ['select-one', 'select-multiple', 'textarea'];
 
-var _classCallCheck = (function (instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-})
+/**
+ * mark an object with a '__hyperform=true' property
+ *
+ * We use this to distinguish our properties from the native ones. Usage:
+ * js> mark(obj);
+ * js> assert(obj.__hyperform === true)
+ */
 
-function defineProperties(target, props) {
-  for (var i = 0; i < props.length; i++) {
-    var descriptor = props[i];
-    descriptor.enumerable = descriptor.enumerable || false;
-    descriptor.configurable = true;
-    if ("value" in descriptor) descriptor.writable = true;
-    Object.defineProperty(target, descriptor.key, descriptor);
+function mark (obj) {
+  if (['object', 'function'].indexOf(typeof obj) > -1) {
+    delete obj.__hyperform;
+    Object.defineProperty(obj, '__hyperform', {
+      configurable: true,
+      enumerable: false,
+      value: true
+    });
   }
+
+  return obj;
 }
-
-function _createClass (Constructor, protoProps, staticProps) {
-  if (protoProps) defineProperties(Constructor.prototype, protoProps);
-  if (staticProps) defineProperties(Constructor, staticProps);
-  return Constructor;
-};
 
 /**
  * the internal storage for messages
@@ -269,8 +247,6 @@ function reportValidity(element) {
 
   return valid;
 }
-
-mark(reportValidity);
 
 function check(event) {
   event.preventDefault();
@@ -517,13 +493,11 @@ function install_property (element, property, descriptor) {
 }
 
 /**
- *
+ * set a custom validity message or delete it with an empty string
  */
 function setCustomValidity(element, msg) {
   message_store.set(element, msg, true);
 }
-
-mark(setCustomValidity);
 
 function sprintf (str) {
   for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
@@ -754,11 +728,6 @@ function get_type (element) {
 
 var catalog = {
   en: {
-    /**
-     * these validation messages are from Firefox source,
-     * http://mxr.mozilla.org/mozilla-central/source/dom/locales/en-US/chrome/dom/dom.properties
-     * released under MPL license, http://mozilla.org/MPL/2.0/.
-     */
     TextTooLong: 'Please shorten this text to %l characters or less (you are currently using %l characters).',
     ValueMissing: 'Please fill out this field.',
     CheckboxMissing: 'Please check this box if you want to proceed.',
@@ -944,8 +913,6 @@ function valueAsDate(element) {
   return null;
 }
 
-mark(valueAsDate);
-
 /**
  * implement the valueAsNumber functionality
  *
@@ -992,8 +959,6 @@ function valueAsNumber(element) {
   return NaN;
 }
 
-mark(valueAsNumber);
-
 /**
  *
  */
@@ -1017,8 +982,6 @@ function stepDown(element) {
     valueAsNumber(element, prev);
   }
 }
-
-mark(stepDown);
 
 /**
  *
@@ -1044,8 +1007,6 @@ function stepUp(element) {
   }
 }
 
-mark(stepUp);
-
 /**
  * get the validation message for an element, empty string, if the element
  * satisfies all constraints.
@@ -1060,16 +1021,12 @@ function validationMessage(element) {
   return msg.toString();
 }
 
-mark(validationMessage);
-
 /**
- * check, if an element will be subject to HTML5 validation
+ * check, if an element will be subject to HTML5 validation at all
  */
 function willValidate(element) {
   return is_validation_candidate(element);
 }
-
-mark(willValidate);
 
 var gA = function gA(prop) {
   return function () {
@@ -1152,80 +1109,78 @@ function uninstall_properties(element) {
   }
 }
 
+var polyfills = {
+  checkValidity: {
+    value: mark(function () {
+      return checkValidity(this);
+    })
+  },
+  reportValidity: {
+    value: mark(function () {
+      return reportValidity(this);
+    })
+  },
+  setCustomValidity: {
+    value: mark(function (msg) {
+      return setCustomValidity(this, msg);
+    })
+  },
+  stepDown: {
+    value: mark(function () {
+      var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+      return stepDown(this, n);
+    })
+  },
+  stepUp: {
+    value: mark(function () {
+      var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+      return stepUp(this, n);
+    })
+  },
+  validationMessage: {
+    get: mark(function () {
+      return validationMessage(this);
+    })
+  },
+  validity: {
+    get: mark(function () {
+      return ValidityState(this);
+    })
+  },
+  valueAsDate: {
+    get: mark(function () {
+      return valueAsDate(this);
+    }),
+    set: mark(function (value) {
+      valueAsDate(this, value);
+    })
+  },
+  valueAsNumber: {
+    get: mark(function () {
+      return valueAsNumber(this);
+    }),
+    set: mark(function (value) {
+      valueAsNumber(this, value);
+    })
+  },
+  willValidate: {
+    get: mark(function () {
+      return willValidate(this);
+    })
+  }
+};
+
 function polyfill (element) {
   if (element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement || element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLFieldSetElement) {
 
-    install_property(element, 'checkValidity', {
-      value: function value() {
-        return checkValidity(this);
-      }
-    });
-    install_property(element, 'reportValidity', {
-      value: function value() {
-        return reportValidity(this);
-      }
-    });
-    install_property(element, 'setCustomValidity', {
-      value: function value(msg) {
-        return setCustomValidity(this, msg);
-      }
-    });
-    install_property(element, 'stepDown', {
-      value: function value() {
-        var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
-        return stepDown(this, n);
-      }
-    });
-    install_property(element, 'stepUp', {
-      value: function value() {
-        var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
-        return stepUp(this, n);
-      }
-    });
-    install_property(element, 'validationMessage', {
-      get: function get() {
-        return validationMessage(this);
-      }
-    });
-    install_property(element, 'validity', {
-      get: function get() {
-        return ValidityState(this);
-      }
-    });
-    install_property(element, 'valueAsDate', {
-      get: function get() {
-        return valueAsDate(this);
-      },
-      set: function set(value) {
-        valueAsDate(this, value);
-      }
-    });
-    install_property(element, 'valueAsNumber', {
-      get: function get() {
-        return valueAsNumber(this);
-      },
-      set: function set(value) {
-        valueAsNumber(this, value);
-      }
-    });
-    install_property(element, 'willValidate', {
-      get: function get() {
-        return willValidate(this);
-      }
-    });
+    for (var prop in polyfills) {
+      install_property(element, prop, polyfills[prop]);
+    }
 
     install_properties(element);
   } else if (element instanceof window.HTMLFormElement) {
-    install_property(element, 'checkValidity', {
-      value: function value() {
-        return checkValidity(this);
-      }
-    });
-    install_property(element, 'reportValidity', {
-      value: function value() {
-        return reportValidity(this);
-      }
-    });
+    install_property(element, 'checkValidity', polyfills.checkValidity);
+    install_property(element, 'reportValidity', polyfills.reportValidity);
   }
 }
 
@@ -1256,138 +1211,131 @@ var instances = new WeakMap();
  * wrap <form>s, window or document, that get treated with the global
  * hyperform()
  */
+function Wrapper(form, settings) {
 
-var Wrapper = function () {
-  function Wrapper(form, settings) {
-    _classCallCheck(this, Wrapper);
+  this.form = form;
+  this.settings = settings;
+  this.revalidator = this.revalidate.bind(this);
 
-    this.form = form;
-    this.settings = settings;
-    this.revalidator = this.revalidate.bind(this);
+  instances.set(form, this);
 
-    instances.set(form, this);
+  catch_submit(form, settings.revalidate === 'never');
 
-    catch_submit(form, settings.revalidate === 'never');
-
-    if (form === window || form instanceof window.HTMLDocument) {
-      /* install on the prototypes, when called for the whole document */
-      this.install([window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype]);
-      polyfill(window.HTMLFormElement);
-    } else if (form instanceof window.HTMLFormElement || form instanceof window.HTMLFieldSetElement) {
-      this.install(form.elements);
-      if (form instanceof window.HTMLFormElement) {
-        polyfill(form);
-      }
-    }
-
-    if (settings.revalidate === 'oninput' || settings.revalidate === 'hybrid') {
-      /* in a perfect world we'd just bind to "input", but support here is
-       * abysmal: http://caniuse.com/#feat=input-event */
-      form.addEventListener('keyup', this.revalidator);
-      form.addEventListener('change', this.revalidator);
-    }
-    if (settings.revalidate === 'onblur' || settings.revalidate === 'hybrid') {
-      /* useCapture=true, because `blur` doesn't bubble. See
-       * https://developer.mozilla.org/en-US/docs/Web/Events/blur#Event_delegation
-       * for a discussion */
-      form.addEventListener('blur', this.revalidator, true);
+  if (form === window || form instanceof window.HTMLDocument) {
+    /* install on the prototypes, when called for the whole document */
+    this.install([window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype]);
+    polyfill(window.HTMLFormElement);
+  } else if (form instanceof window.HTMLFormElement || form instanceof window.HTMLFieldSetElement) {
+    this.install(form.elements);
+    if (form instanceof window.HTMLFormElement) {
+      polyfill(form);
     }
   }
 
-  _createClass(Wrapper, [{
-    key: 'destroy',
-    value: function destroy() {
-      uncatch_submit(this.form);
-      instances.delete(this.form);
-      this.form.removeEventListener('keyup', this.revalidator);
-      this.form.removeEventListener('change', this.revalidator);
-      this.form.removeEventListener('blur', this.revalidator, true);
-      if (this.form === window || this.form instanceof window.HTMLDocument) {
-        this.uninstall([window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype]);
-        polyunfill(window.HTMLFormElement);
-      } else if (this.form instanceof window.HTMLFormElement || this.form instanceof window.HTMLFieldSetElement) {
-        this.uninstall(this.form.elements);
-        if (this.form instanceof window.HTMLFormElement) {
-          polyunfill(this.form);
-        }
+  if (settings.revalidate === 'oninput' || settings.revalidate === 'hybrid') {
+    /* in a perfect world we'd just bind to "input", but support here is
+      * abysmal: http://caniuse.com/#feat=input-event */
+    form.addEventListener('keyup', this.revalidator);
+    form.addEventListener('change', this.revalidator);
+  }
+  if (settings.revalidate === 'onblur' || settings.revalidate === 'hybrid') {
+    /* useCapture=true, because `blur` doesn't bubble. See
+      * https://developer.mozilla.org/en-US/docs/Web/Events/blur#Event_delegation
+      * for a discussion */
+    form.addEventListener('blur', this.revalidator, true);
+  }
+}
+
+Wrapper.prototype = {
+  destroy: function destroy() {
+    uncatch_submit(this.form);
+    instances.delete(this.form);
+    this.form.removeEventListener('keyup', this.revalidator);
+    this.form.removeEventListener('change', this.revalidator);
+    this.form.removeEventListener('blur', this.revalidator, true);
+    if (this.form === window || this.form instanceof window.HTMLDocument) {
+      this.uninstall([window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype]);
+      polyunfill(window.HTMLFormElement);
+    } else if (this.form instanceof window.HTMLFormElement || this.form instanceof window.HTMLFieldSetElement) {
+      this.uninstall(this.form.elements);
+      if (this.form instanceof window.HTMLFormElement) {
+        polyunfill(this.form);
       }
     }
+  },
 
-    /**
-     * revalidate an input element
-     */
 
-  }, {
-    key: 'revalidate',
-    value: function revalidate(event) {
-      if (event.target instanceof window.HTMLButtonElement || event.target instanceof window.HTMLTextAreaElement || event.target instanceof window.HTMLSelectElement || event.target instanceof window.HTMLInputElement) {
+  /**
+   * revalidate an input element
+   */
+  revalidate: function revalidate(event) {
+    if (event.target instanceof window.HTMLButtonElement || event.target instanceof window.HTMLTextAreaElement || event.target instanceof window.HTMLSelectElement || event.target instanceof window.HTMLInputElement) {
 
-        if (this.settings.revalidate === 'hybrid') {
-          /* "hybrid" somewhat simulates what browsers do. See for example
-           * Firefox's :-moz-ui-invalid pseudo-class:
-           * https://developer.mozilla.org/en-US/docs/Web/CSS/:-moz-ui-invalid */
-          if (event.type === 'blur' && event.target.value !== event.target.defaultValue || event.target.validity.valid) {
-            /* on blur, update the report when the value has changed from the
-             * default or when the element is valid (possibly removing a still
-             * standing invalidity report). */
-            reportValidity(event.target);
-          } else if (event.type === 'keyup' || event.type === 'change') {
-            if (event.target.validity.valid) {
-              // report instantly, when an element becomes valid,
-              // postpone report to blur event, when an element is invalid
-              reportValidity(event.target);
-            }
-          }
-        } else {
+      if (this.settings.revalidate === 'hybrid') {
+        /* "hybrid" somewhat simulates what browsers do. See for example
+         * Firefox's :-moz-ui-invalid pseudo-class:
+         * https://developer.mozilla.org/en-US/docs/Web/CSS/:-moz-ui-invalid */
+        if (event.type === 'blur' && event.target.value !== event.target.defaultValue || event.target.validity.valid) {
+          /* on blur, update the report when the value has changed from the
+           * default or when the element is valid (possibly removing a still
+           * standing invalidity report). */
           reportValidity(event.target);
+        } else if (event.type === 'keyup' || event.type === 'change') {
+          if (event.target.validity.valid) {
+            // report instantly, when an element becomes valid,
+            // postpone report to blur event, when an element is invalid
+            reportValidity(event.target);
+          }
         }
+      } else {
+        reportValidity(event.target);
       }
     }
+  },
 
-    /**
-     * install the polyfills on each given element
-     *
-     * If you add elements dynamically, you have to call install() on them
-     * yourself:
-     *
-     * js> var form = hyperform(document.forms[0]);
-     * js> document.forms[0].appendChild(input);
-     * js> form.install(input);
-     *
-     * You can skip this, if you called hyperform on window or document.
-     */
 
-  }, {
-    key: 'install',
-    value: function install(els) {
-      if (els instanceof window.Element) {
-        els = [els];
-      }
-
-      var els_length = els.length;
-
-      for (var i = 0; i < els_length; i++) {
-        polyfill(els[i]);
-      }
+  /**
+   * install the polyfills on each given element
+   *
+   * If you add elements dynamically, you have to call install() on them
+   * yourself:
+   *
+   * js> var form = hyperform(document.forms[0]);
+   * js> document.forms[0].appendChild(input);
+   * js> form.install(input);
+   *
+   * You can skip this, if you called hyperform on window or document.
+   */
+  install: function install(els) {
+    if (els instanceof window.Element) {
+      els = [els];
     }
-  }, {
-    key: 'uninstall',
-    value: function uninstall(els) {
-      if (els instanceof window.Element) {
-        els = [els];
-      }
 
-      var els_length = els.length;
+    var els_length = els.length;
 
-      for (var i = 0; i < els_length; i++) {
-        polyunfill(els[i]);
-      }
+    for (var i = 0; i < els_length; i++) {
+      polyfill(els[i]);
     }
-  }]);
+  },
+  uninstall: function uninstall(els) {
+    if (els instanceof window.Element) {
+      els = [els];
+    }
 
-  return Wrapper;
-}();
+    var els_length = els.length;
 
+    for (var i = 0; i < els_length; i++) {
+      polyunfill(els[i]);
+    }
+  }
+};
+
+/**
+ * try to get the appropriate wrapper for a specific element by looking up
+ * its parent chain
+ *
+ * @return Wrapper | undefined
+ */
 function get_wrapper(element) {
   var wrapped;
 
@@ -2159,6 +2107,9 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
   set: undefined
 });
 
+/**
+ * mark the validity prototype, because that is what the client-facing
+ * code deals with mostly, not the property descriptor thing */
 mark(ValidityStatePrototype);
 
 /**
@@ -2185,8 +2136,6 @@ function checkValidity(element) {
 
   return valid;
 }
-
-mark(checkValidity);
 
 var version = '0.7.4';
 

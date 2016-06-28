@@ -92,6 +92,9 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
   set: undefined,
 });
 
+/**
+ * mark the validity prototype, because that is what the client-facing
+ * code deals with mostly, not the property descriptor thing */
 mark(ValidityStatePrototype);
 
 export default ValidityState;
