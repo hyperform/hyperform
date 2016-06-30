@@ -39,4 +39,7 @@ test('hooks filter value', t => {
   t.is(call_filter('hooks4', false), false);
   t.is(call_filter('hooks4', 'abc'), 'abc');
   t.is(call_filter('hooks4', func), func);
+  add_hook('hooks4', x => x? 'y' : 'n');
+  t.is(call_filter('hooks4', true), 'y');
+  t.is(call_filter('hooks4', false), 'n');
 });

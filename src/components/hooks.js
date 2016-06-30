@@ -44,7 +44,7 @@ export function call_filter(hook, initial_value) {
       const interimResult = currentAction.call({
         state: previousResult,
         hook: hook,
-      });
+      }, previousResult);
       return (interimResult !== undefined)? interimResult : previousResult;
     }, result);
   }
