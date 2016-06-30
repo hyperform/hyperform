@@ -2182,7 +2182,7 @@ define(function () { 'use strict';
       return valid;
     }
 
-    var version = '0.7.7';
+    var version = '0.8.0';
 
     /**
      * public hyperform interface:
