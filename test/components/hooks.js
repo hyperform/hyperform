@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import { add_hook, call_hook, remove_hook } from '../../src/components/hooks';
+import { add_hook, call_hook, call_filter, remove_hook } from '../../src/components/hooks';
 
 test('hooks', t => {
   var called = false;
@@ -30,4 +30,13 @@ test('hooks remove hook', t => {
   remove_hook('hooks3', func);
   var result = call_hook('hooks3', 1);
   t.is(called, false);
+});
+
+test('hooks filter value', t => {
+  const func = () => undefined;
+  add_hook('hooks4', func);
+  t.is(call_filter('hooks4', 1), 1);
+  t.is(call_filter('hooks4', false), false);
+  t.is(call_filter('hooks4', 'abc'), 'abc');
+  t.is(call_filter('hooks4', func), func);
 });

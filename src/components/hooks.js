@@ -34,6 +34,25 @@ export function call_hook(hook) {
 }
 
 /**
+ *
+ */
+export function call_filter(hook, initial_value) {
+  var result = initial_value;
+
+  if (hook in registry) {
+    result = registry[hook].reduce(function(previousResult, currentAction) {
+      const interimResult = currentAction.call({
+        state: previousResult,
+        hook: hook,
+      });
+      return (interimResult !== undefined)? interimResult : previousResult;
+    }, result);
+  }
+
+  return result;
+}
+
+/**
  * remove an action again
  */
 export function remove_hook(hook, action) {
