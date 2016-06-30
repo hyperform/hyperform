@@ -12,6 +12,7 @@ import valueAsDate from './polyfills/valueAsDate';
 import valueAsNumber from './polyfills/valueAsNumber';
 import willValidate from './polyfills/willValidate';
 import custom_messages from './components/custom_messages';
+import { add_hook, remove_hook } from './components/hooks';
 import { set_language, add_translation } from './components/localization';
 import CustomValidatorRegistry from './components/registry';
 import Renderer from './components/renderer';
@@ -78,5 +79,7 @@ hyperform.add_translation = (lang, catalog) => { add_translation(lang, catalog);
 hyperform.set_renderer = (renderer, action) => { Renderer.set(renderer, action); return hyperform; };
 hyperform.add_validator = (element, validator) => { CustomValidatorRegistry.set(element, validator); return hyperform; };
 hyperform.set_message = (element, validator, message) => { custom_messages.set(element, validator, message); return hyperform; };
+hyperform.add_hook = (hook, action, position) => { add_hook(hook, action, position); return hyperform; };
+hyperform.remove_hook = (hook, action) => { remove_hook(hook, action); return hyperform; };
 
 export default hyperform;

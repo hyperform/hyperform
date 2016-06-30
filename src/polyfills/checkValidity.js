@@ -1,6 +1,7 @@
 'use strict';
 
 
+import return_hook_or from '../tools/return_hook_or';
 import trigger_event from '../tools/trigger_event';
 import ValidityState from './validityState';
 import { get_wrapper } from '../components/wrapper';
@@ -9,7 +10,7 @@ import { get_wrapper } from '../components/wrapper';
 /**
  * check an element's validity with respect to it's form
  */
-export default function checkValidity(element) {
+const checkValidity = return_hook_or('checkValidity', function(element) {
   /* if this is a <form>, check validity of all child inputs */
   if (element instanceof window.HTMLFormElement) {
     return (
@@ -29,4 +30,7 @@ export default function checkValidity(element) {
   }
 
   return valid;
-}
+});
+
+
+export default checkValidity;
