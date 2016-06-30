@@ -2250,7 +2250,7 @@ var hyperform = (function () {
     hyperform.set_renderer = function (renderer, action) {
       Renderer.set(renderer, action);return hyperform;
     };
-    hyperform.register = function (element, validator) {
+    hyperform.add_validator = function (element, validator) {
       custom_validator_registry.set(element, validator);return hyperform;
     };
     hyperform.set_message = function (element, validator, message) {

@@ -76,7 +76,7 @@ hyperform.willValidate = willValidate;
 hyperform.set_language = lang => { set_language(lang); return hyperform; };
 hyperform.add_translation = (lang, catalog) => { add_translation(lang, catalog); return hyperform; };
 hyperform.set_renderer = (renderer, action) => { Renderer.set(renderer, action); return hyperform; };
-hyperform.register = (element, validator) => { CustomValidatorRegistry.set(element, validator); return hyperform; };
+hyperform.add_validator = (element, validator) => { CustomValidatorRegistry.set(element, validator); return hyperform; };
 hyperform.set_message = (element, validator, message) => { custom_messages.set(element, validator, message); return hyperform; };
 
 export default hyperform;
