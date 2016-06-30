@@ -44,7 +44,6 @@ function remove_hook(hook, action) {
     }
   }
 }
-
 /**
  * add an action to a hook
  */

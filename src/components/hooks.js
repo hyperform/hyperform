@@ -65,6 +65,7 @@ export function remove_hook(hook, action) {
     }
   }
 }
+export { remove_hook as remove_filter };
 
 /**
  * add an action to a hook
@@ -78,3 +79,4 @@ export function add_hook(hook, action, position) {
   }
   registry[hook].splice(position, 0, action);
 }
+export { add_hook as add_filter };

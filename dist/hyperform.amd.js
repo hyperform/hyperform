@@ -44,7 +44,6 @@ define(function () { 'use strict';
         }
       }
     }
-
     /**
      * add an action to a hook
      */

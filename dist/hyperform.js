@@ -45,7 +45,6 @@ var hyperform = (function () {
         }
       }
     }
-
     /**
      * add an action to a hook
      */
