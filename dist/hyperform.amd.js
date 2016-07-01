@@ -1,7 +1,7 @@
 /*! hyperform.js.org */
 define(function () { 'use strict';
 
-    var registry = {};
+    var registry = Object.create(null);
 
     /**
      * run all actions registered for a hook

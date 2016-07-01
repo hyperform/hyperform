@@ -1,7 +1,7 @@
 'use strict';
 
 
-const registry = {};
+const registry = Object.create(null);
 
 
 /**
