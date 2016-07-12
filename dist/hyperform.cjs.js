@@ -603,6 +603,10 @@ function install_property (element, property, descriptor) {
   Object.defineProperty(element, property, descriptor);
 }
 
+function is_field (element) {
+        return element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement || element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLFieldSetElement || element === window.HTMLButtonElement.prototype || element === window.HTMLInputElement.prototype || element === window.HTMLSelectElement.prototype || element === window.HTMLTextAreaElement.prototype || element === window.HTMLFieldSetElement.prototype;
+}
+
 /**
  * set a custom validity message or delete it with an empty string
  */
@@ -1282,21 +1286,21 @@ var polyfills = {
 };
 
 function polyfill (element) {
-  if (element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement || element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLFieldSetElement) {
+  if (is_field(element)) {
 
     for (var prop in polyfills) {
       install_property(element, prop, polyfills[prop]);
     }
 
     install_properties(element);
-  } else if (element instanceof window.HTMLFormElement) {
+  } else if (element instanceof window.HTMLFormElement || element === window.HTMLFormElement.prototype) {
     install_property(element, 'checkValidity', polyfills.checkValidity);
     install_property(element, 'reportValidity', polyfills.reportValidity);
   }
 }
 
 function polyunfill (element) {
-  if (element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement || element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLFieldSetElement) {
+  if (is_field(element)) {
 
     uninstall_property(element, 'checkValidity');
     uninstall_property(element, 'reportValidity');

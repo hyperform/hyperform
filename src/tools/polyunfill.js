@@ -1,16 +1,13 @@
 'use strict';
 
 
-import uninstall_property from '../tools/property_uninstaller';
+import is_field from './is_field';
+import uninstall_property from './property_uninstaller';
 import { uninstall_properties } from '../polyfills/properties';
 
 
 export default function(element) {
-  if (element instanceof window.HTMLButtonElement ||
-      element instanceof window.HTMLInputElement ||
-      element instanceof window.HTMLSelectElement ||
-      element instanceof window.HTMLTextAreaElement ||
-      element instanceof window.HTMLFieldSetElement) {
+  if (is_field(element)) {
 
     uninstall_property(element, 'checkValidity');
     uninstall_property(element, 'reportValidity');

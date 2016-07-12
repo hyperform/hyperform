@@ -2,6 +2,7 @@
 
 
 import install_property from './property_installer';
+import is_field from './is_field';
 import mark from './mark';
 
 import checkValidity from '../polyfills/checkValidity';
@@ -53,11 +54,7 @@ const polyfills = {
 };
 
 export default function(element) {
-  if (element instanceof window.HTMLButtonElement ||
-      element instanceof window.HTMLInputElement ||
-      element instanceof window.HTMLSelectElement ||
-      element instanceof window.HTMLTextAreaElement ||
-      element instanceof window.HTMLFieldSetElement) {
+  if (is_field(element)) {
 
     for (let prop in polyfills) {
       install_property(element, prop, polyfills[prop]);
@@ -65,7 +62,8 @@ export default function(element) {
 
     install_properties(element);
 
-  } else if (element instanceof window.HTMLFormElement) {
+  } else if (element instanceof window.HTMLFormElement ||
+             element === window.HTMLFormElement.prototype) {
     install_property(element, 'checkValidity', polyfills.checkValidity);
     install_property(element, 'reportValidity', polyfills.reportValidity);
   }
