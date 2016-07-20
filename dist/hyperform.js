@@ -423,9 +423,6 @@ var hyperform = (function () {
             /* must be a submit button... */
             is_submit_button(event.target) &&
 
-            /* if validation should be ignored, we're not interested anyhow */
-            !event.target.hasAttribute('formnovalidate') &&
-
             /* the button needs a form, that's going to be submitted */
             event.target.form &&
 
@@ -468,7 +465,12 @@ var hyperform = (function () {
          */
         function click_handler(event) {
           if (is_submitting_click(event)) {
-            check(event);
+            if (is_submit_button(event.target) && event.target.hasAttribute('formnovalidate')) {
+              /* if validation should be ignored, we're not interested in any checks */
+              submit_form_via(event.target);
+            } else {
+              check(event);
+            }
           }
         }
 
