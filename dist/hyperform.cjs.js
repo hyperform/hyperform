@@ -2262,7 +2262,7 @@ var checkValidity = return_hook_or('checkValidity', function (element) {
   return valid;
 });
 
-var version = '0.8.1';
+var version = '0.8.2';
 
 /**
  * public hyperform interface:
