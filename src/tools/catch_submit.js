@@ -10,20 +10,40 @@ import { get_wrapper } from '../components/wrapper';
 function submit_form_via(element) {
   /* apparently, the submit event is not triggered in most browsers on
    * the submit() method, so we do it manually here to model a natural
-   * submit as closely as possible. */
+   * submit as closely as possible.
+   * Now to the fun fact: If you trigger a submit event from a form, what
+   * do you think should happen?
+   * 1) the form will be automagically submitted by the browser, or
+   * 2) nothing.
+   * And as you already suspected, the correct answer is: both! Firefox
+   * opts for 1), Chrome for 2). Yay! */
+
+  var event_got_cancelled;
+
+  const do_cancel = e => {
+    event_got_cancelled = e.defaultPrevented;
+    /* we prevent the default ourselves in this (hopefully) last event
+     * handler to keep Firefox from prematurely submitting the form. */
+    e.preventDefault();
+  };
+
+  element.form.addEventListener('submit', do_cancel);
   const submit_event = trigger_event(element.form, 'submit',
                                      { cancelable: true });
-  if (! submit_event.defaultPrevented) {
+  element.form.removeEventListener('submit', do_cancel);
+
+  if (! event_got_cancelled) {
     add_submit_field(element);
-    element.form.submit();
-    remove_submit_field(element);
+    window.HTMLFormElement.prototype.submit.call(element.form);
+    window.setTimeout(() => remove_submit_field(element));
   }
 }
 
 
+/**
+ * if a submit button was clicked, add its name=value to the submitted data
+ */
 function add_submit_field(button) {
-  /* if a submit button was clicked, add its name=value to the
-   * submitted data. */
   if (['image', 'submit'].indexOf(button.type) > -1 && button.name) {
     const wrapper = get_wrapper(button.form) || {};
     var submit_helper = wrapper.submit_helper;
@@ -170,6 +190,7 @@ function click_handler(event) {
     if (is_submit_button(event.target) &&
         event.target.hasAttribute('formnovalidate')) {
       /* if validation should be ignored, we're not interested in any checks */
+      event.preventDefault();
       submit_form_via(event.target);
     } else {
       check(event);
@@ -183,6 +204,7 @@ function click_handler(event) {
  */
 function ignored_click_handler(event) {
   if (is_submitting_click(event)) {
+    event.preventDefault();
     submit_form_via(event.target);
   }
 }
@@ -230,8 +252,8 @@ function ignored_keypress_handler(event) {
       }
     }
 
+    event.preventDefault();
     if (submit) {
-      event.preventDefault();
       submit.click();
     } else {
       submit_form_via(event.target);
