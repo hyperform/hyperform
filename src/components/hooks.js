@@ -34,17 +34,22 @@ export function call_hook(hook) {
 }
 
 /**
+ * Filter a value through hooked functions
  *
+ * Allows for additional parameters:
+ * js> do_filter('foo', null, current_element)
  */
-export function call_filter(hook, initial_value) {
+export function do_filter(hook, initial_value) {
   var result = initial_value;
+  var call_args = Array.prototype.slice.call(arguments, 1);
 
   if (hook in registry) {
     result = registry[hook].reduce(function(previousResult, currentAction) {
-      const interimResult = currentAction.call({
+      call_args[0] = previousResult;
+      const interimResult = currentAction.apply({
         state: previousResult,
         hook: hook,
-      }, previousResult);
+      }, call_args);
       return (interimResult !== undefined)? interimResult : previousResult;
     }, result);
   }

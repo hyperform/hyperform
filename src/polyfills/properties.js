@@ -3,22 +3,23 @@
 
 import install_property from '../tools/property_installer';
 import uninstall_property from '../tools/property_uninstaller';
+import { call_hook, do_filter } from '../components/hooks';
 
 
 const gA = prop => function() {
-  return this.getAttribute(prop);
+  return do_filter('attr_get_'+prop, this.getAttribute(prop), this);
 };
 
 const sA = prop => function(value) {
-  this.setAttribute(prop, value);
+  this.setAttribute(prop, do_filter('attr_set_'+prop, value, this));
 };
 
 const gAb = prop => function() {
-  return this.hasAttribute(prop);
+  return do_filter('attr_get_'+prop, this.hasAttribute(prop), this);
 };
 
 const sAb = prop => function(value) {
-  if (value) {
+  if (do_filter('attr_set_'+prop, value, this)) {
     this.setAttribute(prop, prop);
   } else {
     this.removeAttribute(prop);
@@ -26,10 +27,11 @@ const sAb = prop => function(value) {
 };
 
 const gAn = prop => function() {
-  return Math.max(0, Number(this.getAttribute(prop)));
+  return do_filter('attr_get_'+prop, Math.max(0, Number(this.getAttribute(prop))), this);
 };
 
 const sAn = prop => function(value) {
+  value = do_filter('attr_set_'+prop, value, this);
   if (/^[0-9]+$/.test(value)) {
     this.setAttribute(prop, value);
   }

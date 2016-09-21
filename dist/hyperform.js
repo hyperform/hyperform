@@ -33,6 +33,30 @@ var hyperform = (function () {
         }
 
         /**
+         * Filter a value through hooked functions
+         *
+         * Allows for additional parameters:
+         * js> do_filter('foo', null, current_element)
+         */
+        function do_filter(hook, initial_value) {
+          var result = initial_value;
+          var call_args = Array.prototype.slice.call(arguments, 1);
+
+          if (hook in registry) {
+            result = registry[hook].reduce(function (previousResult, currentAction) {
+              call_args[0] = previousResult;
+              var interimResult = currentAction.apply({
+                state: previousResult,
+                hook: hook
+              }, call_args);
+              return interimResult !== undefined ? interimResult : previousResult;
+            }, result);
+          }
+
+          return result;
+        }
+
+        /**
          * remove an action again
          */
         function remove_hook(hook, action) {
@@ -1148,25 +1172,25 @@ var hyperform = (function () {
 
         var gA = function gA(prop) {
           return function () {
-            return this.getAttribute(prop);
+            return do_filter('attr_get_' + prop, this.getAttribute(prop), this);
           };
         };
 
         var sA = function sA(prop) {
           return function (value) {
-            this.setAttribute(prop, value);
+            this.setAttribute(prop, do_filter('attr_set_' + prop, value, this));
           };
         };
 
         var gAb = function gAb(prop) {
           return function () {
-            return this.hasAttribute(prop);
+            return do_filter('attr_get_' + prop, this.hasAttribute(prop), this);
           };
         };
 
         var sAb = function sAb(prop) {
           return function (value) {
-            if (value) {
+            if (do_filter('attr_set_' + prop, value, this)) {
               this.setAttribute(prop, prop);
             } else {
               this.removeAttribute(prop);
@@ -1176,12 +1200,13 @@ var hyperform = (function () {
 
         var gAn = function gAn(prop) {
           return function () {
-            return Math.max(0, Number(this.getAttribute(prop)));
+            return do_filter('attr_get_' + prop, Math.max(0, Number(this.getAttribute(prop))), this);
           };
         };
 
         var sAn = function sAn(prop) {
           return function (value) {
+            value = do_filter('attr_set_' + prop, value, this);
             if (/^[0-9]+$/.test(value)) {
               this.setAttribute(prop, value);
             }
