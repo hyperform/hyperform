@@ -100,21 +100,29 @@ function return_hook_or (hook, action) {
 }
 
 function trigger_event (element, event) {
-    var _ref = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+  var _ref = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
-    var _ref$bubbles = _ref.bubbles;
-    var bubbles = _ref$bubbles === undefined ? true : _ref$bubbles;
-    var _ref$cancelable = _ref.cancelable;
-    var cancelable = _ref$cancelable === undefined ? false : _ref$cancelable;
+  var _ref$bubbles = _ref.bubbles;
+  var bubbles = _ref$bubbles === undefined ? true : _ref$bubbles;
+  var _ref$cancelable = _ref.cancelable;
+  var cancelable = _ref$cancelable === undefined ? false : _ref$cancelable;
+  var payload = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
 
-    if (!(event instanceof window.Event)) {
-        var _event = document.createEvent('Event');
-        _event.initEvent(event, bubbles, cancelable);
-        event = _event;
+  if (!(event instanceof window.Event)) {
+    var _event = document.createEvent('Event');
+    _event.initEvent(event, bubbles, cancelable);
+    event = _event;
+  }
+
+  for (var key in payload) {
+    if (payload.hasOwnProperty(key)) {
+      event[key] = payload[key];
     }
-    element.dispatchEvent(event);
+  }
 
-    return event;
+  element.dispatchEvent(event);
+
+  return event;
 }
 
 /* and datetime-local? Spec says “Nah!” */
@@ -346,6 +354,15 @@ function reportValidity(element) {
   return valid;
 }
 
+/**
+ * submit a form, because `element` triggered it
+ *
+ * This method also dispatches a submit event on the form prior to the
+ * submission. The event contains the trigger element as `explicitTarget`.
+ *
+ * If the element is a button with a name, the name=value pair will be added
+ * to the submitted data.
+ */
 function submit_form_via(element) {
   /* apparently, the submit event is not triggered in most browsers on
    * the submit() method, so we do it manually here to model a natural
@@ -367,7 +384,7 @@ function submit_form_via(element) {
   };
 
   element.form.addEventListener('submit', do_cancel);
-  var submit_event = trigger_event(element.form, 'submit', { cancelable: true });
+  var submit_event = trigger_event(element.form, 'submit', { cancelable: true }, { originalTarget: element });
   element.form.removeEventListener('submit', do_cancel);
 
   if (!event_got_cancelled) {
@@ -380,7 +397,8 @@ function submit_form_via(element) {
 }
 
 /**
- * if a submit button was clicked, add its name=value to the submitted data
+ * if a submit button was clicked, add its name=value by means of a type=hidden
+ * input field
  */
 function add_submit_field(button) {
   if (['image', 'submit'].indexOf(button.type) > -1 && button.name) {
@@ -401,6 +419,9 @@ function add_submit_field(button) {
   }
 }
 
+/**
+ * remove a possible helper input, that was added by `add_submit_field`
+ */
 function remove_submit_field(button) {
   if (['image', 'submit'].indexOf(button.type) > -1 && button.name) {
     var wrapper = get_wrapper(button.form) || {};
@@ -411,9 +432,15 @@ function remove_submit_field(button) {
   }
 }
 
+/**
+ * check a form's validity and submit it
+ *
+ * The method triggers a cancellable `validate` event on the form. If the
+ * event is cancelled, form submission will be aborted, too.
+ *
+ * If the form is found to contain invalid fields, focus the first field.
+ */
 function check(event) {
-  event.preventDefault();
-
   /* trigger a "validate" event on the form to be submitted */
   var val_event = trigger_event(event.target.form, 'validate', { cancelable: true });
   if (val_event.defaultPrevented) {
@@ -486,10 +513,10 @@ function is_submitting_keypress(event) {
     /* <Enter> was pressed... */
     event.keyCode === 13 &&
 
-    /* ...on an <input> or <button> */
+    /* ...on an <input> that is... */
     event.target.nodeName === 'INPUT' &&
 
-    /* this is a standard text input field (not checkbox, ...) */
+    /* ...a standard text input field (not checkbox, ...) */
     text_types.indexOf(event.target.type) > -1 ||
     /* or <Enter> or <Space> was pressed... */
     (event.keyCode === 13 || event.keyCode === 32) &&
@@ -510,9 +537,9 @@ function is_submitting_keypress(event) {
  */
 function click_handler(event) {
   if (is_submitting_click(event)) {
+    event.preventDefault();
     if (is_submit_button(event.target) && event.target.hasAttribute('formnovalidate')) {
       /* if validation should be ignored, we're not interested in any checks */
-      event.preventDefault();
       submit_form_via(event.target);
     } else {
       check(event);
@@ -546,8 +573,8 @@ function keypress_handler(event) {
       }
     }
 
+    event.preventDefault();
     if (submit) {
-      event.preventDefault();
       submit.click();
     } else {
       check(event);
