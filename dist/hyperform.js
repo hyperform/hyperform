@@ -359,7 +359,7 @@ var hyperform = (function () {
          * submit a form, because `element` triggered it
          *
          * This method also dispatches a submit event on the form prior to the
-         * submission. The event contains the trigger element as `explicitTarget`.
+         * submission. The event contains the trigger element as `submittedVia`.
          *
          * If the element is a button with a name, the name=value pair will be added
          * to the submitted data.
@@ -385,7 +385,7 @@ var hyperform = (function () {
           };
 
           element.form.addEventListener('submit', do_cancel);
-          var submit_event = trigger_event(element.form, 'submit', { cancelable: true }, { originalTarget: element });
+          var submit_event = trigger_event(element.form, 'submit', { cancelable: true }, { submittedVia: element });
           element.form.removeEventListener('submit', do_cancel);
 
           if (!event_got_cancelled) {
