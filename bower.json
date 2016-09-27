@@ -24,6 +24,13 @@
     "**/.*",
     "node_modules",
     "bower_components",
+    "examples",
+    "jspm.browser.js",
+    "jspm.config.js",
+    "jspm_packages",
+    "Makefile",
+    "src",
+    "stuff",
     "test",
     "tests"
   ]
