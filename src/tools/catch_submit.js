@@ -37,9 +37,8 @@ function submit_form_via(element) {
   };
 
   element.form.addEventListener('submit', do_cancel);
-  const submit_event = trigger_event(element.form, 'submit',
-                                     { cancelable: true },
-                                     { submittedVia: element });
+  trigger_event(element.form, 'submit', { cancelable: true },
+                { submittedVia: element });
   element.form.removeEventListener('submit', do_cancel);
 
   if (! event_got_cancelled) {

@@ -20,7 +20,7 @@ export default function stepDown(element, n=1) {
                                   'InvalidStateError');
   }
 
-  const { prev, next } = get_next_valid(element, n);
+  const prev = get_next_valid(element, n)[0];
 
   if (prev !== null) {
     valueAsNumber(element, prev);

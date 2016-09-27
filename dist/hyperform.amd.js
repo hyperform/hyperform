@@ -384,7 +384,7 @@ define(function () { 'use strict';
           };
 
           element.form.addEventListener('submit', do_cancel);
-          var submit_event = trigger_event(element.form, 'submit', { cancelable: true }, { submittedVia: element });
+          trigger_event(element.form, 'submit', { cancelable: true }, { submittedVia: element });
           element.form.removeEventListener('submit', do_cancel);
 
           if (!event_got_cancelled) {
@@ -1168,11 +1168,7 @@ define(function () { 'use strict';
             throw new window.DOMException('stepDown encountered step "any"', 'InvalidStateError');
           }
 
-          var _get_next_valid = get_next_valid(element, n);
-
-          var prev = _get_next_valid.prev;
-          var next = _get_next_valid.next;
-
+          var prev = get_next_valid(element, n)[0];
 
           if (prev !== null) {
             valueAsNumber(element, prev);
@@ -1192,11 +1188,7 @@ define(function () { 'use strict';
             throw new window.DOMException('stepUp encountered step "any"', 'InvalidStateError');
           }
 
-          var _get_next_valid = get_next_valid(element, n);
-
-          var prev = _get_next_valid.prev;
-          var next = _get_next_valid.next;
-
+          var next = get_next_valid(element, n)[1];
 
           if (next !== null) {
             valueAsNumber(element, next);
