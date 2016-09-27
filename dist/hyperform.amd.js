@@ -507,13 +507,9 @@ define(function () { 'use strict';
          * test, if the keypress event would trigger a submit
          */
         function is_submitting_keypress(event) {
-          var wrapper = get_wrapper(event.target.form) || { settings: {} };
           return(
             /* prevented default: won't trigger a submit */
             !event.defaultPrevented && (
-            /* settings allow implicit submit... */
-            !wrapper.settings.prevent_implicit_submit &&
-
             /* ...and <Enter> was pressed... */
             event.keyCode === 13 &&
 
@@ -566,6 +562,13 @@ define(function () { 'use strict';
          */
         function keypress_handler(event) {
           if (is_submitting_keypress(event)) {
+            var wrapper = get_wrapper(event.target.form) || { settings: {} };
+            if (wrapper.settings.prevent_implicit_submit) {
+              /* user doesn't want an implicit submit. Cancel here. */
+              event.preventDefault();
+              return;
+            }
+
             /* check, that there is no submit button in the form. Otherwise
              * that should be clicked. */
             var el = event.target.form.elements.length;
