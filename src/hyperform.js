@@ -25,6 +25,7 @@ import version from './version';
  */
 function hyperform(form, {
                      strict=false,
+                     prevent_implicit_submit=false,
                      revalidate,
                      valid_event,
                      extend_fieldset,
@@ -49,7 +50,8 @@ function hyperform(form, {
     classes = {};
   }
 
-  const settings = { strict, revalidate, valid_event, extend_fieldset, classes, };
+  const settings = { strict, prevent_implicit_submit, revalidate, valid_event,
+                     extend_fieldset, classes, };
 
   if (form instanceof window.NodeList ||
       form instanceof window.HTMLCollection ||

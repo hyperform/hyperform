@@ -507,10 +507,14 @@ define(function () { 'use strict';
          * test, if the keypress event would trigger a submit
          */
         function is_submitting_keypress(event) {
+          var wrapper = get_wrapper(event.target.form) || { settings: {} };
           return(
             /* prevented default: won't trigger a submit */
             !event.defaultPrevented && (
-            /* <Enter> was pressed... */
+            /* settings allow implicit submit... */
+            !wrapper.settings.prevent_implicit_submit &&
+
+            /* ...and <Enter> was pressed... */
             event.keyCode === 13 &&
 
             /* ...on an <input> that is... */
@@ -2348,6 +2352,8 @@ define(function () { 'use strict';
 
           var _ref$strict = _ref.strict;
           var strict = _ref$strict === undefined ? false : _ref$strict;
+          var _ref$prevent_implicit = _ref.prevent_implicit_submit;
+          var prevent_implicit_submit = _ref$prevent_implicit === undefined ? false : _ref$prevent_implicit;
           var revalidate = _ref.revalidate;
           var valid_event = _ref.valid_event;
           var extend_fieldset = _ref.extend_fieldset;
@@ -2372,7 +2378,8 @@ define(function () { 'use strict';
             classes = {};
           }
 
-          var settings = { strict: strict, revalidate: revalidate, valid_event: valid_event, extend_fieldset: extend_fieldset, classes: classes };
+          var settings = { strict: strict, prevent_implicit_submit: prevent_implicit_submit, revalidate: revalidate, valid_event: valid_event,
+            extend_fieldset: extend_fieldset, classes: classes };
 
           if (form instanceof window.NodeList || form instanceof window.HTMLCollection || form instanceof Array) {
             return Array.prototype.map.call(form, function (element) {

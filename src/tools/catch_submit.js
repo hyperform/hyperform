@@ -169,13 +169,17 @@ function is_submitting_click(event) {
  * test, if the keypress event would trigger a submit
  */
 function is_submitting_keypress(event) {
+  const wrapper = get_wrapper(event.target.form) || { settings: {} };
   return (
     /* prevented default: won't trigger a submit */
     ! event.defaultPrevented &&
 
     (
       (
-        /* <Enter> was pressed... */
+        /* settings allow implicit submit... */
+        ! wrapper.settings.prevent_implicit_submit &&
+
+        /* ...and <Enter> was pressed... */
         event.keyCode === 13 &&
 
         /* ...on an <input> that is... */
