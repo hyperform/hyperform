@@ -2342,7 +2342,7 @@ var checkValidity = return_hook_or('checkValidity', function (element) {
   return valid;
 });
 
-var version = '0.8.4';
+var version = '0.8.5';
 
 /**
  * public hyperform interface:
