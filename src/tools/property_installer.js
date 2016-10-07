@@ -18,6 +18,12 @@ export default function(element, property, descriptor) {
 
   if (original_descriptor) {
 
+    if (original_descriptor.configurable === false) {
+      /* global console */
+      console.log('[hyperform] cannot install custom property '+property);
+      return false;
+    }
+
     /* we already installed that property... */
     if ((original_descriptor.get && original_descriptor.get.__hyperform) ||
         (original_descriptor.value && original_descriptor.value.__hyperform)) {
@@ -34,4 +40,6 @@ export default function(element, property, descriptor) {
 
   delete element[property];
   Object.defineProperty(element, property, descriptor);
+
+  return true;
 }

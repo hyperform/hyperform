@@ -2,6 +2,7 @@
 
 
 import { catch_submit, uncatch_submit } from '../tools/catch_submit';
+import ValidityState from '../polyfills/validityState';
 import reportValidity from '../polyfills/reportValidity';
 import uninstall from '../tools/property_uninstaller';
 import polyfill from '../tools/polyfill';
@@ -107,13 +108,13 @@ Wrapper.prototype = {
          * https://developer.mozilla.org/en-US/docs/Web/CSS/:-moz-ui-invalid */
         if (event.type === 'blur' &&
             event.target.value !== event.target.defaultValue ||
-            event.target.validity.valid) {
+            ValidityState(event.target).valid) {
           /* on blur, update the report when the value has changed from the
            * default or when the element is valid (possibly removing a still
            * standing invalidity report). */
           reportValidity(event.target);
         } else if (event.type === 'keyup' || event.type === 'change') {
-          if (event.target.validity.valid) {
+          if (ValidityState(event.target).valid) {
             // report instantly, when an element becomes valid,
             // postpone report to blur event, when an element is invalid
             reportValidity(event.target);

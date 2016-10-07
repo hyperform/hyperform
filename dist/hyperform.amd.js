@@ -674,6 +674,12 @@ define(function () { 'use strict';
 
           if (original_descriptor) {
 
+            if (original_descriptor.configurable === false) {
+              /* global console */
+              console.log('[hyperform] cannot install custom property ' + property);
+              return false;
+            }
+
             /* we already installed that property... */
             if (original_descriptor.get && original_descriptor.get.__hyperform || original_descriptor.value && original_descriptor.value.__hyperform) {
               return;
@@ -685,6 +691,8 @@ define(function () { 'use strict';
 
           delete element[property];
           Object.defineProperty(element, property, descriptor);
+
+          return true;
         }
 
         function is_field (element) {
@@ -1475,13 +1483,13 @@ define(function () { 'use strict';
                 /* "hybrid" somewhat simulates what browsers do. See for example
                  * Firefox's :-moz-ui-invalid pseudo-class:
                  * https://developer.mozilla.org/en-US/docs/Web/CSS/:-moz-ui-invalid */
-                if (event.type === 'blur' && event.target.value !== event.target.defaultValue || event.target.validity.valid) {
+                if (event.type === 'blur' && event.target.value !== event.target.defaultValue || ValidityState(event.target).valid) {
                   /* on blur, update the report when the value has changed from the
                    * default or when the element is valid (possibly removing a still
                    * standing invalidity report). */
                   reportValidity(event.target);
                 } else if (event.type === 'keyup' || event.type === 'change') {
-                  if (event.target.validity.valid) {
+                  if (ValidityState(event.target).valid) {
                     // report instantly, when an element becomes valid,
                     // postpone report to blur event, when an element is invalid
                     reportValidity(event.target);
