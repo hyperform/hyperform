@@ -100,14 +100,49 @@ var hyperform = (function () {
           };
         }
 
+        /* the following code is borrowed from the WebComponents project, licensed
+         * under the BSD license. Source:
+         * <https://github.com/webcomponents/webcomponentsjs/blob/5283db1459fa2323e5bfc8b9b5cc1753ed85e3d0/src/WebComponents/dom.js#L53-L78>
+         */
+        // defaultPrevented is broken in IE.
+        // https://connect.microsoft.com/IE/feedback/details/790389/event-defaultprevented-returns-false-after-preventdefault-was-called
+
+        var workingDefaultPrevented = function () {
+          var e = document.createEvent('Event');
+          e.initEvent('foo', true, true);
+          e.preventDefault();
+          return e.defaultPrevented;
+        }();
+
+        if (!workingDefaultPrevented) {
+          (function () {
+            var origPreventDefault = window.Event.prototype.preventDefault;
+            window.Event.prototype.preventDefault = function () {
+              if (!this.cancelable) {
+                return;
+              }
+
+              origPreventDefault.call(this);
+
+              Object.defineProperty(this, 'defaultPrevented', {
+                get: function get() {
+                  return true;
+                },
+                configurable: true
+              });
+            };
+          })();
+        }
+        /* end of borrowed code */
+
         function trigger_event (element, event) {
-          var _ref = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+          var _ref = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
           var _ref$bubbles = _ref.bubbles;
           var bubbles = _ref$bubbles === undefined ? true : _ref$bubbles;
           var _ref$cancelable = _ref.cancelable;
           var cancelable = _ref$cancelable === undefined ? false : _ref$cancelable;
-          var payload = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+          var payload = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
           if (!(event instanceof window.Event)) {
             var _event = document.createEvent('Event');
@@ -185,7 +220,7 @@ var hyperform = (function () {
         /* jshint -W053 */
         var message_store = {
           set: function set(element, message) {
-            var is_custom = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
+            var is_custom = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
 
             if (element instanceof window.HTMLFieldSetElement) {
               var wrapped_form = get_wrapper(element);
@@ -243,7 +278,7 @@ var hyperform = (function () {
          * @see https://gist.github.com/gordonbrander/2230317
          */
         function generate_id () {
-          var prefix = arguments.length <= 0 || arguments[0] === undefined ? 'hf_' : arguments[0];
+          var prefix = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'hf_';
 
           return prefix + uid++ + Math.random().toString(36).substr(2);
         }
@@ -274,7 +309,7 @@ var hyperform = (function () {
            * i.e., showing and hiding warnings
            */
           show_warning: function show_warning(element) {
-            var sub_radio = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+            var sub_radio = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
             var msg = message_store.get(element).toString();
             var warning = warnings_cache.get(element);
@@ -473,7 +508,7 @@ var hyperform = (function () {
          * test if node is a submit button
          */
         function is_submit_button(node) {
-          return(
+          return (
             /* must be an input or button element... */
             (node.nodeName === 'INPUT' || node.nodeName === 'BUTTON') && (
 
@@ -486,7 +521,7 @@ var hyperform = (function () {
          * test, if the click event would trigger a submit
          */
         function is_submitting_click(event) {
-          return(
+          return (
             /* prevented default: won't trigger a submit */
             !event.defaultPrevented && (
 
@@ -508,7 +543,7 @@ var hyperform = (function () {
          * test, if the keypress event would trigger a submit
          */
         function is_submitting_keypress(event) {
-          return(
+          return (
             /* prevented default: won't trigger a submit */
             !event.defaultPrevented && (
             /* ...and <Enter> was pressed... */
@@ -622,7 +657,7 @@ var hyperform = (function () {
          *                    form is detected.
          */
         function catch_submit(listening_node) {
-          var ignore = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+          var ignore = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
           if (ignore) {
             listening_node.addEventListener('click', ignored_click_handler);
@@ -776,7 +811,7 @@ var hyperform = (function () {
         }
 
         function pad(num) {
-          var size = arguments.length <= 1 || arguments[1] === undefined ? 2 : arguments[1];
+          var size = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 2;
 
           var s = num + '';
           while (s.length < size) {
@@ -1014,7 +1049,7 @@ var hyperform = (function () {
          * get previous and next valid values for a stepped input element
          */
         function get_next_valid (element) {
-          var n = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
+          var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
 
           var type = get_type(element);
 
@@ -1091,7 +1126,7 @@ var hyperform = (function () {
          * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasdate
          */
         function valueAsDate(element) {
-          var value = arguments.length <= 1 || arguments[1] === undefined ? undefined : arguments[1];
+          var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
 
           var type = get_type(element);
           if (dates.indexOf(type) > -1) {
@@ -1127,7 +1162,7 @@ var hyperform = (function () {
          * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasnumber
          */
         function valueAsNumber(element) {
-          var value = arguments.length <= 1 || arguments[1] === undefined ? undefined : arguments[1];
+          var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
 
           var type = get_type(element);
           if (numbers.indexOf(type) > -1) {
@@ -1171,7 +1206,7 @@ var hyperform = (function () {
          *
          */
         function stepDown(element) {
-          var n = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
+          var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
 
           if (numbers.indexOf(get_type(element)) === -1) {
             throw new window.DOMException('stepDown encountered invalid type', 'InvalidStateError');
@@ -1191,7 +1226,7 @@ var hyperform = (function () {
          *
          */
         function stepUp(element) {
-          var n = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
+          var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
 
           if (numbers.indexOf(get_type(element)) === -1) {
             throw new window.DOMException('stepUp encountered invalid type', 'InvalidStateError');
@@ -1328,13 +1363,13 @@ var hyperform = (function () {
           },
           stepDown: {
             value: mark(function () {
-              var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+              var n = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
               return stepDown(this, n);
             })
           },
           stepUp: {
             value: mark(function () {
-              var n = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+              var n = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
               return stepUp(this, n);
             })
           },
@@ -1649,7 +1684,7 @@ var hyperform = (function () {
             return custom_messages;
           },
           get: function get(element, validator) {
-            var _default = arguments.length <= 2 || arguments[2] === undefined ? undefined : arguments[2];
+            var _default = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
 
             var messages = store$1.get(element);
             if (messages === undefined || !(validator in messages)) {
@@ -1667,7 +1702,7 @@ var hyperform = (function () {
             return messages[validator];
           },
           delete: function _delete(element) {
-            var validator = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+            var validator = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
             if (!validator) {
               return store$1.delete(element);
@@ -2352,7 +2387,7 @@ var hyperform = (function () {
          * public hyperform interface:
          */
         function hyperform(form) {
-          var _ref = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+          var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
           var _ref$strict = _ref.strict;
           var strict = _ref$strict === undefined ? false : _ref$strict;

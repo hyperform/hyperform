@@ -19,10 +19,10 @@ SystemJS.config({
     "github:*/*.json"
   ],
   map: {
-    "core-js": "npm:core-js@1.2.6",
+    "core-js": "npm:core-js@1.2.7",
     "fs": "github:jspm/nodelibs-fs@0.2.0-alpha",
     "path": "github:jspm/nodelibs-path@0.2.0-alpha",
-    "plugin-babel": "npm:systemjs-plugin-babel@0.0.9",
+    "plugin-babel": "npm:systemjs-plugin-babel@0.0.16",
     "process": "github:jspm/nodelibs-process@0.2.0-alpha"
   },
   packages: {}
