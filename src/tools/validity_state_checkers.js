@@ -8,12 +8,13 @@
  */
 
 
-import get_next_valid from '../tools/get_next_valid';
-import get_type from '../tools/get_type';
-import sprintf from '../tools/sprintf';
-import string_to_number from '../tools/string_to_number';
-import string_to_date from '../tools/string_to_date';
-import unicode_string_length from '../tools/unicode_string_length';
+import format_date from './format_date';
+import get_next_valid from './get_next_valid';
+import get_type from './get_type';
+import sprintf from './sprintf';
+import string_to_number from './string_to_number';
+import string_to_date from './string_to_date';
+import unicode_string_length from './unicode_string_length';
 import custom_messages from '../components/custom_messages';
 import _ from '../components/localization';
 import message_store from '../components/message_store';
@@ -101,11 +102,11 @@ const rangeOverflow = check(test_max, element => {
     case 'datetime':
     case 'datetime-local':
       msg = sprintf(_('DateRangeOverflow'),
-                    string_to_date(element.getAttribute('max'), type));
+                    format_date(string_to_date(element.getAttribute('max'), type), type));
       break;
     case 'time':
       msg = sprintf(_('TimeRangeOverflow'),
-                    string_to_date(element.getAttribute('max'), type));
+                    format_date(string_to_date(element.getAttribute('max'), type), type));
       break;
     // case 'number':
     default:
@@ -126,11 +127,11 @@ const rangeUnderflow = check(test_min, element => {
     case 'datetime':
     case 'datetime-local':
       msg = sprintf(_('DateRangeUnderflow'),
-                    string_to_date(element.getAttribute('min'), type));
+                    format_date(string_to_date(element.getAttribute('min'), type), type));
       break;
     case 'time':
       msg = sprintf(_('TimeRangeUnderflow'),
-                    string_to_date(element.getAttribute('min'), type));
+                    format_date(string_to_date(element.getAttribute('min'), type), type));
       break;
     // case 'number':
     default:

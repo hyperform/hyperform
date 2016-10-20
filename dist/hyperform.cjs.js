@@ -1654,6 +1654,26 @@ function is_validation_candidate (element) {
   return false;
 }
 
+function format_date (date) {
+  var part = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+
+  switch (part) {
+    case 'date':
+      return (date.toLocaleDateString || date.toDateString).call(date);
+    case 'time':
+      return (date.toLocaleTimeString || date.toTimeString).call(date);
+    case 'month':
+      return 'toLocaleDateString' in date ? date.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: '2-digit'
+      }) : date.toDateString();
+    // case 'week':
+    // TODO
+    default:
+      return (date.toLocaleString || date.toString).call(date);
+  }
+}
+
 /**
  * patch String.length to account for non-BMP characters
  *
@@ -2149,10 +2169,10 @@ var rangeOverflow = check$1(test_max, function (element) {
     case 'date':
     case 'datetime':
     case 'datetime-local':
-      msg = sprintf(_('DateRangeOverflow'), string_to_date(element.getAttribute('max'), type));
+      msg = sprintf(_('DateRangeOverflow'), format_date(string_to_date(element.getAttribute('max'), type), type));
       break;
     case 'time':
-      msg = sprintf(_('TimeRangeOverflow'), string_to_date(element.getAttribute('max'), type));
+      msg = sprintf(_('TimeRangeOverflow'), format_date(string_to_date(element.getAttribute('max'), type), type));
       break;
     // case 'number':
     default:
@@ -2170,10 +2190,10 @@ var rangeUnderflow = check$1(test_min, function (element) {
     case 'date':
     case 'datetime':
     case 'datetime-local':
-      msg = sprintf(_('DateRangeUnderflow'), string_to_date(element.getAttribute('min'), type));
+      msg = sprintf(_('DateRangeUnderflow'), format_date(string_to_date(element.getAttribute('min'), type), type));
       break;
     case 'time':
-      msg = sprintf(_('TimeRangeUnderflow'), string_to_date(element.getAttribute('min'), type));
+      msg = sprintf(_('TimeRangeUnderflow'), format_date(string_to_date(element.getAttribute('min'), type), type));
       break;
     // case 'number':
     default:
