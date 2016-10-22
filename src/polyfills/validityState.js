@@ -69,6 +69,7 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
     const validClass = wrapper && wrapper.settings.classes.valid || 'hf-valid';
     const invalidClass = wrapper && wrapper.settings.classes.invalid || 'hf-invalid';
     const userInvalidClass = wrapper && wrapper.settings.classes.userInvalid || 'hf-user-invalid';
+    const userValidClass = wrapper && wrapper.settings.classes.userValid || 'hf-user-valid';
     const inRangeClass = wrapper && wrapper.settings.classes.inRange || 'hf-in-range';
     const outOfRangeClass = wrapper && wrapper.settings.classes.outOfRange || 'hf-out-of-range';
     const validatedClass = wrapper && wrapper.settings.classes.validated || 'hf-validated';
@@ -80,6 +81,7 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
         if (validity_state_checkers[prop](this.element)) {
           this.element.classList.add(invalidClass);
           this.element.classList.remove(validClass);
+          this.element.classList.remove(userValidClass);
           if (this.element.value !== this.element.defaultValue) {
             this.element.classList.add(userInvalidClass);
           } else {
@@ -94,6 +96,11 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
     message_store.delete(this.element);
     this.element.classList.remove(invalidClass, userInvalidClass, outOfRangeClass);
     this.element.classList.add(validClass, inRangeClass);
+    if (this.element.value !== this.element.defaultValue) {
+      this.element.classList.add(userValidClass);
+    } else {
+      this.element.classList.remove(userValidClass);
+    }
     this.element.setAttribute('aria-invalid', 'false');
     return true;
   },

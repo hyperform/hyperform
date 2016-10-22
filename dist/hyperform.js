@@ -2368,6 +2368,7 @@ var hyperform = (function () {
             var validClass = wrapper && wrapper.settings.classes.valid || 'hf-valid';
             var invalidClass = wrapper && wrapper.settings.classes.invalid || 'hf-invalid';
             var userInvalidClass = wrapper && wrapper.settings.classes.userInvalid || 'hf-user-invalid';
+            var userValidClass = wrapper && wrapper.settings.classes.userValid || 'hf-user-valid';
             var inRangeClass = wrapper && wrapper.settings.classes.inRange || 'hf-in-range';
             var outOfRangeClass = wrapper && wrapper.settings.classes.outOfRange || 'hf-out-of-range';
             var validatedClass = wrapper && wrapper.settings.classes.validated || 'hf-validated';
@@ -2379,6 +2380,7 @@ var hyperform = (function () {
                 if (validity_state_checkers[_prop](this.element)) {
                   this.element.classList.add(invalidClass);
                   this.element.classList.remove(validClass);
+                  this.element.classList.remove(userValidClass);
                   if (this.element.value !== this.element.defaultValue) {
                     this.element.classList.add(userInvalidClass);
                   } else {
@@ -2393,6 +2395,11 @@ var hyperform = (function () {
             message_store.delete(this.element);
             this.element.classList.remove(invalidClass, userInvalidClass, outOfRangeClass);
             this.element.classList.add(validClass, inRangeClass);
+            if (this.element.value !== this.element.defaultValue) {
+              this.element.classList.add(userValidClass);
+            } else {
+              this.element.classList.remove(userValidClass);
+            }
             this.element.setAttribute('aria-invalid', 'false');
             return true;
           },
