@@ -19,6 +19,7 @@ import custom_messages from '../components/custom_messages';
 import _ from '../components/localization';
 import message_store from '../components/message_store';
 import CustomValidatorRegistry from '../components/registry';
+import { get_wrapper } from '../components/wrapper';
 import test_bad_input from '../validators/bad_input';
 import test_max from '../validators/max';
 import test_maxlength from '../validators/maxlength';
@@ -94,9 +95,19 @@ const patternMismatch = check(test_pattern, element => {
 });
 
 
+/**
+ * TODO: when rangeOverflow and rangeUnderflow are both called directly and
+ * successful, the inRange and outOfRange classes won't get removed, unless
+ * element.validityState.valid is queried, too.
+ */
 const rangeOverflow = check(test_max, element => {
   const type = get_type(element);
+  const wrapper = get_wrapper(element);
+  const outOfRangeClass = wrapper && wrapper.settings.classes.outOfRange || 'hf-out-of-range';
+  const inRangeClass = wrapper && wrapper.settings.classes.inRange || 'hf-in-range';
+
   let msg;
+
   switch (type) {
     case 'date':
     case 'datetime':
@@ -114,14 +125,21 @@ const rangeOverflow = check(test_max, element => {
                     string_to_number(element.getAttribute('max'), type));
       break;
   }
+
   set_msg(element, 'rangeOverflow', msg);
+  element.classList.add(outOfRangeClass);
+  element.classList.remove(inRangeClass);
 });
 
 
 const rangeUnderflow = check(test_min, element => {
   const type = get_type(element);
+  const wrapper = get_wrapper(element);
+  const outOfRangeClass = wrapper && wrapper.settings.classes.outOfRange || 'hf-out-of-range';
+  const inRangeClass = wrapper && wrapper.settings.classes.inRange || 'hf-in-range';
 
   let msg;
+
   switch (type) {
     case 'date':
     case 'datetime':
@@ -139,7 +157,10 @@ const rangeUnderflow = check(test_min, element => {
                     string_to_number(element.getAttribute('min'), type));
       break;
   }
+
   set_msg(element, 'rangeUnderflow', msg);
+  element.classList.add(outOfRangeClass);
+  element.classList.remove(inRangeClass);
 });
 
 

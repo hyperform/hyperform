@@ -2162,9 +2162,19 @@ var patternMismatch = check$1(test_pattern, function (element) {
   set_msg(element, 'patternMismatch', element.title ? sprintf(_('PatternMismatchWithTitle'), element.title) : _('PatternMismatch'));
 });
 
+/**
+ * TODO: when rangeOverflow and rangeUnderflow are both called directly and
+ * successful, the inRange and outOfRange classes won't get removed, unless
+ * element.validityState.valid is queried, too.
+ */
 var rangeOverflow = check$1(test_max, function (element) {
   var type = get_type(element);
+  var wrapper = get_wrapper(element);
+  var outOfRangeClass = wrapper && wrapper.settings.classes.outOfRange || 'hf-out-of-range';
+  var inRangeClass = wrapper && wrapper.settings.classes.inRange || 'hf-in-range';
+
   var msg = void 0;
+
   switch (type) {
     case 'date':
     case 'datetime':
@@ -2179,13 +2189,20 @@ var rangeOverflow = check$1(test_max, function (element) {
       msg = sprintf(_('NumberRangeOverflow'), string_to_number(element.getAttribute('max'), type));
       break;
   }
+
   set_msg(element, 'rangeOverflow', msg);
+  element.classList.add(outOfRangeClass);
+  element.classList.remove(inRangeClass);
 });
 
 var rangeUnderflow = check$1(test_min, function (element) {
   var type = get_type(element);
+  var wrapper = get_wrapper(element);
+  var outOfRangeClass = wrapper && wrapper.settings.classes.outOfRange || 'hf-out-of-range';
+  var inRangeClass = wrapper && wrapper.settings.classes.inRange || 'hf-in-range';
 
   var msg = void 0;
+
   switch (type) {
     case 'date':
     case 'datetime':
@@ -2200,7 +2217,10 @@ var rangeUnderflow = check$1(test_min, function (element) {
       msg = sprintf(_('NumberRangeUnderflow'), string_to_number(element.getAttribute('min'), type));
       break;
   }
+
   set_msg(element, 'rangeUnderflow', msg);
+  element.classList.add(outOfRangeClass);
+  element.classList.remove(inRangeClass);
 });
 
 var stepMismatch = check$1(test_step, function (element) {
@@ -2346,6 +2366,9 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
     var wrapper = get_wrapper(this.element);
     var validClass = wrapper && wrapper.settings.classes.valid || 'hf-valid';
     var invalidClass = wrapper && wrapper.settings.classes.invalid || 'hf-invalid';
+    var userInvalidClass = wrapper && wrapper.settings.classes.userInvalid || 'hf-user-invalid';
+    var inRangeClass = wrapper && wrapper.settings.classes.inRange || 'hf-in-range';
+    var outOfRangeClass = wrapper && wrapper.settings.classes.outOfRange || 'hf-out-of-range';
     var validatedClass = wrapper && wrapper.settings.classes.validated || 'hf-validated';
 
     this.element.classList.add(validatedClass);
@@ -2355,6 +2378,11 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
         if (validity_state_checkers[_prop](this.element)) {
           this.element.classList.add(invalidClass);
           this.element.classList.remove(validClass);
+          if (this.element.value !== this.element.defaultValue) {
+            this.element.classList.add(userInvalidClass);
+          } else {
+            this.element.classList.remove(userInvalidClass);
+          }
           this.element.setAttribute('aria-invalid', 'true');
           return false;
         }
@@ -2362,8 +2390,8 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
     }
 
     message_store.delete(this.element);
-    this.element.classList.remove(invalidClass);
-    this.element.classList.add(validClass);
+    this.element.classList.remove(invalidClass, userInvalidClass, outOfRangeClass);
+    this.element.classList.add(validClass, inRangeClass);
     this.element.setAttribute('aria-invalid', 'false');
     return true;
   },
