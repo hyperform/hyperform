@@ -1,7 +1,7 @@
 'use strict';
 
 
-import is_validation_candidate from '../tools/is_validation_candidate';
+import isValidationCandidate from '../tools/isValidationCandidate';
 
 
 /**
@@ -9,7 +9,7 @@ import is_validation_candidate from '../tools/is_validation_candidate';
  */
 export default function(element) {
   return (
-      ! is_validation_candidate(element)
+      ! isValidationCandidate(element)
       ||
       ! element.value
       ||

@@ -1,8 +1,8 @@
 'use strict';
 
 
-import get_type from '../tools/get_type';
-import string_to_number from '../tools/string_to_number';
+import getType from '../tools/getType';
+import stringToNumber from '../tools/stringToNumber';
 import { numbers } from '../components/types';
 import valueAsDate from './valueAsDate';
 
@@ -13,7 +13,7 @@ import valueAsDate from './valueAsDate';
  * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasnumber
  */
 export default function valueAsNumber(element, value=undefined) {
-  const type = get_type(element);
+  const type = getType(element);
   if (numbers.indexOf(type) > -1) {
     if (type === 'range' && element.hasAttribute('multiple')) {
       /* @see https://html.spec.whatwg.org/multipage/forms.html#do-not-apply */
@@ -43,7 +43,7 @@ export default function valueAsNumber(element, value=undefined) {
       return;
     }
 
-    return string_to_number(element.value, type);
+    return stringToNumber(element.value, type);
 
   } else if (value !== undefined) {
     /* trying to set a number on a not-number input fails */

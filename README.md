@@ -60,7 +60,7 @@ hyperform(window, {
                            // re-validated automatically. Valid values:
                            // `oninput`, `onsubmit`, and `never`.
 
-    valid_event: true,     // default. Whether the non-standard `valid`
+    validEvent: true,     // default. Whether the non-standard `valid`
                            // event should be triggered
 });
 ```
@@ -69,7 +69,7 @@ If you only need a certain feature, you can access it directly by name:
 
 ```js
 if (hyperform.willValidate(form.elements[0])) {
-    var is_valid = hyperform.validityState(form.elements[0]).valid;
+    var isValid = hyperform.validityState(form.elements[0]).valid;
 }
 ```
 
@@ -138,7 +138,7 @@ What parts of the high-level API are finished?
 
     ```js
     hyperform.register(element, function(element) {
-      return result_of_convoluted_validation_routine();
+      return resultOfConvolutedValidationRoutine();
     });
     ```
 

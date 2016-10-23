@@ -1,8 +1,8 @@
 'use strict';
 
 
-import get_next_valid from '../tools/get_next_valid';
-import get_type from '../tools/get_type';
+import getNextValid from '../tools/getNextValid';
+import getType from '../tools/getType';
 import { numbers } from '../components/types';
 import valueAsNumber from './valueAsNumber';
 
@@ -11,7 +11,7 @@ import valueAsNumber from './valueAsNumber';
  *
  */
 export default function stepDown(element, n=1) {
-  if (numbers.indexOf(get_type(element)) === -1) {
+  if (numbers.indexOf(getType(element)) === -1) {
     throw new window.DOMException('stepDown encountered invalid type',
                                   'InvalidStateError');
   }
@@ -20,7 +20,7 @@ export default function stepDown(element, n=1) {
                                   'InvalidStateError');
   }
 
-  const prev = get_next_valid(element, n)[0];
+  const prev = getNextValid(element, n)[0];
 
   if (prev !== null) {
     valueAsNumber(element, prev);

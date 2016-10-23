@@ -1,7 +1,7 @@
 'use strict';
 
 
-import { get_wrapper } from './wrapper';
+import { getWrapper } from './wrapper';
 import mark from '../tools/mark';
 
 
@@ -12,22 +12,22 @@ const store = new WeakMap();
 
 
 /* jshint -W053 */
-const message_store = {
+const messageStore = {
 
-  set(element, message, is_custom=false) {
+  set(element, message, isCustom=false) {
     if (element instanceof window.HTMLFieldSetElement) {
-      const wrapped_form = get_wrapper(element);
-      if (wrapped_form && ! wrapped_form.settings.extend_fieldset) {
+      const wrappedForm = getWrapper(element);
+      if (wrappedForm && ! wrappedForm.settings.extendFieldset) {
         /* make this a no-op for <fieldset> in strict mode */
-        return message_store;
+        return messageStore;
       }
     }
 
     if (typeof message === 'string') {
       message = new String(message);
     }
-    if (is_custom) {
-      message.is_custom = true;
+    if (isCustom) {
+      message.isCustom = true;
     }
     mark(message);
     store.set(element, message);
@@ -37,7 +37,7 @@ const message_store = {
       element._original_setCustomValidity(message.toString());
     }
 
-    return message_store;
+    return messageStore;
   },
 
   get(element) {
@@ -60,4 +60,4 @@ const message_store = {
 };
 /* jshint +W053 */
 
-export default message_store;
+export default messageStore;

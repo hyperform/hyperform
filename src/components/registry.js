@@ -1,7 +1,7 @@
 'use strict';
 
 
-const internal_registry = new WeakMap();
+const internalRegistry = new WeakMap();
 
 
 /**
@@ -10,23 +10,23 @@ const internal_registry = new WeakMap();
  * slim wrapper around a WeakMap to ensure the values are arrays
  * (hence allowing > 1 validators per element)
  */
-const custom_validator_registry = {
+const customValidatorRegistry = {
 
   set(element, validator) {
-    const current = internal_registry.get(element) || [];
+    const current = internalRegistry.get(element) || [];
     current.push(validator);
-    internal_registry.set(element, current);
-    return custom_validator_registry;
+    internalRegistry.set(element, current);
+    return customValidatorRegistry;
   },
 
   get(element) {
-    return internal_registry.get(element) || [];
+    return internalRegistry.get(element) || [];
   },
 
   delete(element) {
-    return internal_registry.delete(element);
+    return internalRegistry.delete(element);
   },
 
 };
 
-export default custom_validator_registry;
+export default customValidatorRegistry;

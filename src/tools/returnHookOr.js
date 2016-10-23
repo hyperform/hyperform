@@ -1,7 +1,7 @@
 'use strict';
 
 
-import { call_hook } from '../components/hooks.js';
+import { callHook } from '../components/hooks.js';
 
 
 /**
@@ -12,7 +12,7 @@ import { call_hook } from '../components/hooks.js';
  */
 export default function(hook, action) {
   return function() {
-    const data = call_hook(hook, Array.prototype.slice.call(arguments));
+    const data = callHook(hook, Array.prototype.slice.call(arguments));
 
     if (data !== undefined) {
       return data;

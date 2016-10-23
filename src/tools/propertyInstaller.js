@@ -14,19 +14,19 @@ export default function(element, property, descriptor) {
     descriptor.writable = true;
   }
 
-  const original_descriptor = Object.getOwnPropertyDescriptor(element, property);
+  const originalDescriptor = Object.getOwnPropertyDescriptor(element, property);
 
-  if (original_descriptor) {
+  if (originalDescriptor) {
 
-    if (original_descriptor.configurable === false) {
+    if (originalDescriptor.configurable === false) {
       /* global console */
       console.log('[hyperform] cannot install custom property '+property);
       return false;
     }
 
     /* we already installed that property... */
-    if ((original_descriptor.get && original_descriptor.get.__hyperform) ||
-        (original_descriptor.value && original_descriptor.value.__hyperform)) {
+    if ((originalDescriptor.get && originalDescriptor.get.__hyperform) ||
+        (originalDescriptor.value && originalDescriptor.value.__hyperform)) {
       return;
     }
 
@@ -34,7 +34,7 @@ export default function(element, property, descriptor) {
     Object.defineProperty(
       element,
       '_original_'+property,
-      original_descriptor
+      originalDescriptor
     );
   }
 

@@ -1,13 +1,13 @@
 'use strict';
 
 
-export const default_step = {
+export const defaultStep = {
   'datetime-local': 60,
   datetime: 60,
   time: 60,
 };
 
-export const step_scale_factor = {
+export const stepScaleFactor = {
   'datetime-local': 1000,
   datetime: 1000,
   date: 86400000,
@@ -15,14 +15,14 @@ export const step_scale_factor = {
   time: 1000,
 };
 
-export const default_step_base = {
+export const defaultStepBase = {
   week: -259200000,
 };
 
-export const default_min = {
+export const defaultMin = {
   range: 0,
 };
 
-export const default_max = {
+export const defaultMax = {
   range: 100,
 };

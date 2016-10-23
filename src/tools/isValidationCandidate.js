@@ -1,9 +1,9 @@
 'use strict';
 
 
-import { validation_candidates, non_inputs } from '../components/types';
-import { get_wrapper } from '../components/wrapper';
-import get_type from '../tools/get_type';
+import { validationCandidates, nonInputs } from '../components/types';
+import { getWrapper } from '../components/wrapper';
+import getType from '../tools/getType';
 
 
 /**
@@ -21,20 +21,20 @@ export default function(element) {
       ||
       element instanceof window.HTMLInputElement) {
 
-    const type = get_type(element);
+    const type = getType(element);
     /* its type must be in the whitelist or missing (select, textarea) */
     if (! type ||
-        non_inputs.indexOf(type) > -1 ||
-        validation_candidates.indexOf(type) > -1) {
+        nonInputs.indexOf(type) > -1 ||
+        validationCandidates.indexOf(type) > -1) {
 
       /* it mustn't be disabled or readonly */
       if (! element.hasAttribute('disabled') &&
           ! element.hasAttribute('readonly')) {
 
-        const wrapped_form = get_wrapper(element);
+        const wrappedForm = getWrapper(element);
         /* it hasn't got the (non-standard) attribute 'novalidate' or its
          * parent form has got the strict parameter */
-        if ((wrapped_form && wrapped_form.settings.novalidate_on_elements) ||
+        if ((wrappedForm && wrappedForm.settings.novalidateOnElements) ||
             ! element.hasAttribute('novalidate') ||
             ! element.noValidate) {
 

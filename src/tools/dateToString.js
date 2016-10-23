@@ -2,7 +2,7 @@
 
 
 import sprintf from './sprintf';
-import get_week_of_year from './get_week_of_year';
+import getWeekOfYear from './getWeekOfYear';
 
 
 function pad(num, size=2) {
@@ -17,15 +17,15 @@ function pad(num, size=2) {
 /**
  * calculate a string from a date according to HTML5
  */
-export default function date_to_string(date, element_type) {
+export default function dateToString(date, elementType) {
   if (! (date instanceof Date)) {
     return null;
   }
 
-  switch (element_type) {
+  switch (elementType) {
     case 'datetime':
-      return date_to_string(date, 'date') + 'T' +
-             date_to_string(date, 'time');
+      return dateToString(date, 'date') + 'T' +
+             dateToString(date, 'time');
 
     case 'datetime-local':
       return sprintf('%s-%s-%sT%s:%s:%s.%s',
@@ -49,7 +49,7 @@ export default function date_to_string(date, element_type) {
                      pad(date.getUTCMonth() + 1));
 
     case 'week':
-      const params = get_week_of_year(date);
+      const params = getWeekOfYear(date);
       return sprintf.call(null, '%s-W%s', params[0], pad(params[1]));
 
     case 'time':

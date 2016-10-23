@@ -1,8 +1,8 @@
 'use strict';
 
 
-import install_property from './property_installer';
-import is_field from './is_field';
+import installProperty from './propertyInstaller';
+import isField from './isField';
 import mark from './mark';
 
 import checkValidity from '../polyfills/checkValidity';
@@ -15,7 +15,7 @@ import ValidityState from '../polyfills/validityState';
 import valueAsDate from '../polyfills/valueAsDate';
 import valueAsNumber from '../polyfills/valueAsNumber';
 import willValidate from '../polyfills/willValidate';
-import { install_properties } from '../polyfills/properties';
+import { installProperties } from '../polyfills/properties';
 
 
 const polyfills = {
@@ -54,17 +54,17 @@ const polyfills = {
 };
 
 export default function(element) {
-  if (is_field(element)) {
+  if (isField(element)) {
 
     for (let prop in polyfills) {
-      install_property(element, prop, polyfills[prop]);
+      installProperty(element, prop, polyfills[prop]);
     }
 
-    install_properties(element);
+    installProperties(element);
 
   } else if (element instanceof window.HTMLFormElement ||
              element === window.HTMLFormElement.prototype) {
-    install_property(element, 'checkValidity', polyfills.checkValidity);
-    install_property(element, 'reportValidity', polyfills.reportValidity);
+    installProperty(element, 'checkValidity', polyfills.checkValidity);
+    installProperty(element, 'reportValidity', polyfills.reportValidity);
   }
 }

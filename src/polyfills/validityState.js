@@ -1,11 +1,11 @@
 'use strict';
 
 
-import is_validation_candidate from '../tools/is_validation_candidate';
+import isValidationCandidate from '../tools/isValidationCandidate';
 import mark from '../tools/mark';
-import message_store from '../components/message_store';
-import { get_wrapper } from '../components/wrapper';
-import validity_state_checkers from '../tools/validity_state_checkers';
+import messageStore from '../components/messageStore';
+import { getWrapper } from '../components/wrapper';
+import validityStateCheckers from '../tools/validityStateCheckers';
 
 
 /**
@@ -43,13 +43,13 @@ ValidityState.cache = new WeakMap();
  * copy functionality from the validity checkers to the ValidityState
  * prototype
  */
-for (let prop in validity_state_checkers) {
+for (let prop in validityStateCheckers) {
   Object.defineProperty(ValidityStatePrototype, prop, {
     configurable: true,
     enumerable: true,
     get: (func => function() {
       return func(this.element);
-    })(validity_state_checkers[prop]),
+    })(validityStateCheckers[prop]),
     set: undefined,
   });
 }
@@ -65,16 +65,16 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
   configurable: true,
   enumerable: true,
   get: function() {
-    const wrapper = get_wrapper(this.element);
+    const wrapper = getWrapper(this.element);
     const validClass = wrapper && wrapper.settings.classes.valid || 'hf-valid';
     const invalidClass = wrapper && wrapper.settings.classes.invalid || 'hf-invalid';
     const validatedClass = wrapper && wrapper.settings.classes.validated || 'hf-validated';
 
     this.element.classList.add(validatedClass);
 
-    if (is_validation_candidate(this.element)) {
-      for (let prop in validity_state_checkers) {
-        if (validity_state_checkers[prop](this.element)) {
+    if (isValidationCandidate(this.element)) {
+      for (let prop in validityStateCheckers) {
+        if (validityStateCheckers[prop](this.element)) {
           this.element.classList.add(invalidClass);
           this.element.classList.remove(validClass);
           this.element.setAttribute('aria-invalid', 'true');
@@ -83,7 +83,7 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
       }
     }
 
-    message_store.delete(this.element);
+    messageStore.delete(this.element);
     this.element.classList.remove(invalidClass);
     this.element.classList.add(validClass);
     this.element.setAttribute('aria-invalid', 'false');

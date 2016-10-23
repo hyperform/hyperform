@@ -1,10 +1,10 @@
 'use strict';
 
 
-import trigger_event from '../tools/trigger_event';
+import triggerEvent from '../tools/triggerEvent';
 import Renderer from '../components/renderer';
 import ValidityState from './validityState';
-import { get_wrapper } from '../components/wrapper';
+import { getWrapper } from '../components/wrapper';
 
 
 /**
@@ -23,16 +23,16 @@ export default function reportValidity(element) {
   const valid = ValidityState(element).valid;
   var event;
   if (valid) {
-    const wrapped_form = get_wrapper(element);
-    if (wrapped_form && wrapped_form.settings.valid_event) {
-      event = trigger_event(element, 'valid', { cancelable: true });
+    const wrappedForm = getWrapper(element);
+    if (wrappedForm && wrappedForm.settings.validEvent) {
+      event = triggerEvent(element, 'valid', { cancelable: true });
     }
   } else {
-    event = trigger_event(element, 'invalid', { cancelable: true });
+    event = triggerEvent(element, 'invalid', { cancelable: true });
   }
 
   if (! event || ! event.defaultPrevented) {
-    Renderer.show_warning(element);
+    Renderer.showWarning(element);
   }
 
   return valid;

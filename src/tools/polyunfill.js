@@ -1,29 +1,29 @@
 'use strict';
 
 
-import is_field from './is_field';
-import uninstall_property from './property_uninstaller';
-import { uninstall_properties } from '../polyfills/properties';
+import isField from './isField';
+import uninstallProperty from './propertyUninstaller';
+import { uninstallProperties } from '../polyfills/properties';
 
 
 export default function(element) {
-  if (is_field(element)) {
+  if (isField(element)) {
 
-    uninstall_property(element, 'checkValidity');
-    uninstall_property(element, 'reportValidity');
-    uninstall_property(element, 'setCustomValidity');
-    uninstall_property(element, 'stepDown');
-    uninstall_property(element, 'stepUp');
-    uninstall_property(element, 'validationMessage');
-    uninstall_property(element, 'validity');
-    uninstall_property(element, 'valueAsDate');
-    uninstall_property(element, 'valueAsNumber');
-    uninstall_property(element, 'willValidate');
+    uninstallProperty(element, 'checkValidity');
+    uninstallProperty(element, 'reportValidity');
+    uninstallProperty(element, 'setCustomValidity');
+    uninstallProperty(element, 'stepDown');
+    uninstallProperty(element, 'stepUp');
+    uninstallProperty(element, 'validationMessage');
+    uninstallProperty(element, 'validity');
+    uninstallProperty(element, 'valueAsDate');
+    uninstallProperty(element, 'valueAsNumber');
+    uninstallProperty(element, 'willValidate');
 
-    uninstall_properties(element);
+    uninstallProperties(element);
 
   } else if (element instanceof window.HTMLFormElement) {
-    uninstall_property(element, 'checkValidity');
-    uninstall_property(element, 'reportValidity');
+    uninstallProperty(element, 'checkValidity');
+    uninstallProperty(element, 'reportValidity');
   }
 }

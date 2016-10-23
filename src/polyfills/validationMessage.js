@@ -1,7 +1,7 @@
 'use strict';
 
 
-import message_store from '../components/message_store';
+import messageStore from '../components/messageStore';
 
 
 /**
@@ -9,11 +9,11 @@ import message_store from '../components/message_store';
  * satisfies all constraints.
  */
 export default function validationMessage(element) {
-  const msg = message_store.get(element);
+  const msg = messageStore.get(element);
   if (! msg) {
     return '';
   }
 
-  /* make it a primitive again, since message_store returns String(). */
+  /* make it a primitive again, since messageStore returns String(). */
   return msg.toString();
 }

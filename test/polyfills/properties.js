@@ -1,11 +1,11 @@
 'use strict';
 
 import test from 'ava';
-import { install_properties } from '../../src/polyfills/properties';
+import { installProperties } from '../../src/polyfills/properties';
 
 test('properties', t => {
   var el = document.createElement('input');
-  install_properties(el);
+  installProperties(el);
   el.setAttribute('maxlength', '2');
   t.true(el.maxLength === 2);
   el.maxLength = 3;

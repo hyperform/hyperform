@@ -1,10 +1,10 @@
 'use strict';
 
 
-import get_type from '../tools/get_type';
-import is_validation_candidate from '../tools/is_validation_candidate';
+import getType from '../tools/getType';
+import isValidationCandidate from '../tools/isValidationCandidate';
 import { dates } from '../components/types';
-import string_to_date from '../tools/string_to_date';
+import stringToDate from '../tools/stringToDate';
 
 
 /**
@@ -14,9 +14,9 @@ import string_to_date from '../tools/string_to_date';
  * value like "123abc" should result in an error.
  */
 export default function(element) {
-  const type = get_type(element);
+  const type = getType(element);
 
-  if (! is_validation_candidate(element) ||
+  if (! isValidationCandidate(element) ||
       ! element.value || ! element.hasAttribute('max')) {
     /* we're not responsible here */
     return true;
@@ -24,8 +24,8 @@ export default function(element) {
 
   let value, max;
   if (dates.indexOf(type) > -1) {
-    value = 1 * string_to_date(element.value, type);
-    max = 1 * (string_to_date(element.getAttribute('max'), type) || NaN);
+    value = 1 * stringToDate(element.value, type);
+    max = 1 * (stringToDate(element.getAttribute('max'), type) || NaN);
   } else {
     value = Number(element.value);
     max = Number(element.getAttribute('max'));

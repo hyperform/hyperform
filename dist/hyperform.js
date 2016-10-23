@@ -12,9 +12,9 @@ var hyperform = (function () {
          *
          * @return mixed the returned value of the action calls or undefined
          */
-        function call_hook(hook) {
+        function callHook(hook) {
           var result;
-          var call_args = Array.prototype.slice.call(arguments, 1);
+          var callArgs = Array.prototype.slice.call(arguments, 1);
 
           if (hook in registry) {
             result = registry[hook].reduce(function (args) {
@@ -26,7 +26,7 @@ var hyperform = (function () {
                 }, args);
                 return interimResult !== undefined ? interimResult : previousResult;
               };
-            }(call_args), result);
+            }(callArgs), result);
           }
 
           return result;
@@ -36,19 +36,19 @@ var hyperform = (function () {
          * Filter a value through hooked functions
          *
          * Allows for additional parameters:
-         * js> do_filter('foo', null, current_element)
+         * js> doFilter('foo', null, currentElement)
          */
-        function do_filter(hook, initial_value) {
-          var result = initial_value;
-          var call_args = Array.prototype.slice.call(arguments, 1);
+        function doFilter(hook, initialValue) {
+          var result = initialValue;
+          var callArgs = Array.prototype.slice.call(arguments, 1);
 
           if (hook in registry) {
             result = registry[hook].reduce(function (previousResult, currentAction) {
-              call_args[0] = previousResult;
+              callArgs[0] = previousResult;
               var interimResult = currentAction.apply({
                 state: previousResult,
                 hook: hook
-              }, call_args);
+              }, callArgs);
               return interimResult !== undefined ? interimResult : previousResult;
             }, result);
           }
@@ -59,7 +59,7 @@ var hyperform = (function () {
         /**
          * remove an action again
          */
-        function remove_hook(hook, action) {
+        function removeHook(hook, action) {
           if (hook in registry) {
             for (var i = 0; i < registry[hook].length; i++) {
               if (registry[hook][i] === action) {
@@ -72,7 +72,7 @@ var hyperform = (function () {
         /**
          * add an action to a hook
          */
-        function add_hook(hook, action, position) {
+        function addHook(hook, action, position) {
           if (!(hook in registry)) {
             registry[hook] = [];
           }
@@ -88,9 +88,9 @@ var hyperform = (function () {
          *
          * @return function a function wrapper around action
          */
-        function return_hook_or (hook, action) {
+        function returnHookOr (hook, action) {
           return function () {
-            var data = call_hook(hook, Array.prototype.slice.call(arguments));
+            var data = callHook(hook, Array.prototype.slice.call(arguments));
 
             if (data !== undefined) {
               return data;
@@ -135,7 +135,7 @@ var hyperform = (function () {
         }
         /* end of borrowed code */
 
-        function trigger_event (element, event) {
+        function triggerEvent (element, event) {
           var _ref = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
           var _ref$bubbles = _ref.bubbles;
@@ -145,9 +145,9 @@ var hyperform = (function () {
           var payload = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
           if (!(event instanceof window.Event)) {
-            var _event = document.createEvent('Event');
-            _event.initEvent(event, bubbles, cancelable);
-            event = _event;
+            var newEvent = document.createEvent('Event');
+            newEvent.initEvent(event, bubbles, cancelable);
+            event = newEvent;
           }
 
           for (var key in payload) {
@@ -165,31 +165,31 @@ var hyperform = (function () {
 
         var dates = ['datetime', 'date', 'month', 'week', 'time'];
 
-        var plain_numbers = ['number', 'range'];
+        var plainNumbers = ['number', 'range'];
 
         /* everything that returns something meaningful for valueAsNumber and
          * can have the step attribute */
-        var numbers = dates.concat(plain_numbers, 'datetime-local');
+        var numbers = dates.concat(plainNumbers, 'datetime-local');
 
         /* the spec says to only check those for syntax in validity.typeMismatch.
          * ¯\_(ツ)_/¯ */
-        var type_checked = ['email', 'url'];
+        var typeChecked = ['email', 'url'];
 
         /* check these for validity.badInput */
-        var input_checked = ['email', 'date', 'month', 'week', 'time', 'datetime', 'datetime-local', 'number', 'range', 'color'];
+        var inputChecked = ['email', 'date', 'month', 'week', 'time', 'datetime', 'datetime-local', 'number', 'range', 'color'];
 
-        var text_types = ['text', 'search', 'tel', 'password'].concat(type_checked);
+        var textTypes = ['text', 'search', 'tel', 'password'].concat(typeChecked);
 
         /* input element types, that are candidates for the validation API.
          * Missing from this set are: button, hidden, menu (from <button>), reset and
          * the types for non-<input> elements. */
-        var validation_candidates = ['checkbox', 'color', 'file', 'image', 'radio', 'submit'].concat(numbers, text_types);
+        var validationCandidates = ['checkbox', 'color', 'file', 'image', 'radio', 'submit'].concat(numbers, textTypes);
 
         /* all known types of <input> */
-        var inputs = ['button', 'hidden', 'reset'].concat(validation_candidates);
+        var inputs = ['button', 'hidden', 'reset'].concat(validationCandidates);
 
         /* apparently <select> and <textarea> have types of their own */
-        var non_inputs = ['select-one', 'select-multiple', 'textarea'];
+        var nonInputs = ['select-one', 'select-multiple', 'textarea'];
 
         /**
          * mark an object with a '__hyperform=true' property
@@ -218,23 +218,23 @@ var hyperform = (function () {
         var store = new WeakMap();
 
         /* jshint -W053 */
-        var message_store = {
+        var messageStore = {
           set: function set(element, message) {
-            var is_custom = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+            var isCustom = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
 
             if (element instanceof window.HTMLFieldSetElement) {
-              var wrapped_form = get_wrapper(element);
-              if (wrapped_form && !wrapped_form.settings.extend_fieldset) {
+              var wrappedForm = getWrapper(element);
+              if (wrappedForm && !wrappedForm.settings.extendFieldset) {
                 /* make this a no-op for <fieldset> in strict mode */
-                return message_store;
+                return messageStore;
               }
             }
 
             if (typeof message === 'string') {
               message = new String(message);
             }
-            if (is_custom) {
-              message.is_custom = true;
+            if (isCustom) {
+              message.isCustom = true;
             }
             mark(message);
             store.set(element, message);
@@ -244,7 +244,7 @@ var hyperform = (function () {
               element._original_setCustomValidity(message.toString());
             }
 
-            return message_store;
+            return messageStore;
           },
           get: function get(element) {
             var message = store.get(element);
@@ -277,20 +277,20 @@ var hyperform = (function () {
          *
          * @see https://gist.github.com/gordonbrander/2230317
          */
-        function generate_id () {
+        function generateId () {
           var prefix = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'hf_';
 
           return prefix + uid++ + Math.random().toString(36).substr(2);
         }
 
-        var warnings_cache = new WeakMap();
+        var warningsCache = new WeakMap();
 
         var DefaultRenderer = {
 
           /**
            * called when a warning should become visible
            */
-          attach_warning: function attach_warning(warning, element) {
+          attachWarning: function attachWarning(warning, element) {
             /* should also work, if element is last,
              * http://stackoverflow.com/a/4793630/113195 */
             element.parentNode.insertBefore(warning, element.nextSibling);
@@ -299,7 +299,7 @@ var hyperform = (function () {
           /**
            * called when a warning should vanish
            */
-          detach_warning: function detach_warning(warning, element) {
+          detachWarning: function detachWarning(warning, element) {
             warning.parentNode.removeChild(warning);
           },
 
@@ -308,36 +308,36 @@ var hyperform = (function () {
            *
            * i.e., showing and hiding warnings
            */
-          show_warning: function show_warning(element) {
-            var sub_radio = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+          showWarning: function showWarning(element) {
+            var subRadio = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
-            var msg = message_store.get(element).toString();
-            var warning = warnings_cache.get(element);
+            var msg = messageStore.get(element).toString();
+            var warning = warningsCache.get(element);
 
             if (msg) {
               if (!warning) {
-                var wrapper = get_wrapper(element);
+                var wrapper = getWrapper(element);
                 warning = document.createElement('div');
                 warning.className = wrapper && wrapper.settings.classes.warning || 'hf-warning';
-                warning.id = generate_id();
+                warning.id = generateId();
                 warning.setAttribute('aria-live', 'polite');
-                warnings_cache.set(element, warning);
+                warningsCache.set(element, warning);
               }
 
               element.setAttribute('aria-errormessage', warning.id);
               warning.textContent = msg;
-              Renderer.attach_warning(warning, element);
+              Renderer.attachWarning(warning, element);
             } else if (warning && warning.parentNode) {
               element.removeAttribute('aria-errormessage');
-              Renderer.detach_warning(warning, element);
+              Renderer.detachWarning(warning, element);
             }
 
-            if (!sub_radio && element.type === 'radio' && element.form) {
+            if (!subRadio && element.type === 'radio' && element.form) {
               /* render warnings for all other same-name radios, too */
               Array.prototype.filter.call(document.getElementsByName(element.name), function (radio) {
                 return radio.name === element.name && radio.form === element.form;
               }).map(function (radio) {
-                return Renderer.show_warning(radio, 'sub_radio');
+                return Renderer.showWarning(radio, 'subRadio');
               });
             }
           }
@@ -346,9 +346,9 @@ var hyperform = (function () {
 
         var Renderer = {
 
-          attach_warning: DefaultRenderer.attach_warning,
-          detach_warning: DefaultRenderer.detach_warning,
-          show_warning: DefaultRenderer.show_warning,
+          attachWarning: DefaultRenderer.attachWarning,
+          detachWarning: DefaultRenderer.detachWarning,
+          showWarning: DefaultRenderer.showWarning,
 
           set: function set(renderer, action) {
             if (!action) {
@@ -375,16 +375,16 @@ var hyperform = (function () {
           var valid = ValidityState(element).valid;
           var event;
           if (valid) {
-            var wrapped_form = get_wrapper(element);
-            if (wrapped_form && wrapped_form.settings.valid_event) {
-              event = trigger_event(element, 'valid', { cancelable: true });
+            var wrappedForm = getWrapper(element);
+            if (wrappedForm && wrappedForm.settings.validEvent) {
+              event = triggerEvent(element, 'valid', { cancelable: true });
             }
           } else {
-            event = trigger_event(element, 'invalid', { cancelable: true });
+            event = triggerEvent(element, 'invalid', { cancelable: true });
           }
 
           if (!event || !event.defaultPrevented) {
-            Renderer.show_warning(element);
+            Renderer.showWarning(element);
           }
 
           return valid;
@@ -399,7 +399,7 @@ var hyperform = (function () {
          * If the element is a button with a name, the name=value pair will be added
          * to the submitted data.
          */
-        function submit_form_via(element) {
+        function submitFormVia(element) {
           /* apparently, the submit event is not triggered in most browsers on
            * the submit() method, so we do it manually here to model a natural
            * submit as closely as possible.
@@ -410,24 +410,24 @@ var hyperform = (function () {
            * And as you already suspected, the correct answer is: both! Firefox
            * opts for 1), Chrome for 2). Yay! */
 
-          var event_got_cancelled;
+          var eventGotCancelled;
 
-          var do_cancel = function do_cancel(e) {
-            event_got_cancelled = e.defaultPrevented;
+          var doCancel = function doCancel(e) {
+            eventGotCancelled = e.defaultPrevented;
             /* we prevent the default ourselves in this (hopefully) last event
              * handler to keep Firefox from prematurely submitting the form. */
             e.preventDefault();
           };
 
-          element.form.addEventListener('submit', do_cancel);
-          trigger_event(element.form, 'submit', { cancelable: true }, { submittedVia: element });
-          element.form.removeEventListener('submit', do_cancel);
+          element.form.addEventListener('submit', doCancel);
+          triggerEvent(element.form, 'submit', { cancelable: true }, { submittedVia: element });
+          element.form.removeEventListener('submit', doCancel);
 
-          if (!event_got_cancelled) {
-            add_submit_field(element);
+          if (!eventGotCancelled) {
+            addSubmitField(element);
             window.HTMLFormElement.prototype.submit.call(element.form);
             window.setTimeout(function () {
-              return remove_submit_field(element);
+              return removeSubmitField(element);
             });
           }
         }
@@ -436,34 +436,34 @@ var hyperform = (function () {
          * if a submit button was clicked, add its name=value by means of a type=hidden
          * input field
          */
-        function add_submit_field(button) {
+        function addSubmitField(button) {
           if (['image', 'submit'].indexOf(button.type) > -1 && button.name) {
-            var wrapper = get_wrapper(button.form) || {};
-            var submit_helper = wrapper.submit_helper;
-            if (submit_helper) {
-              if (submit_helper.parentNode) {
-                submit_helper.parentNode.removeChild(submit_helper);
+            var wrapper = getWrapper(button.form) || {};
+            var submitHelper = wrapper.submitHelper;
+            if (submitHelper) {
+              if (submitHelper.parentNode) {
+                submitHelper.parentNode.removeChild(submitHelper);
               }
             } else {
-              submit_helper = document.createElement('input');
-              submit_helper.type = 'hidden';
-              wrapper.submit_helper = submit_helper;
+              submitHelper = document.createElement('input');
+              submitHelper.type = 'hidden';
+              wrapper.submitHelper = submitHelper;
             }
-            submit_helper.name = button.name;
-            submit_helper.value = button.value;
-            button.form.appendChild(submit_helper);
+            submitHelper.name = button.name;
+            submitHelper.value = button.value;
+            button.form.appendChild(submitHelper);
           }
         }
 
         /**
-         * remove a possible helper input, that was added by `add_submit_field`
+         * remove a possible helper input, that was added by `addSubmitField`
          */
-        function remove_submit_field(button) {
+        function removeSubmitField(button) {
           if (['image', 'submit'].indexOf(button.type) > -1 && button.name) {
-            var wrapper = get_wrapper(button.form) || {};
-            var submit_helper = wrapper.submit_helper;
-            if (submit_helper && submit_helper.parentNode) {
-              submit_helper.parentNode.removeChild(submit_helper);
+            var wrapper = getWrapper(button.form) || {};
+            var submitHelper = wrapper.submitHelper;
+            if (submitHelper && submitHelper.parentNode) {
+              submitHelper.parentNode.removeChild(submitHelper);
             }
           }
         }
@@ -478,36 +478,36 @@ var hyperform = (function () {
          */
         function check(event) {
           /* trigger a "validate" event on the form to be submitted */
-          var val_event = trigger_event(event.target.form, 'validate', { cancelable: true });
-          if (val_event.defaultPrevented) {
+          var valEvent = triggerEvent(event.target.form, 'validate', { cancelable: true });
+          if (valEvent.defaultPrevented) {
             /* skip the whole submit thing, if the validation is canceled. A user
              * can still call form.submit() afterwards. */
             return;
           }
 
           var valid = true;
-          var first_invalid;
+          var firstInvalid;
           Array.prototype.map.call(event.target.form.elements, function (element) {
             if (!reportValidity(element)) {
               valid = false;
-              if (!first_invalid && 'focus' in element) {
-                first_invalid = element;
+              if (!firstInvalid && 'focus' in element) {
+                firstInvalid = element;
               }
             }
           });
 
           if (valid) {
-            submit_form_via(event.target);
-          } else if (first_invalid) {
+            submitFormVia(event.target);
+          } else if (firstInvalid) {
             /* focus the first invalid element, if validation went south */
-            first_invalid.focus();
+            firstInvalid.focus();
           }
         }
 
         /**
          * test if node is a submit button
          */
-        function is_submit_button(node) {
+        function isSubmitButton(node) {
           return (
             /* must be an input or button element... */
             (node.nodeName === 'INPUT' || node.nodeName === 'BUTTON') && (
@@ -520,7 +520,7 @@ var hyperform = (function () {
         /**
          * test, if the click event would trigger a submit
          */
-        function is_submitting_click(event) {
+        function isSubmittingClick(event) {
           return (
             /* prevented default: won't trigger a submit */
             !event.defaultPrevented && (
@@ -529,7 +529,7 @@ var hyperform = (function () {
             !('button' in event) || event.button < 2) &&
 
             /* must be a submit button... */
-            is_submit_button(event.target) &&
+            isSubmitButton(event.target) &&
 
             /* the button needs a form, that's going to be submitted */
             event.target.form &&
@@ -542,7 +542,7 @@ var hyperform = (function () {
         /**
          * test, if the keypress event would trigger a submit
          */
-        function is_submitting_keypress(event) {
+        function isSubmittingKeypress(event) {
           return (
             /* prevented default: won't trigger a submit */
             !event.defaultPrevented && (
@@ -553,12 +553,12 @@ var hyperform = (function () {
             event.target.nodeName === 'INPUT' &&
 
             /* ...a standard text input field (not checkbox, ...) */
-            text_types.indexOf(event.target.type) > -1 ||
+            textTypes.indexOf(event.target.type) > -1 ||
             /* or <Enter> or <Space> was pressed... */
             (event.keyCode === 13 || event.keyCode === 32) &&
 
             /* ...on a submit button */
-            is_submit_button(event.target)) &&
+            isSubmitButton(event.target)) &&
 
             /* there's a form... */
             event.target.form &&
@@ -571,12 +571,12 @@ var hyperform = (function () {
         /**
          * catch explicit submission by click on a button
          */
-        function click_handler(event) {
-          if (is_submitting_click(event)) {
+        function clickHandler(event) {
+          if (isSubmittingClick(event)) {
             event.preventDefault();
-            if (is_submit_button(event.target) && event.target.hasAttribute('formnovalidate')) {
+            if (isSubmitButton(event.target) && event.target.hasAttribute('formnovalidate')) {
               /* if validation should be ignored, we're not interested in any checks */
-              submit_form_via(event.target);
+              submitFormVia(event.target);
             } else {
               check(event);
             }
@@ -586,20 +586,20 @@ var hyperform = (function () {
         /**
          * catch explicit submission by click on a button, but circumvent validation
          */
-        function ignored_click_handler(event) {
-          if (is_submitting_click(event)) {
+        function ignoredClickHandler(event) {
+          if (isSubmittingClick(event)) {
             event.preventDefault();
-            submit_form_via(event.target);
+            submitFormVia(event.target);
           }
         }
 
         /**
          * catch implicit submission by pressing <Enter> in some situations
          */
-        function keypress_handler(event) {
-          if (is_submitting_keypress(event)) {
-            var wrapper = get_wrapper(event.target.form) || { settings: {} };
-            if (wrapper.settings.prevent_implicit_submit) {
+        function keypressHandler(event) {
+          if (isSubmittingKeypress(event)) {
+            var wrapper = getWrapper(event.target.form) || { settings: {} };
+            if (wrapper.settings.preventImplicitSubmit) {
               /* user doesn't want an implicit submit. Cancel here. */
               event.preventDefault();
               return;
@@ -628,8 +628,8 @@ var hyperform = (function () {
         /**
          * catch implicit submission by pressing <Enter> in some situations, but circumvent validation
          */
-        function ignored_keypress_handler(event) {
-          if (is_submitting_keypress(event)) {
+        function ignoredKeypressHandler(event) {
+          if (isSubmittingKeypress(event)) {
             /* check, that there is no submit button in the form. Otherwise
              * that should be clicked. */
             var el = event.target.form.elements.length;
@@ -645,7 +645,7 @@ var hyperform = (function () {
             if (submit) {
               submit.click();
             } else {
-              submit_form_via(event.target);
+              submitFormVia(event.target);
             }
           }
         }
@@ -656,39 +656,39 @@ var hyperform = (function () {
          * @param bool ignore bypass validation, when an attempt to submit the
          *                    form is detected.
          */
-        function catch_submit(listening_node) {
+        function catchSubmit(listeningNode) {
           var ignore = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
           if (ignore) {
-            listening_node.addEventListener('click', ignored_click_handler);
-            listening_node.addEventListener('keypress', ignored_keypress_handler);
+            listeningNode.addEventListener('click', ignoredClickHandler);
+            listeningNode.addEventListener('keypress', ignoredKeypressHandler);
           } else {
-            listening_node.addEventListener('click', click_handler);
-            listening_node.addEventListener('keypress', keypress_handler);
+            listeningNode.addEventListener('click', clickHandler);
+            listeningNode.addEventListener('keypress', keypressHandler);
           }
         }
 
         /**
-         * decommission the event listeners from catch_submit() again
+         * decommission the event listeners from catchSubmit() again
          */
-        function uncatch_submit(listening_node) {
-          listening_node.removeEventListener('click', ignored_click_handler);
-          listening_node.removeEventListener('keypress', ignored_keypress_handler);
-          listening_node.removeEventListener('click', click_handler);
-          listening_node.removeEventListener('keypress', keypress_handler);
+        function uncatchSubmit(listeningNode) {
+          listeningNode.removeEventListener('click', ignoredClickHandler);
+          listeningNode.removeEventListener('keypress', ignoredKeypressHandler);
+          listeningNode.removeEventListener('click', clickHandler);
+          listeningNode.removeEventListener('keypress', keypressHandler);
         }
 
         /**
          * remove `property` from element and restore _original_property, if present
          */
 
-        function uninstall_property (element, property) {
+        function uninstallProperty (element, property) {
           delete element[property];
 
-          var original_descriptor = Object.getOwnPropertyDescriptor(element, '_original_' + property);
+          var originalDescriptor = Object.getOwnPropertyDescriptor(element, '_original_' + property);
 
-          if (original_descriptor) {
-            Object.defineProperty(element, property, original_descriptor);
+          if (originalDescriptor) {
+            Object.defineProperty(element, property, originalDescriptor);
           }
         }
 
@@ -699,30 +699,30 @@ var hyperform = (function () {
          * js> assert(element.foo === 'bar');
          */
 
-        function install_property (element, property, descriptor) {
+        function installProperty (element, property, descriptor) {
           descriptor.configurable = true;
           descriptor.enumerable = true;
           if ('value' in descriptor) {
             descriptor.writable = true;
           }
 
-          var original_descriptor = Object.getOwnPropertyDescriptor(element, property);
+          var originalDescriptor = Object.getOwnPropertyDescriptor(element, property);
 
-          if (original_descriptor) {
+          if (originalDescriptor) {
 
-            if (original_descriptor.configurable === false) {
+            if (originalDescriptor.configurable === false) {
               /* global console */
               console.log('[hyperform] cannot install custom property ' + property);
               return false;
             }
 
             /* we already installed that property... */
-            if (original_descriptor.get && original_descriptor.get.__hyperform || original_descriptor.value && original_descriptor.value.__hyperform) {
+            if (originalDescriptor.get && originalDescriptor.get.__hyperform || originalDescriptor.value && originalDescriptor.value.__hyperform) {
               return;
             }
 
             /* publish existing property under new name, if it's not from us */
-            Object.defineProperty(element, '_original_' + property, original_descriptor);
+            Object.defineProperty(element, '_original_' + property, originalDescriptor);
           }
 
           delete element[property];
@@ -731,7 +731,7 @@ var hyperform = (function () {
           return true;
         }
 
-        function is_field (element) {
+        function isField (element) {
                 return element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement || element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLFieldSetElement || element === window.HTMLButtonElement.prototype || element === window.HTMLInputElement.prototype || element === window.HTMLSelectElement.prototype || element === window.HTMLTextAreaElement.prototype || element === window.HTMLFieldSetElement.prototype;
         }
 
@@ -739,7 +739,7 @@ var hyperform = (function () {
          * set a custom validity message or delete it with an empty string
          */
         function setCustomValidity(element, msg) {
-          message_store.set(element, msg, true);
+          messageStore.set(element, msg, true);
         }
 
         function sprintf (str) {
@@ -747,19 +747,19 @@ var hyperform = (function () {
             args[_key - 1] = arguments[_key];
           }
 
-          var args_length = args.length;
-          var global_index = 0;
+          var argsLength = args.length;
+          var globalIndex = 0;
 
           return str.replace(/%([0-9]+\$)?([sl])/g, function (match, position, type) {
-            var local_index = global_index;
+            var localIndex = globalIndex;
             if (position) {
-              local_index = Number(position.replace(/\$$/, '')) - 1;
+              localIndex = Number(position.replace(/\$$/, '')) - 1;
             }
-            global_index += 1;
+            globalIndex += 1;
 
             var arg = '';
-            if (args_length > local_index) {
-              arg = args[local_index];
+            if (argsLength > localIndex) {
+              arg = args[localIndex];
             }
 
             if (arg instanceof Date || typeof arg === 'number' || arg instanceof Number) {
@@ -795,7 +795,7 @@ var hyperform = (function () {
          *      2012/1/1   is Sunday in week 52 of 2011
          */
 
-        function get_week_of_year (d) {
+        function getWeekOfYear (d) {
           /* Copy date so don't modify original */
           d = new Date(+d);
           d.setUTCHours(0, 0, 0);
@@ -823,14 +823,14 @@ var hyperform = (function () {
         /**
          * calculate a string from a date according to HTML5
          */
-        function date_to_string(date, element_type) {
+        function dateToString(date, elementType) {
           if (!(date instanceof Date)) {
             return null;
           }
 
-          switch (element_type) {
+          switch (elementType) {
             case 'datetime':
-              return date_to_string(date, 'date') + 'T' + date_to_string(date, 'time');
+              return dateToString(date, 'date') + 'T' + dateToString(date, 'time');
 
             case 'datetime-local':
               return sprintf('%s-%s-%sT%s:%s:%s.%s', date.getFullYear(), pad(date.getMonth() + 1), pad(date.getDate()), pad(date.getHours()), pad(date.getMinutes()), pad(date.getSeconds()), pad(date.getMilliseconds(), 3)).replace(/(:00)?\.000$/, '');
@@ -842,7 +842,7 @@ var hyperform = (function () {
               return sprintf('%s-%s', date.getUTCFullYear(), pad(date.getUTCMonth() + 1));
 
             case 'week':
-              var params = get_week_of_year(date);
+              var params = getWeekOfYear(date);
               return sprintf.call(null, '%s-W%s', params[0], pad(params[1]));
 
             case 'time':
@@ -858,7 +858,7 @@ var hyperform = (function () {
          * @see http://stackoverflow.com/a/16591175/113195
          */
 
-        function get_date_from_week (week, year) {
+        function getDateFromWeek (week, year) {
           var date = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
 
           if (date.getUTCDay() <= 4 /* thursday */) {
@@ -873,10 +873,10 @@ var hyperform = (function () {
         /**
          * calculate a date from a string according to HTML5
          */
-        function string_to_date (string, element_type) {
+        function stringToDate (string, elementType) {
           var date = new Date(0);
           var ms;
-          switch (element_type) {
+          switch (elementType) {
             case 'datetime':
               if (!/^([0-9]{4,})-([0-9]{2})-([0-9]{2})T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
                 return null;
@@ -910,7 +910,7 @@ var hyperform = (function () {
               if (!/^([0-9]{4,})-W(0[1-9]|[1234][0-9]|5[0-3])$/.test(string)) {
                 return null;
               }
-              return get_date_from_week(Number(RegExp.$2), Number(RegExp.$1));
+              return getDateFromWeek(Number(RegExp.$2), Number(RegExp.$1));
 
             case 'time':
               if (!/^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
@@ -930,8 +930,8 @@ var hyperform = (function () {
         /**
          * calculate a date from a string according to HTML5
          */
-        function string_to_number (string, element_type) {
-          var rval = string_to_date(string, element_type);
+        function stringToNumber (string, elementType) {
+          var rval = stringToDate(string, elementType);
           if (rval !== null) {
             return +rval;
           }
@@ -942,7 +942,7 @@ var hyperform = (function () {
         /**
          * get the element's type in a backwards-compatible way
          */
-        function get_type (element) {
+        function getType (element) {
           if (element instanceof window.HTMLTextAreaElement) {
             return 'textarea';
           } else if (element instanceof window.HTMLSelectElement) {
@@ -995,22 +995,22 @@ var hyperform = (function () {
 
         var language = 'en';
 
-        function set_language(newlang) {
+        function setLanguage(newlang) {
           language = newlang;
         }
 
-        function add_translation(lang, new_catalog) {
+        function addTranslation(lang, newCatalog) {
           if (!(lang in catalog)) {
             catalog[lang] = {};
           }
-          for (var key in new_catalog) {
-            if (new_catalog.hasOwnProperty(key)) {
-              catalog[lang][key] = new_catalog[key];
+          for (var key in newCatalog) {
+            if (newCatalog.hasOwnProperty(key)) {
+              catalog[lang][key] = newCatalog[key];
             }
           }
         }
 
-        function _ (s) {
+        function l10n (s) {
           if (language in catalog && s in catalog[language]) {
             return catalog[language][s];
           } else if (s in catalog.en) {
@@ -1019,13 +1019,13 @@ var hyperform = (function () {
           return s;
         }
 
-        var default_step = {
+        var defaultStep = {
           'datetime-local': 60,
           datetime: 60,
           time: 60
         };
 
-        var step_scale_factor = {
+        var stepScaleFactor = {
           'datetime-local': 1000,
           datetime: 1000,
           date: 86400000,
@@ -1033,71 +1033,71 @@ var hyperform = (function () {
           time: 1000
         };
 
-        var default_step_base = {
+        var defaultStepBase = {
           week: -259200000
         };
 
-        var default_min = {
+        var defaultMin = {
           range: 0
         };
 
-        var default_max = {
+        var defaultMax = {
           range: 100
         };
 
         /**
          * get previous and next valid values for a stepped input element
          */
-        function get_next_valid (element) {
+        function getNextValid (element) {
           var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
 
-          var type = get_type(element);
+          var type = getType(element);
 
           var aMin = element.getAttribute('min');
-          var min = default_min[type] || NaN;
+          var min = defaultMin[type] || NaN;
           if (aMin) {
-            var pMin = string_to_number(aMin, type);
+            var pMin = stringToNumber(aMin, type);
             if (!isNaN(pMin)) {
               min = pMin;
             }
           }
 
           var aMax = element.getAttribute('max');
-          var max = default_max[type] || NaN;
+          var max = defaultMax[type] || NaN;
           if (aMax) {
-            var pMax = string_to_number(aMax, type);
+            var pMax = stringToNumber(aMax, type);
             if (!isNaN(pMax)) {
               max = pMax;
             }
           }
 
           var aStep = element.getAttribute('step');
-          var step = default_step[type] || 1;
+          var step = defaultStep[type] || 1;
           if (aStep && aStep.toLowerCase() === 'any') {
             /* quick return: we cannot calculate prev and next */
-            return [_('any value'), _('any value')];
+            return [l10n('any value'), l10n('any value')];
           } else if (aStep) {
-            var pStep = string_to_number(aStep, type);
+            var pStep = stringToNumber(aStep, type);
             if (!isNaN(pStep)) {
               step = pStep;
             }
           }
 
-          var default_value = string_to_number(element.getAttribute('value'), type);
+          var defaultValue = stringToNumber(element.getAttribute('value'), type);
 
-          var value = string_to_number(element.value || element.getAttribute('value'), type);
+          var value = stringToNumber(element.value || element.getAttribute('value'), type);
 
           if (isNaN(value)) {
             /* quick return: we cannot calculate without a solid base */
-            return [_('any valid value'), _('any valid value')];
+            return [l10n('any valid value'), l10n('any valid value')];
           }
 
-          var step_base = !isNaN(min) ? min : !isNaN(default_value) ? default_value : default_step_base[type] || 0;
+          var stepBase = !isNaN(min) ? min : !isNaN(defaultValue) ? defaultValue : defaultStepBase[type] || 0;
 
-          var scale = step_scale_factor[type] || 1;
+          var scale = stepScaleFactor[type] || 1;
 
-          var prev = step_base + Math.floor((value - step_base) / (step * scale)) * (step * scale) * n;
-          var next = step_base + (Math.floor((value - step_base) / (step * scale)) + 1) * (step * scale) * n;
+          var prev = stepBase + Math.floor((value - stepBase) / (step * scale)) * (step * scale) * n;
+          var next = stepBase + (Math.floor((value - stepBase) / (step * scale)) + 1) * (step * scale) * n;
 
           if (prev < min) {
             prev = null;
@@ -1113,8 +1113,8 @@ var hyperform = (function () {
 
           /* convert to date objects, if appropriate */
           if (dates.indexOf(type) > -1) {
-            prev = date_to_string(new Date(prev), type);
-            next = date_to_string(new Date(next), type);
+            prev = dateToString(new Date(prev), type);
+            next = dateToString(new Date(next), type);
           }
 
           return [prev, next];
@@ -1128,7 +1128,7 @@ var hyperform = (function () {
         function valueAsDate(element) {
           var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
 
-          var type = get_type(element);
+          var type = getType(element);
           if (dates.indexOf(type) > -1) {
             if (value !== undefined) {
               /* setter: value must be null or a Date() */
@@ -1138,7 +1138,7 @@ var hyperform = (function () {
                 if (isNaN(value.getTime())) {
                   element.value = '';
                 } else {
-                  element.value = date_to_string(value, type);
+                  element.value = dateToString(value, type);
                 }
               } else {
                 throw new window.DOMException('valueAsDate setter encountered invalid value', 'TypeError');
@@ -1146,8 +1146,8 @@ var hyperform = (function () {
               return;
             }
 
-            var value_date = string_to_date(element.value, type);
-            return value_date instanceof Date ? value_date : null;
+            var valueDate = stringToDate(element.value, type);
+            return valueDate instanceof Date ? valueDate : null;
           } else if (value !== undefined) {
             /* trying to set a date on a not-date input fails */
             throw new window.DOMException('valueAsDate setter cannot set date on this element', 'InvalidStateError');
@@ -1164,7 +1164,7 @@ var hyperform = (function () {
         function valueAsNumber(element) {
           var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
 
-          var type = get_type(element);
+          var type = getType(element);
           if (numbers.indexOf(type) > -1) {
             if (type === 'range' && element.hasAttribute('multiple')) {
               /* @see https://html.spec.whatwg.org/multipage/forms.html#do-not-apply */
@@ -1193,7 +1193,7 @@ var hyperform = (function () {
               return;
             }
 
-            return string_to_number(element.value, type);
+            return stringToNumber(element.value, type);
           } else if (value !== undefined) {
             /* trying to set a number on a not-number input fails */
             throw new window.DOMException('valueAsNumber setter cannot set number on this element', 'InvalidStateError');
@@ -1208,14 +1208,14 @@ var hyperform = (function () {
         function stepDown(element) {
           var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
 
-          if (numbers.indexOf(get_type(element)) === -1) {
+          if (numbers.indexOf(getType(element)) === -1) {
             throw new window.DOMException('stepDown encountered invalid type', 'InvalidStateError');
           }
           if ((element.getAttribute('step') || '').toLowerCase() === 'any') {
             throw new window.DOMException('stepDown encountered step "any"', 'InvalidStateError');
           }
 
-          var prev = get_next_valid(element, n)[0];
+          var prev = getNextValid(element, n)[0];
 
           if (prev !== null) {
             valueAsNumber(element, prev);
@@ -1228,14 +1228,14 @@ var hyperform = (function () {
         function stepUp(element) {
           var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
 
-          if (numbers.indexOf(get_type(element)) === -1) {
+          if (numbers.indexOf(getType(element)) === -1) {
             throw new window.DOMException('stepUp encountered invalid type', 'InvalidStateError');
           }
           if ((element.getAttribute('step') || '').toLowerCase() === 'any') {
             throw new window.DOMException('stepUp encountered step "any"', 'InvalidStateError');
           }
 
-          var next = get_next_valid(element, n)[1];
+          var next = getNextValid(element, n)[1];
 
           if (next !== null) {
             valueAsNumber(element, next);
@@ -1247,12 +1247,12 @@ var hyperform = (function () {
          * satisfies all constraints.
          */
         function validationMessage(element) {
-          var msg = message_store.get(element);
+          var msg = messageStore.get(element);
           if (!msg) {
             return '';
           }
 
-          /* make it a primitive again, since message_store returns String(). */
+          /* make it a primitive again, since messageStore returns String(). */
           return msg.toString();
         }
 
@@ -1260,30 +1260,30 @@ var hyperform = (function () {
          * check, if an element will be subject to HTML5 validation at all
          */
         function willValidate(element) {
-          return is_validation_candidate(element);
+          return isValidationCandidate(element);
         }
 
         var gA = function gA(prop) {
           return function () {
-            return do_filter('attr_get_' + prop, this.getAttribute(prop), this);
+            return doFilter('attr_get_' + prop, this.getAttribute(prop), this);
           };
         };
 
         var sA = function sA(prop) {
           return function (value) {
-            this.setAttribute(prop, do_filter('attr_set_' + prop, value, this));
+            this.setAttribute(prop, doFilter('attr_set_' + prop, value, this));
           };
         };
 
         var gAb = function gAb(prop) {
           return function () {
-            return do_filter('attr_get_' + prop, this.hasAttribute(prop), this);
+            return doFilter('attr_get_' + prop, this.hasAttribute(prop), this);
           };
         };
 
         var sAb = function sAb(prop) {
           return function (value) {
-            if (do_filter('attr_set_' + prop, value, this)) {
+            if (doFilter('attr_set_' + prop, value, this)) {
               this.setAttribute(prop, prop);
             } else {
               this.removeAttribute(prop);
@@ -1293,25 +1293,25 @@ var hyperform = (function () {
 
         var gAn = function gAn(prop) {
           return function () {
-            return do_filter('attr_get_' + prop, Math.max(0, Number(this.getAttribute(prop))), this);
+            return doFilter('attr_get_' + prop, Math.max(0, Number(this.getAttribute(prop))), this);
           };
         };
 
         var sAn = function sAn(prop) {
           return function (value) {
-            value = do_filter('attr_set_' + prop, value, this);
+            value = doFilter('attr_set_' + prop, value, this);
             if (/^[0-9]+$/.test(value)) {
               this.setAttribute(prop, value);
             }
           };
         };
 
-        function install_properties(element) {
+        function installProperties(element) {
           var _arr = ['accept', 'max', 'min', 'pattern', 'placeholder', 'step'];
 
           for (var _i = 0; _i < _arr.length; _i++) {
             var prop = _arr[_i];
-            install_property(element, prop, {
+            installProperty(element, prop, {
               get: gA(prop),
               set: sA(prop)
             });
@@ -1320,7 +1320,7 @@ var hyperform = (function () {
           var _arr2 = ['multiple', 'required', 'readOnly'];
           for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
             var _prop = _arr2[_i2];
-            install_property(element, _prop, {
+            installProperty(element, _prop, {
               get: gAb(_prop.toLowerCase()),
               set: sAb(_prop.toLowerCase())
             });
@@ -1329,19 +1329,19 @@ var hyperform = (function () {
           var _arr3 = ['minLength', 'maxLength'];
           for (var _i3 = 0; _i3 < _arr3.length; _i3++) {
             var _prop2 = _arr3[_i3];
-            install_property(element, _prop2, {
+            installProperty(element, _prop2, {
               get: gAn(_prop2.toLowerCase()),
               set: sAn(_prop2.toLowerCase())
             });
           }
         }
 
-        function uninstall_properties(element) {
+        function uninstallProperties(element) {
           var _arr4 = ['accept', 'max', 'min', 'pattern', 'placeholder', 'step', 'multiple', 'required', 'readOnly', 'minLength', 'maxLength'];
 
           for (var _i4 = 0; _i4 < _arr4.length; _i4++) {
             var prop = _arr4[_i4];
-            uninstall_property(element, prop);
+            uninstallProperty(element, prop);
           }
         }
 
@@ -1407,37 +1407,37 @@ var hyperform = (function () {
         };
 
         function polyfill (element) {
-          if (is_field(element)) {
+          if (isField(element)) {
 
             for (var prop in polyfills) {
-              install_property(element, prop, polyfills[prop]);
+              installProperty(element, prop, polyfills[prop]);
             }
 
-            install_properties(element);
+            installProperties(element);
           } else if (element instanceof window.HTMLFormElement || element === window.HTMLFormElement.prototype) {
-            install_property(element, 'checkValidity', polyfills.checkValidity);
-            install_property(element, 'reportValidity', polyfills.reportValidity);
+            installProperty(element, 'checkValidity', polyfills.checkValidity);
+            installProperty(element, 'reportValidity', polyfills.reportValidity);
           }
         }
 
         function polyunfill (element) {
-          if (is_field(element)) {
+          if (isField(element)) {
 
-            uninstall_property(element, 'checkValidity');
-            uninstall_property(element, 'reportValidity');
-            uninstall_property(element, 'setCustomValidity');
-            uninstall_property(element, 'stepDown');
-            uninstall_property(element, 'stepUp');
-            uninstall_property(element, 'validationMessage');
-            uninstall_property(element, 'validity');
-            uninstall_property(element, 'valueAsDate');
-            uninstall_property(element, 'valueAsNumber');
-            uninstall_property(element, 'willValidate');
+            uninstallProperty(element, 'checkValidity');
+            uninstallProperty(element, 'reportValidity');
+            uninstallProperty(element, 'setCustomValidity');
+            uninstallProperty(element, 'stepDown');
+            uninstallProperty(element, 'stepUp');
+            uninstallProperty(element, 'validationMessage');
+            uninstallProperty(element, 'validity');
+            uninstallProperty(element, 'valueAsDate');
+            uninstallProperty(element, 'valueAsNumber');
+            uninstallProperty(element, 'willValidate');
 
-            uninstall_properties(element);
+            uninstallProperties(element);
           } else if (element instanceof window.HTMLFormElement) {
-            uninstall_property(element, 'checkValidity');
-            uninstall_property(element, 'reportValidity');
+            uninstallProperty(element, 'checkValidity');
+            uninstallProperty(element, 'reportValidity');
           }
         }
 
@@ -1463,7 +1463,7 @@ var hyperform = (function () {
 
           instances.set(form, this);
 
-          catch_submit(form, settings.revalidate === 'never');
+          catchSubmit(form, settings.revalidate === 'never');
 
           if (form === window || form instanceof window.HTMLDocument) {
             /* install on the prototypes, when called for the whole document */
@@ -1492,7 +1492,7 @@ var hyperform = (function () {
 
         Wrapper.prototype = {
           destroy: function destroy() {
-            uncatch_submit(this.form);
+            uncatchSubmit(this.form);
             instances.delete(this.form);
             this.form.removeEventListener('keyup', this.revalidator);
             this.form.removeEventListener('change', this.revalidator);
@@ -1555,9 +1555,9 @@ var hyperform = (function () {
               els = [els];
             }
 
-            var els_length = els.length;
+            var elsLength = els.length;
 
-            for (var i = 0; i < els_length; i++) {
+            for (var i = 0; i < elsLength; i++) {
               polyfill(els[i]);
             }
           },
@@ -1566,9 +1566,9 @@ var hyperform = (function () {
               els = [els];
             }
 
-            var els_length = els.length;
+            var elsLength = els.length;
 
-            for (var i = 0; i < els_length; i++) {
+            for (var i = 0; i < elsLength; i++) {
               polyunfill(els[i]);
             }
           }
@@ -1580,7 +1580,7 @@ var hyperform = (function () {
          *
          * @return Wrapper | undefined
          */
-        function get_wrapper(element) {
+        function getWrapper(element) {
           var wrapped;
 
           if (element.form) {
@@ -1607,21 +1607,21 @@ var hyperform = (function () {
          *
          * @see https://html.spec.whatwg.org/multipage/forms.html#barred-from-constraint-validation
          */
-        function is_validation_candidate (element) {
+        function isValidationCandidate (element) {
           /* it must be any of those elements */
           if (element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement) {
 
-            var type = get_type(element);
+            var type = getType(element);
             /* its type must be in the whitelist or missing (select, textarea) */
-            if (!type || non_inputs.indexOf(type) > -1 || validation_candidates.indexOf(type) > -1) {
+            if (!type || nonInputs.indexOf(type) > -1 || validationCandidates.indexOf(type) > -1) {
 
               /* it mustn't be disabled or readonly */
               if (!element.hasAttribute('disabled') && !element.hasAttribute('readonly')) {
 
-                var wrapped_form = get_wrapper(element);
+                var wrappedForm = getWrapper(element);
                 /* it hasn't got the (non-standard) attribute 'novalidate' or its
                  * parent form has got the strict parameter */
-                if (wrapped_form && wrapped_form.settings.novalidate_on_elements || !element.hasAttribute('novalidate') || !element.noValidate) {
+                if (wrappedForm && wrappedForm.settings.novalidateOnElements || !element.hasAttribute('novalidate') || !element.noValidate) {
 
                   /* it isn't part of a <fieldset disabled> */
                   var p = element.parentNode;
@@ -1655,7 +1655,7 @@ var hyperform = (function () {
           return false;
         }
 
-        function format_date (date) {
+        function formatDate (date) {
           var part = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
 
           switch (part) {
@@ -1683,7 +1683,7 @@ var hyperform = (function () {
          * polyfills in older browsers.
          */
 
-        function unicode_string_length (str) {
+        function unicodeStringLength (str) {
           return str.match(/[\0-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/g).length;
         }
 
@@ -1696,26 +1696,26 @@ var hyperform = (function () {
         /**
          * register custom error messages per element
          */
-        var custom_messages = {
+        var customMessages = {
           set: function set(element, validator, message) {
             var messages = store$1.get(element) || {};
             messages[validator] = message;
             store$1.set(element, messages);
-            return custom_messages;
+            return customMessages;
           },
           get: function get(element, validator) {
             var _default = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
 
             var messages = store$1.get(element);
             if (messages === undefined || !(validator in messages)) {
-              var data_id = 'data-' + validator.replace(/[A-Z]/g, '-$&').toLowerCase();
-              if (element.hasAttribute(data_id)) {
+              var dataId = 'data-' + validator.replace(/[A-Z]/g, '-$&').toLowerCase();
+              if (element.hasAttribute(dataId)) {
                 /* if the element has a data-validator attribute, use this as fallback.
                  * E.g., if validator == 'valueMissing', the element can specify a
                  * custom validation message like this:
                  *     <input data-value-missing="Oh noes!">
                  */
-                return element.getAttribute(data_id);
+                return element.getAttribute(dataId);
               }
               return _default;
             }
@@ -1737,7 +1737,7 @@ var hyperform = (function () {
           }
         };
 
-        var internal_registry = new WeakMap();
+        var internalRegistry = new WeakMap();
 
         /**
          * A registry for custom validators
@@ -1745,28 +1745,28 @@ var hyperform = (function () {
          * slim wrapper around a WeakMap to ensure the values are arrays
          * (hence allowing > 1 validators per element)
          */
-        var custom_validator_registry = {
+        var customValidatorRegistry = {
           set: function set(element, validator) {
-            var current = internal_registry.get(element) || [];
+            var current = internalRegistry.get(element) || [];
             current.push(validator);
-            internal_registry.set(element, current);
-            return custom_validator_registry;
+            internalRegistry.set(element, current);
+            return customValidatorRegistry;
           },
           get: function get(element) {
-            return internal_registry.get(element) || [];
+            return internalRegistry.get(element) || [];
           },
           delete: function _delete(element) {
-            return internal_registry.delete(element);
+            return internalRegistry.delete(element);
           }
         };
 
         /**
          * test whether the element suffers from bad input
          */
-        function test_bad_input (element) {
-          var type = get_type(element);
+        function testBadInput (element) {
+          var type = getType(element);
 
-          if (!is_validation_candidate(element) || input_checked.indexOf(type) === -1) {
+          if (!isValidationCandidate(element) || inputChecked.indexOf(type) === -1) {
             /* we're not interested, thanks! */
             return true;
           }
@@ -1798,7 +1798,7 @@ var hyperform = (function () {
             case 'month':
             case 'week':
             case 'time':
-              result = string_to_date(element.value, type) !== null;
+              result = stringToDate(element.value, type) !== null;
               break;
             case 'datetime-local':
               result = /^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(element.value);
@@ -1806,7 +1806,7 @@ var hyperform = (function () {
             case 'tel':
               /* spec says No! Phone numbers can have all kinds of formats, so this
                * is expected to be a free-text field. */
-              // TODO we could allow a setting 'phone_regex' to be evaluated here.
+              // TODO we could allow a setting 'phoneRegex' to be evaluated here.
               break;
             case 'email':
               break;
@@ -1821,10 +1821,10 @@ var hyperform = (function () {
          * we use Number() instead of parseFloat(), because an invalid attribute
          * value like "123abc" should result in an error.
          */
-        function test_max (element) {
-          var type = get_type(element);
+        function testMax (element) {
+          var type = getType(element);
 
-          if (!is_validation_candidate(element) || !element.value || !element.hasAttribute('max')) {
+          if (!isValidationCandidate(element) || !element.value || !element.hasAttribute('max')) {
             /* we're not responsible here */
             return true;
           }
@@ -1832,8 +1832,8 @@ var hyperform = (function () {
           var value = void 0,
               max = void 0;
           if (dates.indexOf(type) > -1) {
-            value = 1 * string_to_date(element.value, type);
-            max = 1 * (string_to_date(element.getAttribute('max'), type) || NaN);
+            value = 1 * stringToDate(element.value, type);
+            max = 1 * (stringToDate(element.getAttribute('max'), type) || NaN);
           } else {
             value = Number(element.value);
             max = Number(element.getAttribute('max'));
@@ -1845,8 +1845,8 @@ var hyperform = (function () {
         /**
          * test the maxlength attribute
          */
-        function test_maxlength (element) {
-          if (!is_validation_candidate(element) || !element.value || text_types.indexOf(get_type(element)) === -1 || !element.hasAttribute('maxlength') || !element.getAttribute('maxlength') // catch maxlength=""
+        function testMaxlength (element) {
+          if (!isValidationCandidate(element) || !element.value || textTypes.indexOf(getType(element)) === -1 || !element.hasAttribute('maxlength') || !element.getAttribute('maxlength') // catch maxlength=""
           ) {
               return true;
             }
@@ -1860,7 +1860,7 @@ var hyperform = (function () {
             return true;
           }
 
-          return unicode_string_length(element.value) <= maxlength;
+          return unicodeStringLength(element.value) <= maxlength;
         }
 
         /**
@@ -1869,10 +1869,10 @@ var hyperform = (function () {
          * we use Number() instead of parseFloat(), because an invalid attribute
          * value like "123abc" should result in an error.
          */
-        function test_min (element) {
-          var type = get_type(element);
+        function testMin (element) {
+          var type = getType(element);
 
-          if (!is_validation_candidate(element) || !element.value || !element.hasAttribute('min')) {
+          if (!isValidationCandidate(element) || !element.value || !element.hasAttribute('min')) {
             /* we're not responsible here */
             return true;
           }
@@ -1880,8 +1880,8 @@ var hyperform = (function () {
           var value = void 0,
               min = void 0;
           if (dates.indexOf(type) > -1) {
-            value = 1 * string_to_date(element.value, type);
-            min = 1 * (string_to_date(element.getAttribute('min'), type) || NaN);
+            value = 1 * stringToDate(element.value, type);
+            min = 1 * (stringToDate(element.getAttribute('min'), type) || NaN);
           } else {
             value = Number(element.value);
             min = Number(element.getAttribute('min'));
@@ -1893,8 +1893,8 @@ var hyperform = (function () {
         /**
          * test the minlength attribute
          */
-        function test_minlength (element) {
-          if (!is_validation_candidate(element) || !element.value || text_types.indexOf(get_type(element)) === -1 || !element.hasAttribute('minlength') || !element.getAttribute('minlength') // catch minlength=""
+        function testMinlength (element) {
+          if (!isValidationCandidate(element) || !element.value || textTypes.indexOf(getType(element)) === -1 || !element.hasAttribute('minlength') || !element.getAttribute('minlength') // catch minlength=""
           ) {
               return true;
             }
@@ -1906,26 +1906,26 @@ var hyperform = (function () {
             return true;
           }
 
-          return unicode_string_length(element.value) >= minlength;
+          return unicodeStringLength(element.value) >= minlength;
         }
 
         /**
          * test the pattern attribute
          */
-        function test_pattern (element) {
-            return !is_validation_candidate(element) || !element.value || !element.hasAttribute('pattern') || new RegExp('^(?:' + element.getAttribute('pattern') + ')$').test(element.value);
+        function testPattern (element) {
+            return !isValidationCandidate(element) || !element.value || !element.hasAttribute('pattern') || new RegExp('^(?:' + element.getAttribute('pattern') + ')$').test(element.value);
         }
 
         /**
          * test the required attribute
          */
-        function test_required (element) {
-          if (!is_validation_candidate(element) || !element.hasAttribute('required')) {
+        function testRequired (element) {
+          if (!isValidationCandidate(element) || !element.hasAttribute('required')) {
             /* nothing to do */
             return true;
           }
 
-          /* we don't need get_type() for element.type, because "checkbox" and "radio"
+          /* we don't need getType() for element.type, because "checkbox" and "radio"
            * are well supported. */
           switch (element.type) {
             case 'checkbox':
@@ -1946,10 +1946,10 @@ var hyperform = (function () {
         /**
          * test the step attribute
          */
-        function test_step (element) {
-          var type = get_type(element);
+        function testStep (element) {
+          var type = getType(element);
 
-          if (!is_validation_candidate(element) || !element.value || numbers.indexOf(type) === -1 || (element.getAttribute('step') || '').toLowerCase() === 'any') {
+          if (!isValidationCandidate(element) || !element.value || numbers.indexOf(type) === -1 || (element.getAttribute('step') || '').toLowerCase() === 'any') {
             /* we're not responsible here. Note: If no step attribute is given, we
              * need to validate against the default step as per spec. */
             return true;
@@ -1957,9 +1957,9 @@ var hyperform = (function () {
 
           var step = element.getAttribute('step');
           if (step) {
-            step = string_to_number(step, type);
+            step = stringToNumber(step, type);
           } else {
-            step = default_step[type] || 1;
+            step = defaultStep[type] || 1;
           }
 
           if (step <= 0 || isNaN(step)) {
@@ -1968,13 +1968,13 @@ var hyperform = (function () {
             return true;
           }
 
-          var scale = step_scale_factor[type] || 1;
+          var scale = stepScaleFactor[type] || 1;
 
-          var value = string_to_number(element.value, type);
-          var min = string_to_number(element.getAttribute('min') || element.getAttribute('value') || '', type);
+          var value = stringToNumber(element.value, type);
+          var min = stringToNumber(element.getAttribute('min') || element.getAttribute('value') || '', type);
 
           if (isNaN(min)) {
-            min = default_step_base[type] || 0;
+            min = defaultStepBase[type] || 0;
           }
 
           if (type === 'month') {
@@ -1992,7 +1992,7 @@ var hyperform = (function () {
           result > step * scale - 0.00000001;
         }
 
-        var ws_on_start_or_end = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
+        var wsOnStartOrEnd = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
 
         /**
          * trim a string of whitespace
@@ -2000,7 +2000,7 @@ var hyperform = (function () {
          * We don't use String.trim() to remove the need to polyfill it.
          */
         function trim (str) {
-          return str.replace(ws_on_start_or_end, '');
+          return str.replace(wsOnStartOrEnd, '');
         }
 
         /**
@@ -2010,7 +2010,7 @@ var hyperform = (function () {
          * https://html.spec.whatwg.org/multipage/infrastructure.html#split-a-string-on-commas
          * plus removing empty entries.
          */
-        function comma_split (str) {
+        function commaSplit (str) {
           return str.split(',').map(function (item) {
             return trim(item);
           }).filter(function (b) {
@@ -2022,45 +2022,45 @@ var hyperform = (function () {
          * The definition is out of the "global" scope so that JSDOM can be instantiated
          * after loading Hyperform for tests.
          */
-        var url_canary;
+        var urlCanary;
 
         /* see https://html.spec.whatwg.org/multipage/forms.html#valid-e-mail-address */
-        var email_pattern = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+        var emailPattern = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
         /**
          * test the type-inherent syntax
          */
-        function test_type (element) {
-          var type = get_type(element);
+        function testType (element) {
+          var type = getType(element);
 
-          if (!is_validation_candidate(element) || type !== 'file' && !element.value || type !== 'file' && type_checked.indexOf(type) === -1) {
+          if (!isValidationCandidate(element) || type !== 'file' && !element.value || type !== 'file' && typeChecked.indexOf(type) === -1) {
             /* we're not responsible for this element */
             return true;
           }
 
-          var is_valid = true;
+          var isValid = true;
 
           switch (type) {
             case 'url':
-              if (!url_canary) {
-                url_canary = document.createElement('a');
+              if (!urlCanary) {
+                urlCanary = document.createElement('a');
               }
               var value = trim(element.value);
-              url_canary.href = value;
-              is_valid = url_canary.href === value || url_canary.href === value + '/';
+              urlCanary.href = value;
+              isValid = urlCanary.href === value || urlCanary.href === value + '/';
               break;
             case 'email':
               if (element.hasAttribute('multiple')) {
-                is_valid = comma_split(element.value).every(function (value) {
-                  return email_pattern.test(value);
+                isValid = commaSplit(element.value).every(function (value) {
+                  return emailPattern.test(value);
                 });
               } else {
-                is_valid = email_pattern.test(trim(element.value));
+                isValid = emailPattern.test(trim(element.value));
               }
               break;
             case 'file':
               if ('files' in element && element.files.length && element.hasAttribute('accept')) {
-                var patterns = comma_split(element.getAttribute('accept')).map(function (pattern) {
+                var patterns = commaSplit(element.getAttribute('accept')).map(function (pattern) {
                   if (/^(audio|video|image)\/\*$/.test(pattern)) {
                     pattern = new RegExp('^' + RegExp.$1 + '/.+$');
                   }
@@ -2073,7 +2073,7 @@ var hyperform = (function () {
 
                 fileloop: for (var i = 0; i < element.files.length; i++) {
                   /* we need to match a whitelist, so pre-set with false */
-                  var file_valid = false;
+                  var fileValid = false;
 
                   patternloop: for (var j = 0; j < patterns.length; j++) {
                     var file = element.files[i];
@@ -2092,20 +2092,20 @@ var hyperform = (function () {
 
                     if (fileprop.search(pattern) === 0) {
                       /* we found one match and can quit looking */
-                      file_valid = true;
+                      fileValid = true;
                       break patternloop;
                     }
                   }
 
-                  if (!file_valid) {
-                    is_valid = false;
+                  if (!fileValid) {
+                    isValid = false;
                     break fileloop;
                   }
                 }
               }
           }
 
-          return is_valid;
+          return isValid;
         }
 
         /**
@@ -2124,24 +2124,24 @@ var hyperform = (function () {
         /**
          * create a common function to set error messages
          */
-        function set_msg(element, msgtype, _default) {
-          message_store.set(element, custom_messages.get(element, msgtype, _default));
+        function setMsg(element, msgtype, _default) {
+          messageStore.set(element, customMessages.get(element, msgtype, _default));
         }
 
-        var badInput = check$1(test_bad_input, function (element) {
-          return set_msg(element, 'badInput', _('Please match the requested type.'));
+        var badInput = check$1(testBadInput, function (element) {
+          return setMsg(element, 'badInput', l10n('Please match the requested type.'));
         });
 
         function customError(element) {
           /* check, if there are custom validators in the registry, and call
            * them. */
-          var custom_validators = custom_validator_registry.get(element);
-          var cvl = custom_validators.length;
+          var customValidators = customValidatorRegistry.get(element);
+          var cvl = customValidators.length;
           var valid = true;
 
           if (cvl) {
             for (var i = 0; i < cvl; i++) {
-              var result = custom_validators[i](element);
+              var result = customValidators[i](element);
               if (result !== undefined && !result) {
                 valid = false;
                 /* break on first invalid response */
@@ -2152,60 +2152,60 @@ var hyperform = (function () {
 
           /* check, if there are other validity messages already */
           if (valid) {
-            var msg = message_store.get(element);
-            valid = !(msg.toString() && 'is_custom' in msg);
+            var msg = messageStore.get(element);
+            valid = !(msg.toString() && 'isCustom' in msg);
           }
 
           return !valid;
         }
 
-        var patternMismatch = check$1(test_pattern, function (element) {
-          set_msg(element, 'patternMismatch', element.title ? sprintf(_('PatternMismatchWithTitle'), element.title) : _('PatternMismatch'));
+        var patternMismatch = check$1(testPattern, function (element) {
+          setMsg(element, 'patternMismatch', element.title ? sprintf(l10n('PatternMismatchWithTitle'), element.title) : l10n('PatternMismatch'));
         });
 
-        var rangeOverflow = check$1(test_max, function (element) {
-          var type = get_type(element);
+        var rangeOverflow = check$1(testMax, function (element) {
+          var type = getType(element);
           var msg = void 0;
           switch (type) {
             case 'date':
             case 'datetime':
             case 'datetime-local':
-              msg = sprintf(_('DateRangeOverflow'), format_date(string_to_date(element.getAttribute('max'), type), type));
+              msg = sprintf(l10n('DateRangeOverflow'), formatDate(stringToDate(element.getAttribute('max'), type), type));
               break;
             case 'time':
-              msg = sprintf(_('TimeRangeOverflow'), format_date(string_to_date(element.getAttribute('max'), type), type));
+              msg = sprintf(l10n('TimeRangeOverflow'), formatDate(stringToDate(element.getAttribute('max'), type), type));
               break;
             // case 'number':
             default:
-              msg = sprintf(_('NumberRangeOverflow'), string_to_number(element.getAttribute('max'), type));
+              msg = sprintf(l10n('NumberRangeOverflow'), stringToNumber(element.getAttribute('max'), type));
               break;
           }
-          set_msg(element, 'rangeOverflow', msg);
+          setMsg(element, 'rangeOverflow', msg);
         });
 
-        var rangeUnderflow = check$1(test_min, function (element) {
-          var type = get_type(element);
+        var rangeUnderflow = check$1(testMin, function (element) {
+          var type = getType(element);
 
           var msg = void 0;
           switch (type) {
             case 'date':
             case 'datetime':
             case 'datetime-local':
-              msg = sprintf(_('DateRangeUnderflow'), format_date(string_to_date(element.getAttribute('min'), type), type));
+              msg = sprintf(l10n('DateRangeUnderflow'), formatDate(stringToDate(element.getAttribute('min'), type), type));
               break;
             case 'time':
-              msg = sprintf(_('TimeRangeUnderflow'), format_date(string_to_date(element.getAttribute('min'), type), type));
+              msg = sprintf(l10n('TimeRangeUnderflow'), formatDate(stringToDate(element.getAttribute('min'), type), type));
               break;
             // case 'number':
             default:
-              msg = sprintf(_('NumberRangeUnderflow'), string_to_number(element.getAttribute('min'), type));
+              msg = sprintf(l10n('NumberRangeUnderflow'), stringToNumber(element.getAttribute('min'), type));
               break;
           }
-          set_msg(element, 'rangeUnderflow', msg);
+          setMsg(element, 'rangeUnderflow', msg);
         });
 
-        var stepMismatch = check$1(test_step, function (element) {
-          var list = get_next_valid(element);
+        var stepMismatch = check$1(testStep, function (element) {
+          var list = getNextValid(element);
           var min = list[0];
           var max = list[1];
           var sole = false;
@@ -2218,62 +2218,62 @@ var hyperform = (function () {
           }
 
           if (sole !== false) {
-            msg = sprintf(_('StepMismatchOneValue'), sole);
+            msg = sprintf(l10n('StepMismatchOneValue'), sole);
           } else {
-            msg = sprintf(_('StepMismatch'), min, max);
+            msg = sprintf(l10n('StepMismatch'), min, max);
           }
-          set_msg(element, 'stepMismatch', msg);
+          setMsg(element, 'stepMismatch', msg);
         });
 
-        var tooLong = check$1(test_maxlength, function (element) {
-          set_msg(element, 'tooLong', sprintf(_('TextTooLong'), element.getAttribute('maxlength'), unicode_string_length(element.value)));
+        var tooLong = check$1(testMaxlength, function (element) {
+          setMsg(element, 'tooLong', sprintf(l10n('TextTooLong'), element.getAttribute('maxlength'), unicodeStringLength(element.value)));
         });
 
-        var tooShort = check$1(test_minlength, function (element) {
-          set_msg(element, 'tooShort', sprintf(_('Please lengthen this text to %l characters or more (you are currently using %l characters).'), element.getAttribute('maxlength'), unicode_string_length(element.value)));
+        var tooShort = check$1(testMinlength, function (element) {
+          setMsg(element, 'tooShort', sprintf(l10n('Please lengthen this text to %l characters or more (you are currently using %l characters).'), element.getAttribute('maxlength'), unicodeStringLength(element.value)));
         });
 
-        var typeMismatch = check$1(test_type, function (element) {
-          var msg = _('Please use the appropriate format.');
-          var type = get_type(element);
+        var typeMismatch = check$1(testType, function (element) {
+          var msg = l10n('Please use the appropriate format.');
+          var type = getType(element);
 
           if (type === 'email') {
             if (element.hasAttribute('multiple')) {
-              msg = _('Please enter a comma separated list of email addresses.');
+              msg = l10n('Please enter a comma separated list of email addresses.');
             } else {
-              msg = _('InvalidEmail');
+              msg = l10n('InvalidEmail');
             }
           } else if (type === 'url') {
-            msg = _('InvalidURL');
+            msg = l10n('InvalidURL');
           } else if (type === 'file') {
-            msg = _('Please select a file of the correct type.');
+            msg = l10n('Please select a file of the correct type.');
           }
 
-          set_msg(element, 'typeMismatch', msg);
+          setMsg(element, 'typeMismatch', msg);
         });
 
-        var valueMissing = check$1(test_required, function (element) {
-          var msg = _('ValueMissing');
-          var type = get_type(element);
+        var valueMissing = check$1(testRequired, function (element) {
+          var msg = l10n('ValueMissing');
+          var type = getType(element);
 
           if (type === 'checkbox') {
-            msg = _('CheckboxMissing');
+            msg = l10n('CheckboxMissing');
           } else if (type === 'radio') {
-            msg = _('RadioMissing');
+            msg = l10n('RadioMissing');
           } else if (type === 'file') {
             if (element.hasAttribute('multiple')) {
-              msg = _('Please select one or more files.');
+              msg = l10n('Please select one or more files.');
             } else {
-              msg = _('FileMissing');
+              msg = l10n('FileMissing');
             }
           } else if (element instanceof window.HTMLSelectElement) {
-            msg = _('SelectMissing');
+            msg = l10n('SelectMissing');
           }
 
-          set_msg(element, 'valueMissing', msg);
+          setMsg(element, 'valueMissing', msg);
         });
 
-        var validity_state_checkers = {
+        var validityStateCheckers = {
           badInput: badInput,
           customError: customError,
           patternMismatch: patternMismatch,
@@ -2320,7 +2320,7 @@ var hyperform = (function () {
          * copy functionality from the validity checkers to the ValidityState
          * prototype
          */
-        for (var prop in validity_state_checkers) {
+        for (var prop in validityStateCheckers) {
           Object.defineProperty(ValidityStatePrototype, prop, {
             configurable: true,
             enumerable: true,
@@ -2328,7 +2328,7 @@ var hyperform = (function () {
               return function () {
                 return func(this.element);
               };
-            }(validity_state_checkers[prop]),
+            }(validityStateCheckers[prop]),
             set: undefined
           });
         }
@@ -2344,16 +2344,16 @@ var hyperform = (function () {
           configurable: true,
           enumerable: true,
           get: function get() {
-            var wrapper = get_wrapper(this.element);
+            var wrapper = getWrapper(this.element);
             var validClass = wrapper && wrapper.settings.classes.valid || 'hf-valid';
             var invalidClass = wrapper && wrapper.settings.classes.invalid || 'hf-invalid';
             var validatedClass = wrapper && wrapper.settings.classes.validated || 'hf-validated';
 
             this.element.classList.add(validatedClass);
 
-            if (is_validation_candidate(this.element)) {
-              for (var _prop in validity_state_checkers) {
-                if (validity_state_checkers[_prop](this.element)) {
+            if (isValidationCandidate(this.element)) {
+              for (var _prop in validityStateCheckers) {
+                if (validityStateCheckers[_prop](this.element)) {
                   this.element.classList.add(invalidClass);
                   this.element.classList.remove(validClass);
                   this.element.setAttribute('aria-invalid', 'true');
@@ -2362,7 +2362,7 @@ var hyperform = (function () {
               }
             }
 
-            message_store.delete(this.element);
+            messageStore.delete(this.element);
             this.element.classList.remove(invalidClass);
             this.element.classList.add(validClass);
             this.element.setAttribute('aria-invalid', 'false');
@@ -2379,7 +2379,7 @@ var hyperform = (function () {
         /**
          * check an element's validity with respect to it's form
          */
-        var checkValidity = return_hook_or('checkValidity', function (element) {
+        var checkValidity = returnHookOr('checkValidity', function (element) {
           /* if this is a <form>, check validity of all child inputs */
           if (element instanceof window.HTMLFormElement) {
             return Array.prototype.map.call(element.elements, checkValidity).every(function (b) {
@@ -2390,12 +2390,12 @@ var hyperform = (function () {
           /* default is true, also for elements that are no validation candidates */
           var valid = ValidityState(element).valid;
           if (valid) {
-            var wrapped_form = get_wrapper(element);
-            if (wrapped_form && wrapped_form.settings.valid_event) {
-              trigger_event(element, 'valid');
+            var wrappedForm = getWrapper(element);
+            if (wrappedForm && wrappedForm.settings.validEvent) {
+              triggerEvent(element, 'valid');
             }
           } else {
-            trigger_event(element, 'invalid', { cancelable: true });
+            triggerEvent(element, 'invalid', { cancelable: true });
           }
 
           return valid;
@@ -2411,12 +2411,12 @@ var hyperform = (function () {
 
           var _ref$strict = _ref.strict;
           var strict = _ref$strict === undefined ? false : _ref$strict;
-          var _ref$prevent_implicit = _ref.prevent_implicit_submit;
-          var prevent_implicit_submit = _ref$prevent_implicit === undefined ? false : _ref$prevent_implicit;
+          var _ref$preventImplicitS = _ref.preventImplicitSubmit;
+          var preventImplicitSubmit = _ref$preventImplicitS === undefined ? false : _ref$preventImplicitS;
           var revalidate = _ref.revalidate;
-          var valid_event = _ref.valid_event;
-          var extend_fieldset = _ref.extend_fieldset;
-          var novalidate_on_elements = _ref.novalidate_on_elements;
+          var validEvent = _ref.validEvent;
+          var extendFieldset = _ref.extendFieldset;
+          var novalidateOnElements = _ref.novalidateOnElements;
           var classes = _ref.classes;
 
 
@@ -2424,21 +2424,21 @@ var hyperform = (function () {
             /* other recognized values: 'oninput', 'onblur', 'onsubmit' and 'never' */
             revalidate = strict ? 'onsubmit' : 'hybrid';
           }
-          if (valid_event === undefined) {
-            valid_event = !strict;
+          if (validEvent === undefined) {
+            validEvent = !strict;
           }
-          if (extend_fieldset === undefined) {
-            extend_fieldset = !strict;
+          if (extendFieldset === undefined) {
+            extendFieldset = !strict;
           }
-          if (novalidate_on_elements === undefined) {
-            novalidate_on_elements = !strict;
+          if (novalidateOnElements === undefined) {
+            novalidateOnElements = !strict;
           }
           if (!classes) {
             classes = {};
           }
 
-          var settings = { strict: strict, prevent_implicit_submit: prevent_implicit_submit, revalidate: revalidate, valid_event: valid_event,
-            extend_fieldset: extend_fieldset, classes: classes };
+          var settings = { strict: strict, preventImplicitSubmit: preventImplicitSubmit, revalidate: revalidate, validEvent: validEvent,
+            extendFieldset: extendFieldset, classes: classes };
 
           if (form instanceof window.NodeList || form instanceof window.HTMLCollection || form instanceof Array) {
             return Array.prototype.map.call(form, function (element) {
@@ -2462,26 +2462,26 @@ var hyperform = (function () {
         hyperform.valueAsNumber = valueAsNumber;
         hyperform.willValidate = willValidate;
 
-        hyperform.set_language = function (lang) {
-          set_language(lang);return hyperform;
+        hyperform.setLanguage = function (lang) {
+          setLanguage(lang);return hyperform;
         };
-        hyperform.add_translation = function (lang, catalog) {
-          add_translation(lang, catalog);return hyperform;
+        hyperform.addTranslation = function (lang, catalog) {
+          addTranslation(lang, catalog);return hyperform;
         };
-        hyperform.set_renderer = function (renderer, action) {
+        hyperform.setRenderer = function (renderer, action) {
           Renderer.set(renderer, action);return hyperform;
         };
-        hyperform.add_validator = function (element, validator) {
-          custom_validator_registry.set(element, validator);return hyperform;
+        hyperform.addValidator = function (element, validator) {
+          customValidatorRegistry.set(element, validator);return hyperform;
         };
-        hyperform.set_message = function (element, validator, message) {
-          custom_messages.set(element, validator, message);return hyperform;
+        hyperform.setMessage = function (element, validator, message) {
+          customMessages.set(element, validator, message);return hyperform;
         };
-        hyperform.add_hook = function (hook, action, position) {
-          add_hook(hook, action, position);return hyperform;
+        hyperform.addHook = function (hook, action, position) {
+          addHook(hook, action, position);return hyperform;
         };
-        hyperform.remove_hook = function (hook, action) {
-          remove_hook(hook, action);return hyperform;
+        hyperform.removeHook = function (hook, action) {
+          removeHook(hook, action);return hyperform;
         };
 
         return hyperform;

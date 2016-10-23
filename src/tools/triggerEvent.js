@@ -38,9 +38,9 @@ export default function(element, event, {
                           cancelable=false,
                         }={}, payload={}) {
   if (! (event instanceof window.Event)) {
-      const _event = document.createEvent('Event');
-      _event.initEvent(event, bubbles, cancelable);
-      event = _event;
+      const newEvent = document.createEvent('Event');
+      newEvent.initEvent(event, bubbles, cancelable);
+      event = newEvent;
   }
 
   for (let key in payload) {

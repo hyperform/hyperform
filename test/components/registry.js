@@ -15,10 +15,10 @@ function get(attributes) {
 }
 
 test('registry', t => {
-  var second_called = false;
+  var secondCalled = false;
   var el = get([]);
   var validator1 = function(element) {};
-  var validator2 = function(element) { second_called = true; };
+  var validator2 = function(element) { secondCalled = true; };
 
   t.true(Array.isArray(registry.get(el)));
   registry.set(el, validator1);
@@ -31,5 +31,5 @@ test('registry', t => {
   t.is(registry.get(el).length, 2);
 
   /* make sure the functions don't get called underway */
-  t.is(second_called, false);
+  t.is(secondCalled, false);
 });

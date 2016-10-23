@@ -11,9 +11,9 @@ import ValidityState from './polyfills/validityState';
 import valueAsDate from './polyfills/valueAsDate';
 import valueAsNumber from './polyfills/valueAsNumber';
 import willValidate from './polyfills/willValidate';
-import custom_messages from './components/custom_messages';
-import { add_hook, remove_hook } from './components/hooks';
-import { set_language, add_translation } from './components/localization';
+import customMessages from './components/customMessages';
+import { addHook, removeHook } from './components/hooks';
+import { setLanguage, addTranslation } from './components/localization';
 import CustomValidatorRegistry from './components/registry';
 import Renderer from './components/renderer';
 import Wrapper from './components/wrapper';
@@ -25,11 +25,11 @@ import version from './version';
  */
 function hyperform(form, {
                      strict=false,
-                     prevent_implicit_submit=false,
+                     preventImplicitSubmit=false,
                      revalidate,
-                     valid_event,
-                     extend_fieldset,
-                     novalidate_on_elements,
+                     validEvent,
+                     extendFieldset,
+                     novalidateOnElements,
                      classes,
                    }={}) {
 
@@ -37,21 +37,21 @@ function hyperform(form, {
     /* other recognized values: 'oninput', 'onblur', 'onsubmit' and 'never' */
     revalidate = strict? 'onsubmit' : 'hybrid';
   }
-  if (valid_event === undefined) {
-    valid_event = ! strict;
+  if (validEvent === undefined) {
+    validEvent = ! strict;
   }
-  if (extend_fieldset === undefined) {
-    extend_fieldset = ! strict;
+  if (extendFieldset === undefined) {
+    extendFieldset = ! strict;
   }
-  if (novalidate_on_elements === undefined) {
-    novalidate_on_elements = ! strict;
+  if (novalidateOnElements === undefined) {
+    novalidateOnElements = ! strict;
   }
   if (! classes) {
     classes = {};
   }
 
-  const settings = { strict, prevent_implicit_submit, revalidate, valid_event,
-                     extend_fieldset, classes, };
+  const settings = { strict, preventImplicitSubmit, revalidate, validEvent,
+                     extendFieldset, classes, };
 
   if (form instanceof window.NodeList ||
       form instanceof window.HTMLCollection ||
@@ -76,12 +76,12 @@ hyperform.valueAsDate = valueAsDate;
 hyperform.valueAsNumber = valueAsNumber;
 hyperform.willValidate = willValidate;
 
-hyperform.set_language = lang => { set_language(lang); return hyperform; };
-hyperform.add_translation = (lang, catalog) => { add_translation(lang, catalog); return hyperform; };
-hyperform.set_renderer = (renderer, action) => { Renderer.set(renderer, action); return hyperform; };
-hyperform.add_validator = (element, validator) => { CustomValidatorRegistry.set(element, validator); return hyperform; };
-hyperform.set_message = (element, validator, message) => { custom_messages.set(element, validator, message); return hyperform; };
-hyperform.add_hook = (hook, action, position) => { add_hook(hook, action, position); return hyperform; };
-hyperform.remove_hook = (hook, action) => { remove_hook(hook, action); return hyperform; };
+hyperform.setLanguage = lang => { setLanguage(lang); return hyperform; };
+hyperform.addTranslation = (lang, catalog) => { addTranslation(lang, catalog); return hyperform; };
+hyperform.setRenderer = (renderer, action) => { Renderer.set(renderer, action); return hyperform; };
+hyperform.addValidator = (element, validator) => { CustomValidatorRegistry.set(element, validator); return hyperform; };
+hyperform.setMessage = (element, validator, message) => { customMessages.set(element, validator, message); return hyperform; };
+hyperform.addHook = (hook, action, position) => { addHook(hook, action, position); return hyperform; };
+hyperform.removeHook = (hook, action) => { removeHook(hook, action); return hyperform; };
 
 export default hyperform;

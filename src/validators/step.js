@@ -1,20 +1,20 @@
 'use strict';
 
 
-import get_type from '../tools/get_type';
-import is_validation_candidate from '../tools/is_validation_candidate';
+import getType from '../tools/getType';
+import isValidationCandidate from '../tools/isValidationCandidate';
 import { numbers } from '../components/types';
-import { default_step, step_scale_factor, default_step_base } from '../components/step_defaults';
-import string_to_number from '../tools/string_to_number';
+import { defaultStep, stepScaleFactor, defaultStepBase } from '../components/stepDefaults';
+import stringToNumber from '../tools/stringToNumber';
 
 
 /**
  * test the step attribute
  */
 export default function(element) {
-  const type = get_type(element);
+  const type = getType(element);
 
-  if (! is_validation_candidate(element) ||
+  if (! isValidationCandidate(element) ||
       ! element.value ||
       numbers.indexOf(type) === -1 ||
       (element.getAttribute('step') || '').toLowerCase() === 'any') {
@@ -25,9 +25,9 @@ export default function(element) {
 
   let step = element.getAttribute('step');
   if (step) {
-    step = string_to_number(step, type);
+    step = stringToNumber(step, type);
   } else {
-    step = default_step[type] || 1;
+    step = defaultStep[type] || 1;
   }
 
   if (step <= 0 || isNaN(step)) {
@@ -36,14 +36,14 @@ export default function(element) {
     return true;
   }
 
-  const scale = step_scale_factor[type] || 1;
+  const scale = stepScaleFactor[type] || 1;
 
-  let value = string_to_number(element.value, type);
-  let min = string_to_number(element.getAttribute('min') ||
+  let value = stringToNumber(element.value, type);
+  let min = stringToNumber(element.getAttribute('min') ||
                          element.getAttribute('value') || '', type);
 
   if (isNaN(min)) {
-    min = default_step_base[type] || 0;
+    min = defaultStepBase[type] || 0;
   }
 
   if (type === 'month') {

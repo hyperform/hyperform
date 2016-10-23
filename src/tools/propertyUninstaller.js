@@ -7,11 +7,11 @@
 export default function(element, property) {
   delete element[property];
 
-  const original_descriptor = Object.getOwnPropertyDescriptor(element,
+  const originalDescriptor = Object.getOwnPropertyDescriptor(element,
                                 '_original_'+property);
 
-  if (original_descriptor) {
-    Object.defineProperty(element, property, original_descriptor);
+  if (originalDescriptor) {
+    Object.defineProperty(element, property, originalDescriptor);
   }
 
 }

@@ -1,14 +1,14 @@
 'use strict';
 
 
-import string_to_date from './string_to_date';
+import stringToDate from './stringToDate';
 
 
 /**
  * calculate a date from a string according to HTML5
  */
-export default function(string, element_type) {
-    const rval = string_to_date(string, element_type);
+export default function(string, elementType) {
+    const rval = stringToDate(string, elementType);
     if (rval !== null) {
       return +rval;
     }

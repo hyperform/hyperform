@@ -1,16 +1,16 @@
 'use strict';
 
 
-import get_date_from_week from './get_date_from_week';
+import getDateFromWeek from './getDateFromWeek';
 
 
 /**
  * calculate a date from a string according to HTML5
  */
-export default function(string, element_type) {
+export default function(string, elementType) {
   const date = new Date(0);
   var ms;
-  switch (element_type) {
+  switch (elementType) {
     case 'datetime':
       if (! /^([0-9]{4,})-([0-9]{2})-([0-9]{2})T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
         return null;
@@ -49,7 +49,7 @@ export default function(string, element_type) {
       if (! /^([0-9]{4,})-W(0[1-9]|[1234][0-9]|5[0-3])$/.test(string)) {
         return null;
       }
-      return get_date_from_week(Number(RegExp.$2), Number(RegExp.$1));
+      return getDateFromWeek(Number(RegExp.$2), Number(RegExp.$1));
 
     case 'time':
       if (! /^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {

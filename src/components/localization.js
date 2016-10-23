@@ -34,18 +34,18 @@ const catalog = {
 var language = 'en';
 
 
-export function set_language(newlang) {
+export function setLanguage(newlang) {
   language = newlang;
 }
 
 
-export function add_translation(lang, new_catalog) {
+export function addTranslation(lang, newCatalog) {
   if (! (lang in catalog)) {
     catalog[lang] = {};
   }
-  for (let key in new_catalog) {
-    if (new_catalog.hasOwnProperty(key)) {
-      catalog[lang][key] = new_catalog[key];
+  for (let key in newCatalog) {
+    if (newCatalog.hasOwnProperty(key)) {
+      catalog[lang][key] = newCatalog[key];
     }
   }
 }

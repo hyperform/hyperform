@@ -1,10 +1,10 @@
 'use strict';
 
 
-import { catch_submit, uncatch_submit } from '../tools/catch_submit';
+import { catchSubmit, uncatchSubmit } from '../tools/catchSubmit';
 import ValidityState from '../polyfills/validityState';
 import reportValidity from '../polyfills/reportValidity';
-import uninstall from '../tools/property_uninstaller';
+import uninstall from '../tools/propertyUninstaller';
 import polyfill from '../tools/polyfill';
 import polyunfill from '../tools/polyunfill';
 
@@ -32,7 +32,7 @@ export default function Wrapper(form, settings) {
 
   instances.set(form, this);
 
-  catch_submit(form, settings.revalidate === 'never');
+  catchSubmit(form, settings.revalidate === 'never');
 
   if (form === window || form instanceof window.HTMLDocument) {
     /* install on the prototypes, when called for the whole document */
@@ -70,7 +70,7 @@ export default function Wrapper(form, settings) {
 Wrapper.prototype = {
 
   destroy() {
-    uncatch_submit(this.form);
+    uncatchSubmit(this.form);
     instances.delete(this.form);
     this.form.removeEventListener('keyup', this.revalidator);
     this.form.removeEventListener('change', this.revalidator);
@@ -145,9 +145,9 @@ Wrapper.prototype = {
       els = [ els ];
     }
 
-    const els_length = els.length;
+    const elsLength = els.length;
 
-    for (let i = 0; i < els_length; i++) {
+    for (let i = 0; i < elsLength; i++) {
       polyfill(els[i]);
     }
   },
@@ -157,9 +157,9 @@ Wrapper.prototype = {
       els = [ els ];
     }
 
-    const els_length = els.length;
+    const elsLength = els.length;
 
-    for (let i = 0; i < els_length; i++) {
+    for (let i = 0; i < elsLength; i++) {
       polyunfill(els[i]);
     }
   },
@@ -173,7 +173,7 @@ Wrapper.prototype = {
  *
  * @return Wrapper | undefined
  */
-export function get_wrapper(element) {
+export function getWrapper(element) {
   var wrapped;
 
   if (element.form) {

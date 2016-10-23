@@ -1,21 +1,21 @@
 'use strict';
 
 
-import is_validation_candidate from '../tools/is_validation_candidate';
+import isValidationCandidate from '../tools/isValidationCandidate';
 
 
 /**
  * test the required attribute
  */
 export default function(element) {
-  if (! is_validation_candidate(element)
+  if (! isValidationCandidate(element)
       ||
       ! element.hasAttribute('required')) {
     /* nothing to do */
     return true;
   }
 
-  /* we don't need get_type() for element.type, because "checkbox" and "radio"
+  /* we don't need getType() for element.type, because "checkbox" and "radio"
    * are well supported. */
   switch (element.type) {
     case 'checkbox':

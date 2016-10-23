@@ -1,16 +1,16 @@
 'use strict';
 
 
-import return_hook_or from '../tools/return_hook_or';
-import trigger_event from '../tools/trigger_event';
+import returnHookOr from '../tools/returnHookOr';
+import triggerEvent from '../tools/triggerEvent';
 import ValidityState from './validityState';
-import { get_wrapper } from '../components/wrapper';
+import { getWrapper } from '../components/wrapper';
 
 
 /**
  * check an element's validity with respect to it's form
  */
-const checkValidity = return_hook_or('checkValidity', function(element) {
+const checkValidity = returnHookOr('checkValidity', function(element) {
   /* if this is a <form>, check validity of all child inputs */
   if (element instanceof window.HTMLFormElement) {
     return (
@@ -21,12 +21,12 @@ const checkValidity = return_hook_or('checkValidity', function(element) {
   /* default is true, also for elements that are no validation candidates */
   const valid = ValidityState(element).valid;
   if (valid) {
-    const wrapped_form = get_wrapper(element);
-    if (wrapped_form && wrapped_form.settings.valid_event) {
-      trigger_event(element, 'valid');
+    const wrappedForm = getWrapper(element);
+    if (wrappedForm && wrappedForm.settings.validEvent) {
+      triggerEvent(element, 'valid');
     }
   } else {
-    trigger_event(element, 'invalid', { cancelable: true });
+    triggerEvent(element, 'invalid', { cancelable: true });
   }
 
   return valid;
