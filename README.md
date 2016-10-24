@@ -119,6 +119,15 @@ What parts of the high-level API are finished?
     });
     ```
 
+*   :full_moon: Trigger a `validated` event after validating a form:
+
+    ```js
+    form.addEventListener('validated', event => {
+      /* cancel validation (will also cancel form submission!) */
+      event.preventDefault();
+    });
+    ```
+
 *   :new_moon: Trigger an event before validating individual elements.
 
 *   :full_moon: Trigger a `valid` event, when an input becomes valid, again:

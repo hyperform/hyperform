@@ -1,4 +1,3 @@
-/*! hyperform.js.org */
 var hyperform = (function () {
         'use strict';
 
@@ -478,8 +477,8 @@ var hyperform = (function () {
          */
         function check(event) {
           /* trigger a "validate" event on the form to be submitted */
-          var val_event = trigger_event(event.target.form, 'validate', { cancelable: true });
-          if (val_event.defaultPrevented) {
+          var validate_event = trigger_event(event.target.form, 'validate', { cancelable: true });
+          if (validate_event.defaultPrevented) {
             /* skip the whole submit thing, if the validation is canceled. A user
              * can still call form.submit() afterwards. */
             return;
@@ -487,14 +486,32 @@ var hyperform = (function () {
 
           var valid = true;
           var first_invalid;
+          var valid_elements = [];
+          var invalid_elements = [];
           Array.prototype.map.call(event.target.form.elements, function (element) {
             if (!reportValidity(element)) {
               valid = false;
+              invalid_elements.push(element);
               if (!first_invalid && 'focus' in element) {
                 first_invalid = element;
               }
+            } else {
+              valid_elements.push(element);
             }
           });
+
+          /* trigger a "validated" event on the form to be submitted */
+          var validated_event = trigger_event(event.target.form, 'validated', { cancelable: true }, {
+            firstInvalidElement: first_invalid,
+            invalidElements: invalid_elements,
+            validElements: valid_elements,
+            isFormValid: valid
+          });
+          if (validated_event.defaultPrevented) {
+            /* skip the whole submit thing, if the validation is canceled. A user
+             * can still call form.submit() afterwards. */
+            return;
+          }
 
           if (valid) {
             submit_form_via(event.target);
