@@ -2437,7 +2437,7 @@ define(function () { 'use strict';
           return valid;
         });
 
-        var version = '0.8.9';
+        var version = '0.8.10';
 
         /**
          * public hyperform interface:

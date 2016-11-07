@@ -2437,7 +2437,7 @@ var checkValidity = return_hook_or('checkValidity', function (element) {
   return valid;
 });
 
-var version = '0.8.9';
+var version = '0.8.10';
 
 /**
  * public hyperform interface:
