@@ -1,6 +1,9 @@
 'use strict';
 
 
+import { get_wrapper } from '../components/wrapper';
+
+
 /**
  * add `property` to an element
  *
@@ -19,8 +22,11 @@ export default function(element, property, descriptor) {
   if (original_descriptor) {
 
     if (original_descriptor.configurable === false) {
-      /* global console */
-      console.log('[hyperform] cannot install custom property '+property);
+      const wrapper = get_wrapper(element);
+      if (wrapper && wrapper.settings.debug) {
+        /* global console */
+        console.log('[hyperform] cannot install custom property '+property);
+      }
       return false;
     }
 

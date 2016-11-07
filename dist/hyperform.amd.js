@@ -697,7 +697,6 @@ define(function () { 'use strict';
          * js> installer(element, 'foo', { value: 'bar' });
          * js> assert(element.foo === 'bar');
          */
-
         function install_property (element, property, descriptor) {
           descriptor.configurable = true;
           descriptor.enumerable = true;
@@ -710,8 +709,11 @@ define(function () { 'use strict';
           if (original_descriptor) {
 
             if (original_descriptor.configurable === false) {
-              /* global console */
-              console.log('[hyperform] cannot install custom property ' + property);
+              var wrapper = get_wrapper(element);
+              if (wrapper && wrapper.settings.debug) {
+                /* global console */
+                console.log('[hyperform] cannot install custom property ' + property);
+              }
               return false;
             }
 
@@ -2443,6 +2445,8 @@ define(function () { 'use strict';
         function hyperform(form) {
           var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
+          var _ref$debug = _ref.debug;
+          var debug = _ref$debug === undefined ? false : _ref$debug;
           var _ref$strict = _ref.strict;
           var strict = _ref$strict === undefined ? false : _ref$strict;
           var _ref$prevent_implicit = _ref.prevent_implicit_submit;
@@ -2471,8 +2475,8 @@ define(function () { 'use strict';
             classes = {};
           }
 
-          var settings = { strict: strict, prevent_implicit_submit: prevent_implicit_submit, revalidate: revalidate, valid_event: valid_event,
-            extend_fieldset: extend_fieldset, classes: classes };
+          var settings = { debug: debug, strict: strict, prevent_implicit_submit: prevent_implicit_submit, revalidate: revalidate,
+            valid_event: valid_event, extend_fieldset: extend_fieldset, classes: classes };
 
           if (form instanceof window.NodeList || form instanceof window.HTMLCollection || form instanceof Array) {
             return Array.prototype.map.call(form, function (element) {

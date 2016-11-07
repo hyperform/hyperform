@@ -24,6 +24,7 @@ import version from './version';
  * public hyperform interface:
  */
 function hyperform(form, {
+                     debug=false,
                      strict=false,
                      prevent_implicit_submit=false,
                      revalidate,
@@ -50,8 +51,8 @@ function hyperform(form, {
     classes = {};
   }
 
-  const settings = { strict, prevent_implicit_submit, revalidate, valid_event,
-                     extend_fieldset, classes, };
+  const settings = { debug, strict, prevent_implicit_submit, revalidate,
+                     valid_event, extend_fieldset, classes, };
 
   if (form instanceof window.NodeList ||
       form instanceof window.HTMLCollection ||
