@@ -1,5 +1,5 @@
 # ![Text “Hyperform - Insert Form” in 80s arcade game style](stuff/header.png)
-
+[![CDNJS](https://img.shields.io/cdnjs/v/hyperform.svg)](https://cdnjs.com/libraries/hyperform)
 ## Capture form validation back from the browser
 
 Hyperform is a complete implementation of the HTML 5 form validation API in
