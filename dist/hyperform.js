@@ -1610,6 +1610,13 @@ var hyperform = (function () {
          * @see https://html.spec.whatwg.org/multipage/forms.html#barred-from-constraint-validation
          */
         function is_validation_candidate (element) {
+
+          /* allow a shortcut via filters, e.g. to validate type=hidden fields */
+          var filtered = do_filter('is_validation_candidate', null, element);
+          if (filtered !== null) {
+            return !!filtered;
+          }
+
           /* it must be any of those elements */
           if (element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement) {
 

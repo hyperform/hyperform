@@ -1,6 +1,7 @@
 'use strict';
 
 
+import { do_filter } from '../components/hooks';
 import { validation_candidates, non_inputs } from '../components/types';
 import { get_wrapper } from '../components/wrapper';
 import get_type from '../tools/get_type';
@@ -12,6 +13,13 @@ import get_type from '../tools/get_type';
  * @see https://html.spec.whatwg.org/multipage/forms.html#barred-from-constraint-validation
  */
 export default function(element) {
+
+  /* allow a shortcut via filters, e.g. to validate type=hidden fields */
+  const filtered = do_filter('is_validation_candidate', null, element);
+  if (filtered !== null) {
+    return !! filtered;
+  }
+
   /* it must be any of those elements */
   if (element instanceof window.HTMLSelectElement
       ||
