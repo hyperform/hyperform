@@ -1,2 +1,2 @@
 'use strict';
-export default '0.8.10';
+export default '0.8.11';
