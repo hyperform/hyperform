@@ -419,11 +419,24 @@ function submit_form_via(element) {
    * 2) nothing.
    * And as you already suspected, the correct answer is: both! Firefox
    * opts for 1), Chrome for 2). Yay! */
+  var event_got_cancelled;
 
   var submit_event = create_event('submit', { cancelable: true });
+  /* force Firefox to not submit the form, then fake preventDefault() */
+  submit_event.preventDefault();
+  Object.defineProperty(submit_event, 'defaultPrevented', {
+    value: false,
+    writable: true
+  });
+  Object.defineProperty(submit_event, 'preventDefault', {
+    value: function value() {
+      return submit_event.defaultPrevented = event_got_cancelled = true;
+    },
+    writable: true
+  });
   trigger_event(element.form, submit_event, {}, { submittedVia: element });
 
-  if (!submit_event.defaultPrevented) {
+  if (!event_got_cancelled) {
     add_submit_field(element);
     window.HTMLFormElement.prototype.submit.call(element.form);
     window.setTimeout(function () {
