@@ -2473,7 +2473,7 @@ var hyperform = (function () {
           }
         }
 
-        var version = '0.8.11';
+        var version = '0.8.12';
 
         /**
          * public hyperform interface:
