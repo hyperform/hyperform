@@ -2467,7 +2467,7 @@ var hyperform = (function () {
             style.appendChild(document.createTextNode(""));
             document.head.appendChild(style);
 
-            style.sheet.insertRule('button:not([type]) *,button[type="submit"] *,button[type="image"] *{pointer-events:none}');
+            style.sheet.insertRule('button:not([type]) *,button[type="submit"] *,button[type="image"] *{pointer-events:none}', 0);
 
             active = true;
           }
