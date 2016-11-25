@@ -292,7 +292,8 @@ function ignored_keypress_handler(event) {
  * catch all relevant events _prior_ to a form being submitted
  *
  * @param bool ignore bypass validation, when an attempt to submit the
- *                    form is detected.
+ *                    form is detected. True, when the wrapper's revalidate
+ *                    setting is 'never'.
  */
 export function catch_submit(listening_node, ignore=false) {
   if (ignore) {

@@ -653,7 +653,8 @@ function ignored_keypress_handler(event) {
  * catch all relevant events _prior_ to a form being submitted
  *
  * @param bool ignore bypass validation, when an attempt to submit the
- *                    form is detected.
+ *                    form is detected. True, when the wrapper's revalidate
+ *                    setting is 'never'.
  */
 function catch_submit(listening_node) {
   var ignore = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
@@ -2444,6 +2445,33 @@ var checkValidity = return_hook_or('checkValidity', function (element) {
   return valid;
 });
 
+var active = false;
+
+/**
+ * this small CSS snippet fixes a problem in Chrome, where a click on
+ * a button's child node has this child as event.target. This confuses
+ * our "is this a submitting click" check.
+ *
+ * Why not just check the parent node? Because we check _every_ click,
+ * and _every_ keypress possibly on on the whole page, to determine, if
+ * this one might be a form submitting event. And checking all parent nodes
+ * on every user interaction seems a bit... excessive.
+ */
+function fixButtonEvents () {
+  if (!active) {
+    var style = document.createElement("style");
+
+    style.className = 'hf-styles';
+    /* WebKit :(. See https://davidwalsh.name/add-rules-stylesheets */
+    style.appendChild(document.createTextNode(""));
+    document.head.appendChild(style);
+
+    style.sheet.insertRule('button:not([type]) *,button[type="submit"] *,button[type="image"] *{pointer-events:none}');
+
+    active = true;
+  }
+}
+
 var version = '0.8.11';
 
 /**
@@ -2464,6 +2492,9 @@ function hyperform(form) {
   var novalidate_on_elements = _ref.novalidate_on_elements;
   var classes = _ref.classes;
 
+
+  /* run this only, when we really create a Hyperform instance */
+  fixButtonEvents();
 
   if (revalidate === undefined) {
     /* other recognized values: 'oninput', 'onblur', 'onsubmit' and 'never' */
