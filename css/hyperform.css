@@ -10,6 +10,8 @@
   line-height: 18px;
   padding: .25em .5em;
   pointer-events: none;
+  /* make sure, \n is preserved in messages. */
+  white-space: pre-line;
 }
 
 .hf-invalid + .hf-warning,
