@@ -134,19 +134,30 @@ if (!workingDefaultPrevented) {
 }
 /* end of borrowed code */
 
-function trigger_event (element, event) {
-  var _ref = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+function create_event(name) {
+  var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
   var _ref$bubbles = _ref.bubbles;
   var bubbles = _ref$bubbles === undefined ? true : _ref$bubbles;
   var _ref$cancelable = _ref.cancelable;
   var cancelable = _ref$cancelable === undefined ? false : _ref$cancelable;
+
+  var event = document.createEvent('Event');
+  event.initEvent(name, bubbles, cancelable);
+  return event;
+}
+
+function trigger_event (element, event) {
+  var _ref2 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+  var _ref2$bubbles = _ref2.bubbles;
+  var bubbles = _ref2$bubbles === undefined ? true : _ref2$bubbles;
+  var _ref2$cancelable = _ref2.cancelable;
+  var cancelable = _ref2$cancelable === undefined ? false : _ref2$cancelable;
   var payload = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
   if (!(event instanceof window.Event)) {
-    var _event = document.createEvent('Event');
-    _event.initEvent(event, bubbles, cancelable);
-    event = _event;
+    event = create_event(event, { bubbles: bubbles, cancelable: cancelable });
   }
 
   for (var key in payload) {
@@ -409,20 +420,10 @@ function submit_form_via(element) {
    * And as you already suspected, the correct answer is: both! Firefox
    * opts for 1), Chrome for 2). Yay! */
 
-  var event_got_cancelled;
+  var submit_event = create_event('submit', { cancelable: true });
+  trigger_event(element.form, submit_event, {}, { submittedVia: element });
 
-  var do_cancel = function do_cancel(e) {
-    event_got_cancelled = e.defaultPrevented;
-    /* we prevent the default ourselves in this (hopefully) last event
-     * handler to keep Firefox from prematurely submitting the form. */
-    e.preventDefault();
-  };
-
-  element.form.addEventListener('submit', do_cancel);
-  trigger_event(element.form, 'submit', { cancelable: true }, { submittedVia: element });
-  element.form.removeEventListener('submit', do_cancel);
-
-  if (!event_got_cancelled) {
+  if (!submit_event.defaultPrevented) {
     add_submit_field(element);
     window.HTMLFormElement.prototype.submit.call(element.form);
     window.setTimeout(function () {

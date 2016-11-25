@@ -33,14 +33,19 @@ if (!workingDefaultPrevented) {
 /* end of borrowed code */
 
 
+export function create_event(name, { bubbles=true, cancelable=false, }={}) {
+  const event = document.createEvent('Event');
+  event.initEvent(name, bubbles, cancelable);
+  return event;
+}
+
+
 export default function(element, event, {
                           bubbles=true,
                           cancelable=false,
                         }={}, payload={}) {
   if (! (event instanceof window.Event)) {
-      const _event = document.createEvent('Event');
-      _event.initEvent(event, bubbles, cancelable);
-      event = _event;
+    event = create_event(event, { bubbles, cancelable });
   }
 
   for (let key in payload) {

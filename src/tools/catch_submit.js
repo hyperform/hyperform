@@ -1,7 +1,7 @@
 'use strict';
 
 
-import trigger_event from './trigger_event';
+import trigger_event, { create_event } from './trigger_event';
 import reportValidity from '../polyfills/reportValidity';
 import { text as text_types } from '../components/types';
 import { get_wrapper } from '../components/wrapper';
@@ -27,21 +27,10 @@ function submit_form_via(element) {
    * And as you already suspected, the correct answer is: both! Firefox
    * opts for 1), Chrome for 2). Yay! */
 
-  var event_got_cancelled;
+  var submit_event = create_event('submit', { cancelable: true });
+  trigger_event(element.form, submit_event, {}, { submittedVia: element });
 
-  const do_cancel = e => {
-    event_got_cancelled = e.defaultPrevented;
-    /* we prevent the default ourselves in this (hopefully) last event
-     * handler to keep Firefox from prematurely submitting the form. */
-    e.preventDefault();
-  };
-
-  element.form.addEventListener('submit', do_cancel);
-  trigger_event(element.form, 'submit', { cancelable: true },
-                { submittedVia: element });
-  element.form.removeEventListener('submit', do_cancel);
-
-  if (! event_got_cancelled) {
+  if (! submit_event.defaultPrevented) {
     add_submit_field(element);
     window.HTMLFormElement.prototype.submit.call(element.form);
     window.setTimeout(() => remove_submit_field(element));
