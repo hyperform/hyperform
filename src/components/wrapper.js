@@ -34,7 +34,7 @@ export default function Wrapper(form, settings) {
 
   catch_submit(form, settings.revalidate === 'never');
 
-  if (form === window || form instanceof window.HTMLDocument) {
+  if (form === window || form.nodeType === 9) {
     /* install on the prototypes, when called for the whole document */
     this.install([
       window.HTMLButtonElement.prototype,
@@ -75,7 +75,7 @@ Wrapper.prototype = {
     this.form.removeEventListener('keyup', this.revalidator);
     this.form.removeEventListener('change', this.revalidator);
     this.form.removeEventListener('blur', this.revalidator, true);
-    if (this.form === window || this.form instanceof window.HTMLDocument) {
+    if (this.form === window || this.form.nodeType === 9) {
       this.uninstall([
         window.HTMLButtonElement.prototype,
         window.HTMLInputElement.prototype,
