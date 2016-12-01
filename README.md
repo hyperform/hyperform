@@ -2,11 +2,35 @@
 [![CDNJS](https://img.shields.io/cdnjs/v/hyperform.svg)](https://cdnjs.com/libraries/hyperform)
 ## Capture form validation back from the browser
 
-Hyperform is a complete implementation of the HTML 5 form validation API in
-Javascript. It replaces the browser’s native methods (if it even implements
-them…) and enriches it with custom events and hooks.
+Hyperform is your one-stop solution for client-side form handling.
+
+It features a complete implementation of the HTML 5 form validation API in
+Javascript, replaces the browser’s native methods (if they are even
+implemented…), and enriches your toolbox with custom events and hooks.
+
+Not pumped yet? Then [take a look](https://hyperform.js.org/examples.html) at
+our awesome [examples](https://hyperform.js.org/examples.html).
 
 ## Installation
+
+### Embed from a CDN
+
+Get up and running with Hyperform by embedding it from a CDN:
+[CDNJS](https://cdnjs.com/libraries/hyperform)
+
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hyperform/0.8.15/hyperform.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hyperform/0.8.15/hyperform.min.css">
+```
+
+or unpkg.com:
+
+```html
+<script src="https://unpkg.com/hyperform"></script>
+<link rel="stylesheet" href="https://unpkg.com/hyperform@latest/css/hyperform.css">
+```
+
+### Install locally
 
 The easiest way is installing via `npm`:
 
@@ -14,7 +38,7 @@ The easiest way is installing via `npm`:
 npm install hyperform
 ```
 
-or if you use Bower:
+or you can use Bower:
 
 ```sh
 bower install hyperform
@@ -29,6 +53,12 @@ Then embed `dist/hyperform.min.js` in your file:
 <script src="path/to/hyperform/dist/hyperform.min.js"></script>
 ```
 
+or require it in your code:
+
+```js
+const hyperform = require('hyperform');
+```
+
 In old browsers you will need polyfills for the following features:
 [`WeakMap`](https://github.com/Benvie/WeakMap) (IE 10 and lower),
 [`element.classList`](https://github.com/remy/polyfills) (IE 9 and lower),
@@ -37,8 +67,7 @@ In old browsers you will need polyfills for the following features:
 
 ## Usage
 
-The library introduces the global variable `hyperform`. You can let Hyperform
-take over a single form:
+You can let Hyperform take over a single form:
 
 ```js
 hyperform(document.forms[0]);
@@ -65,17 +94,17 @@ hyperform(window, {
 });
 ```
 
-If you only need a certain feature, you can access it directly by name:
+If you only need a certain feature once, you can access it directly by name:
 
 ```js
-if (hyperform.willValidate(form.elements[0])) {
-    var is_valid = hyperform.validityState(form.elements[0]).valid;
+if (hyperform.willValidate(some_input_element)) {
+    var is_valid = hyperform.validityState(some_input_element).valid;
 }
 ```
 
 ## Examples
 
-[Check out the awesome examples!](https://hyperform.js.org/examples.html)
+[Yes, please! The more the better.](https://hyperform.js.org/examples.html)
 
 ## Status
 
