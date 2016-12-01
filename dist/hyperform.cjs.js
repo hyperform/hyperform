@@ -2486,7 +2486,7 @@ function fixButtonEvents () {
   }
 }
 
-var version = '0.8.14';
+var version = '0.8.15';
 
 /**
  * public hyperform interface:
