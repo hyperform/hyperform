@@ -15,21 +15,21 @@ const DefaultRenderer = {
    * called when a warning should become visible
    */
   attach_warning: function(warning, element) {
-			var wrapper = get_wrapper(element);
-			var position = wrapper && wrapper.settings.attach_warning_position || 'default';
+	var wrapper = get_wrapper(element);
+	var position = wrapper && wrapper.settings.attach_warning_position || 'default';
 
-			switch(position) {
+	switch(position) {
 
-			  case 'default':
-				  /* should also work, if element is last,
-				   * http://stackoverflow.com/a/4793630/113195 */
-				  element.parentNode.insertBefore(warning, element.nextSibling);
-			      break;
+	  case 'default':
+		  /* should also work, if element is last,
+		   * http://stackoverflow.com/a/4793630/113195 */
+		  element.parentNode.insertBefore(warning, element.nextSibling);
+	      break;
 
-			  case 'end':
-				  element.parentNode.append(warning);
-			      break;
-			}
+	  case 'end':
+		  element.parentNode.append(warning);
+	      break;
+	}
   },
 
   /**
