@@ -17,7 +17,6 @@ import { set_language, add_translation } from './components/localization';
 import CustomValidatorRegistry from './components/registry';
 import Renderer from './components/renderer';
 import Wrapper from './components/wrapper';
-import fixButtonEvents from './tools/fixButtonEvents';
 import version from './version';
 
 
@@ -34,9 +33,6 @@ function hyperform(form, {
                      novalidate_on_elements,
                      classes,
                    }={}) {
-
-  /* run this only, when we really create a Hyperform instance */
-  fixButtonEvents();
 
   if (revalidate === undefined) {
     /* other recognized values: 'oninput', 'onblur', 'onsubmit' and 'never' */

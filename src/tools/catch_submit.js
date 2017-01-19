@@ -2,6 +2,7 @@
 
 
 import trigger_event, { create_event } from './trigger_event';
+import matches from './matches';
 import reportValidity from '../polyfills/reportValidity';
 import { text as text_types } from '../components/types';
 import { get_wrapper } from '../components/wrapper';
@@ -95,9 +96,9 @@ function remove_submit_field(button) {
  *
  * If the form is found to contain invalid fields, focus the first field.
  */
-function check(event) {
+function check(button) {
   /* trigger a "validate" event on the form to be submitted */
-  const val_event = trigger_event(event.target.form, 'validate',
+  const val_event = trigger_event(button.form, 'validate',
                                   { cancelable: true });
   if (val_event.defaultPrevented) {
     /* skip the whole submit thing, if the validation is canceled. A user
@@ -107,7 +108,7 @@ function check(event) {
 
   var valid = true;
   var first_invalid;
-  Array.prototype.map.call(event.target.form.elements, element => {
+  Array.prototype.map.call(button.form.elements, element => {
     if (! reportValidity(element)) {
       valid = false;
       if (! first_invalid && ('focus' in element)) {
@@ -117,7 +118,7 @@ function check(event) {
   });
 
   if (valid) {
-    submit_form_via(event.target);
+    submit_form_via(button);
   } else if (first_invalid) {
     /* focus the first invalid element, if validation went south */
     first_invalid.focus();
@@ -143,7 +144,7 @@ function is_submit_button(node) {
 /**
  * test, if the click event would trigger a submit
  */
-function is_submitting_click(event) {
+function is_submitting_click(event, button) {
   return (
     /* prevented default: won't trigger a submit */
     ! event.defaultPrevented &&
@@ -153,13 +154,13 @@ function is_submitting_click(event) {
      event.button < 2) &&
 
     /* must be a submit button... */
-    is_submit_button(event.target) &&
+    is_submit_button(button) &&
 
     /* the button needs a form, that's going to be submitted */
-    event.target.form &&
+    button.form &&
 
     /* again, if the form should not be validated, we're out of the game */
-    ! event.target.form.hasAttribute('novalidate')
+    ! button.form.hasAttribute('novalidate')
   );
 }
 
@@ -178,7 +179,7 @@ function is_submitting_keypress(event) {
         event.keyCode === 13 &&
 
         /* ...on an <input> that is... */
-        (event.target.nodeName === 'INPUT') &&
+        event.target.nodeName === 'INPUT' &&
 
         /* ...a standard text input field (not checkbox, ...) */
         text_types.indexOf(event.target.type) > -1
@@ -202,90 +203,77 @@ function is_submitting_keypress(event) {
 
 
 /**
- * catch explicit submission by click on a button
+ * catch clicks to children of <button>s
  */
-function click_handler(event) {
-  if (is_submitting_click(event)) {
-    event.preventDefault();
-    if (is_submit_button(event.target) &&
-        event.target.hasAttribute('formnovalidate')) {
-      /* if validation should be ignored, we're not interested in any checks */
-      submit_form_via(event.target);
-    } else {
-      check(event);
-    }
+function get_clicked_button(element) {
+  if (is_submit_button(element)) {
+    return element;
+  } else if (matches(element, 'button:not([type]) *, button[type="submit"] *')) {
+    return get_clicked_button(element.parentNode);
+  } else {
+    return null;
   }
 }
 
 
 /**
- * catch explicit submission by click on a button, but circumvent validation
+ * return event handler to catch explicit submission by click on a button
  */
-function ignored_click_handler(event) {
-  if (is_submitting_click(event)) {
-    event.preventDefault();
-    submit_form_via(event.target);
-  }
+function get_click_handler(ignore=false) {
+  return function(event) {
+    const button = get_clicked_button(event.target);
+    if (button && is_submitting_click(event, button)) {
+      event.preventDefault();
+      if (ignore || button.hasAttribute('formnovalidate')) {
+        /* if validation should be ignored, we're not interested in any checks */
+        submit_form_via(button);
+      } else {
+        check(button);
+      }
+    }
+  };
 }
+const click_handler = get_click_handler();
+const ignored_click_handler = get_click_handler(true);
 
 
 /**
  * catch implicit submission by pressing <Enter> in some situations
  */
-function keypress_handler(event) {
-  if (is_submitting_keypress(event))  {
-    const wrapper = get_wrapper(event.target.form) || { settings: {} };
-    if (wrapper.settings.prevent_implicit_submit) {
-      /* user doesn't want an implicit submit. Cancel here. */
+function get_keypress_handler(ignore) {
+  return function keypress_handler(event) {
+    if (is_submitting_keypress(event))  {
       event.preventDefault();
-      return;
-    }
 
-    /* check, that there is no submit button in the form. Otherwise
-     * that should be clicked. */
-    const el = event.target.form.elements.length;
-    var submit;
-    for (let i = 0; i < el; i++) {
-      if (['image', 'submit'].indexOf(event.target.form.elements[i].type) > -1) {
-        submit = event.target.form.elements[i];
-        break;
+      const wrapper = get_wrapper(event.target.form) || { settings: {} };
+      if (wrapper.settings.prevent_implicit_submit) {
+        /* user doesn't want an implicit submit. Cancel here. */
+        return;
+      }
+
+      /* check, that there is no submit button in the form. Otherwise
+      * that should be clicked. */
+      const el = event.target.form.elements.length;
+      var submit;
+      for (let i = 0; i < el; i++) {
+        if (['image', 'submit'].indexOf(event.target.form.elements[i].type) > -1) {
+          submit = event.target.form.elements[i];
+          break;
+        }
+      }
+
+      if (submit) {
+        submit.click();
+      } else if (ignore) {
+        submit_form_via(event.target);
+      } else {
+        check(event.target);
       }
     }
-
-    event.preventDefault();
-    if (submit) {
-      submit.click();
-    } else {
-      check(event);
-    }
-  }
+  };
 }
-
-
-/**
- * catch implicit submission by pressing <Enter> in some situations, but circumvent validation
- */
-function ignored_keypress_handler(event) {
-  if (is_submitting_keypress(event))  {
-    /* check, that there is no submit button in the form. Otherwise
-     * that should be clicked. */
-    const el = event.target.form.elements.length;
-    var submit;
-    for (let i = 0; i < el; i++) {
-      if (['image', 'submit'].indexOf(event.target.form.elements[i].type) > -1) {
-        submit = event.target.form.elements[i];
-        break;
-      }
-    }
-
-    event.preventDefault();
-    if (submit) {
-      submit.click();
-    } else {
-      submit_form_via(event.target);
-    }
-  }
-}
+const keypress_handler = get_keypress_handler();
+const ignored_keypress_handler = get_keypress_handler(true);
 
 
 /**
