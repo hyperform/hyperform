@@ -2,7 +2,7 @@
 
 /* shim layer for the Element.matches method */
 
-const ep = Element.prototype;
+const ep = window.Element.prototype;
 const native_matches = ep.matches ||
                        ep.matchesSelector ||
                        ep.msMatchesSelector ||

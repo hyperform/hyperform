@@ -203,7 +203,7 @@ define(function () { 'use strict';
 
                        /* shim layer for the Element.matches method */
 
-                       var ep = Element.prototype;
+                       var ep = window.Element.prototype;
                        var native_matches = ep.matches || ep.matchesSelector || ep.msMatchesSelector || ep.webkitMatchesSelector;
 
                        function matches (element, selector) {
