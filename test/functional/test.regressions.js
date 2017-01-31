@@ -12,7 +12,9 @@ beforeEach(function() {
 
 afterEach(function() {
   if (form) {
-    form.parentNode.removeChild(form);
+    if (form.parentNode) {
+      form.parentNode.removeChild(form);
+    }
     hform.destroy();
     form = undefined;
     hform = undefined;
@@ -36,7 +38,7 @@ describe('Issue 13', function() {
 
     const iframe = document.createElement('iframe');
     iframe.src = './blank.html';
-    document.body.append(iframe);
+    document.body.appendChild(iframe);
     form.parentNode.removeChild(form);
     iframe.contentDocument.body.appendChild(form);
     form.action = 'blank.html';
@@ -60,7 +62,7 @@ describe('Issue 13', function() {
 
 describe('Issue 34', function() {
 
-  it('should submit when clicking on span nested in button', function(done) {
+  it('should catch submit when clicking on span nested in button', function(done) {
     form.addEventListener('submit', function(evt) {
       evt.preventDefault();
       if (! evt.submittedVia || evt.submittedVia.nodeName !== 'BUTTON') {

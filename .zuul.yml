@@ -1,0 +1,15 @@
+name: hyperform
+ui: mocha-bdd
+browsers:
+  - name: chrome
+    version: 50..dev
+  - name: firefox
+    version: 50..dev
+#  - name: ie
+#    version: 11
+#  - name: edge
+#    version: 12..latest
+#  - name: safari
+#    version: 5..latest
+#  - name: iphone
+#    version: 8.1..latest

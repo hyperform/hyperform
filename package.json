@@ -7,7 +7,7 @@
   "module": "src/hyperform.js",
   "style": "css/hyperform.css",
   "scripts": {
-    "test": "jshint src && ava test && mocha test/functional/tests.js",
+    "test": "jshint src && ava test && zuul -- test/functional/tests.js",
     "preversion": "npm test",
     "version": "make version VERSION=$npm_package_version && make all && git add src/version.js dist/ bower.json",
     "postversion": "git push && git push --tags"
@@ -37,7 +37,8 @@
     "jspm": "0.17.0-beta.13",
     "mocha": "^3.2.0",
     "selenium-webdriver": "^3.0.1",
-    "uglify-js": "^2.6.2"
+    "uglify-js": "^2.6.2",
+    "zuul": "^3.11.1"
   },
   "files": [
     "css",
