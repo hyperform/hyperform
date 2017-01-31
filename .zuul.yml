@@ -2,14 +2,15 @@ name: hyperform
 ui: mocha-bdd
 browsers:
   - name: chrome
-    version: 50..dev
+    version: [-3..latest, beta, dev]
   - name: firefox
-    version: 50..dev
-#  - name: ie
-#    version: 11
-#  - name: edge
-#    version: 12..latest
-#  - name: safari
-#    version: 5..latest
-#  - name: iphone
-#    version: 8.1..latest
+    # 45 is the last ESR version
+    version: [45, -3..latest, beta, dev]
+  - name: ie
+    version: 11
+  - name: edge
+    version: 12..latest
+  - name: safari
+    version: 5..latest
+  - name: iphone
+    version: 8.1..latest
