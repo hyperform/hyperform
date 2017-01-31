@@ -8,7 +8,7 @@
 
 
 import test from 'ava';
-import Wrapper from '../../src/components/wrapper';
+import Wrapper from '../../../src/components/wrapper';
 
 
 test.skip('issue 7 form', t => {

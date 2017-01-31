@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import registry from '../../src/components/registry';
+import registry from '../../../src/components/registry';
 
 function get(attributes) {
   var el = document.createElement('input');

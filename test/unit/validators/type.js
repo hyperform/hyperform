@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import type from '../../src/validators/type';
+import type from '../../../src/validators/type';
 
 test('validator-type others', t => {
   var el = document.createElement('input');

@@ -59,6 +59,9 @@
       "babel-register",
       "./test/helpers/setup-browser-env.js"
     ],
+    "files": [
+      "test/unit/**/*.js"
+    ],
     "babel": "inherit",
     "concurrency": 5
   },

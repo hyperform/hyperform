@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import min from '../../src/validators/min';
+import min from '../../../src/validators/min';
 
 test('validator-min', t => {
   var el = document.createElement('input');

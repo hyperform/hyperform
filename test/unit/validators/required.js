@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import required from '../../src/validators/required';
+import required from '../../../src/validators/required';
 
 test('validator-required', t => {
   var el = document.createElement('input');

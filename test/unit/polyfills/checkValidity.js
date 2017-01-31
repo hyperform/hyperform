@@ -1,8 +1,8 @@
 'use strict';
 
 import test from 'ava';
-import checkValidity from '../../src/polyfills/checkValidity';
-import { add_hook, remove_hook } from '../../src/components/hooks';
+import checkValidity from '../../../src/polyfills/checkValidity';
+import { add_hook, remove_hook } from '../../../src/components/hooks';
 
 test('checkValidity', t => {
   var input = document.createElement('input');

@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import { install_properties } from '../../src/polyfills/properties';
+import { install_properties } from '../../../src/polyfills/properties';
 
 test('properties', t => {
   var el = document.createElement('input');

@@ -1,9 +1,9 @@
 'use strict';
 
 import test from 'ava';
-import custom_messages from '../../src/components/custom_messages';
-import ValidityState from '../../src/polyfills/validityState';
-import validationMessage from '../../src/polyfills/validationMessage';
+import custom_messages from '../../../src/components/custom_messages';
+import ValidityState from '../../../src/polyfills/validityState';
+import validationMessage from '../../../src/polyfills/validationMessage';
 
 test('custom_messages', t => {
   var msg = 'hello from the tests';

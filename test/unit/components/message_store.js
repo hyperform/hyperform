@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import message_store from '../../src/components/message_store';
+import message_store from '../../../src/components/message_store';
 
 test('message_store', t => {
   var msg = new String('hello from the tests');

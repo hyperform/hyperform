@@ -1,8 +1,8 @@
 'use strict';
 
 import test from 'ava';
-import mark from '../../src/tools/mark';
-import property_installer from '../../src/tools/property_installer';
+import mark from '../../../src/tools/mark';
+import property_installer from '../../../src/tools/property_installer';
 
 test('property_installer', t => {
   var ours = {},

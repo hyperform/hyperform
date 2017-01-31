@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import step from '../../src/validators/step';
+import step from '../../../src/validators/step';
 
 test('validator-step', t => {
   var el = document.createElement('input');

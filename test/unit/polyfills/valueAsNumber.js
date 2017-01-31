@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import valueAsNumber from '../../src/polyfills/valueAsNumber';
+import valueAsNumber from '../../../src/polyfills/valueAsNumber';
 
 function get(attributes) {
   var el = document.createElement('input');

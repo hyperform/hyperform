@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import maxlength from '../../src/validators/maxlength';
+import maxlength from '../../../src/validators/maxlength';
 
 test('validator-maxlength', t => {
   var el = document.createElement('input');

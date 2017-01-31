@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import { add_hook, call_hook, do_filter, remove_hook, add_filter, remove_filter } from '../../src/components/hooks';
+import { add_hook, call_hook, do_filter, remove_hook, add_filter, remove_filter } from '../../../src/components/hooks';
 
 test('hooks', t => {
   var called = false;

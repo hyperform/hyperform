@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import max from '../../src/validators/max';
+import max from '../../../src/validators/max';
 
 test('validator-max', t => {
   var el = document.createElement('input');

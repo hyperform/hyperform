@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import { add_translation, set_language, default as _ } from '../../src/components/localization';
+import { add_translation, set_language, default as _ } from '../../../src/components/localization';
 
 test('localization', t => {
   set_language('fi');

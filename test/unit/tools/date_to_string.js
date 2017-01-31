@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import date_to_string from '../../src/tools/date_to_string';
+import date_to_string from '../../../src/tools/date_to_string';
 
 test('date_to_string', t => {
   t.is('2015-01-01T01:23:45',

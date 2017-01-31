@@ -1,8 +1,8 @@
 'use strict';
 
 import test from 'ava';
-import ValidityState from '../../src/polyfills/validityState';
-import Registry from '../../src/components/registry';
+import ValidityState from '../../../src/polyfills/validityState';
+import Registry from '../../../src/components/registry';
 
 test('ValidityState customError non-bool response', t => {
   var input = document.createElement('input');

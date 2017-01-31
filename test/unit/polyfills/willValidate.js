@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import willValidate from '../../src/polyfills/willValidate';
+import willValidate from '../../../src/polyfills/willValidate';
 
 test('willValidate', t => {
   var input = document.createElement('input');

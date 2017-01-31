@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import Wrapper from '../../src/components/wrapper';
+import Wrapper from '../../../src/components/wrapper';
 
 test('wrapper', t => {
   var form = document.createElement('form');

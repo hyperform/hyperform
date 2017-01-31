@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import valueAsDate from '../../src/polyfills/valueAsDate';
+import valueAsDate from '../../../src/polyfills/valueAsDate';
 
 function get(attributes) {
   var el = document.createElement('input');

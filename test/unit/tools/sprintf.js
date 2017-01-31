@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import sprintf from '../../src/tools/sprintf';
+import sprintf from '../../../src/tools/sprintf';
 
 test('sprintf replace single argument', t => {
   t.is(sprintf('a%sc', 'b'), 'abc');

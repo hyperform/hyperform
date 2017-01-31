@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'ava';
-import mark from '../../src/tools/mark';
+import mark from '../../../src/tools/mark';
 
 test('mark objects', t => {
   var dummy = function() {};
