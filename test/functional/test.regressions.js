@@ -1,9 +1,9 @@
 function make_hform(_doc) {
   _doc = _doc || document;
-  form = document.createElement('form');
+  const form = document.createElement('form');
   form.innerHTML = '<input name="test" value="button_span">'+
                    '<button><span>submit</span></button>';
-  hform = _doc.defaultView.hyperform(form);
+  const hform = _doc.defaultView.hyperform(form);
   _doc.body.appendChild(form);
   return hform;
 }
