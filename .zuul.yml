@@ -11,6 +11,8 @@ browsers:
   - name: edge
     version: 12..latest
   - name: safari
-    version: 5..latest
+    # TODO: fix for v5 and v7
+    # version: 5..latest
+    version: [6, 8..latest]
   - name: iphone
     version: 8.1..latest
