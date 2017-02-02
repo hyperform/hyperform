@@ -14,11 +14,13 @@ var customLaunchers = {};
   ['firefox', '48.0', 'Windows 10'],
   ['firefox', '45.0', 'Windows 10'], /* ESR */
   ['firefox', '45.0', 'Linux'],
-  ['microsoft edge', '14.14393', 'Windows 10'],
+  ['MicrosoftEdge', '14.14393', 'Windows 10'],
   ['internet explorer', '11.0', 'Windows 8.1'],
-  // TODO: ['internet explorer', '10.0', 'Windows 7'],
+  // TODO: strange error: ['internet explorer', '10.0', 'Windows 7'],
+  // TODO: needs classList polyfill: ['internet explorer', '9.0', 'Windows 7'],
   ['safari', '10.0', 'macOS 10.12'],
-  ['iphone', '7.1', 'OS X 10.9'],
+  // TODO: doesn't work: ['iphone', '7.1', 'OS X 10.9'],
+  // TODO: Android
 ].forEach(set => {
   customLaunchers['sl_'+set.join('_').replace(/[^a-zA-Z0-9_]+/g, '_')] = {
       base: 'SauceLabs',
