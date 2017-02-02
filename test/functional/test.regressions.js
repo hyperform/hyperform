@@ -1,6 +1,6 @@
 function make_hform(_doc) {
   _doc = _doc || document;
-  const form = document.createElement('form');
+  const form = _doc.createElement('form');
   form.innerHTML = '<input name="test" value="button_span">'+
                    '<button><span>submit</span></button>';
   const hform = _doc.defaultView.hyperform(form);
@@ -9,10 +9,18 @@ function make_hform(_doc) {
 }
 
 
+function destroy_hform(hform) {
+  if (hform.form && hform.form.parentNode) {
+    hform.form.parentNode.removeChild(hform.form);
+  }
+  hform.destroy();
+}
+
+
 function once(element, event, handler) {
   var func = function(evt) {
-    handler(evt);
     element.removeEventListener(event, func);
+    handler(evt);
   };
   element.addEventListener(event, func);
 }
@@ -22,11 +30,12 @@ describe('Issue 13', function() {
 
   it('should add name=value of submit button', function(done) {
     const iframe = document.createElement('iframe');
-    iframe.src = './blank.html';
+    iframe.src = 'blank.html';
     document.body.appendChild(iframe);
 
     once(iframe, 'load', function() {
-      const form = make_hform(iframe.contentDocument).form;
+      const hform = make_hform(iframe.contentDocument);
+      const form = hform.form;
       form.method = 'get';
       form.addEventListener('submit', function(evt) {
         if (! evt.submittedVia || evt.submittedVia.nodeName !== 'BUTTON') {
@@ -40,7 +49,7 @@ describe('Issue 13', function() {
 
       form.parentNode.removeChild(form);
       iframe.contentDocument.body.appendChild(form);
-      form.action = 'blank.html';
+      form.action = '#';
 
       once(iframe, 'load', function() {
         if (iframe.contentWindow.location.search.search(/test=value/) === -1) {
@@ -60,12 +69,14 @@ describe('Issue 13', function() {
 describe('Issue 34', function() {
 
   it('should catch submit when clicking on span nested in button', function(done) {
-    const form = make_hform().form;
+    const hform = make_hform();
+    const form = hform.form;
     form.addEventListener('submit', function(evt) {
       evt.preventDefault();
       if (! evt.submittedVia || evt.submittedVia.nodeName !== 'BUTTON') {
         throw Error('not a Hyperform submit event');
       }
+      destroy_hform(hform);
       done();
     });
     form.querySelector('button span').click();
