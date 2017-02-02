@@ -27,6 +27,7 @@ function hyperform(form, {
                      debug=false,
                      strict=false,
                      prevent_implicit_submit=false,
+                     attach_warning_position='default',
                      revalidate,
                      valid_event,
                      extend_fieldset,
@@ -52,7 +53,7 @@ function hyperform(form, {
   }
 
   const settings = { debug, strict, prevent_implicit_submit, revalidate,
-                     valid_event, extend_fieldset, classes, };
+                     valid_event, extend_fieldset, classes, attach_warning_position };
 
   if (form instanceof window.NodeList ||
       form instanceof window.HTMLCollection ||
