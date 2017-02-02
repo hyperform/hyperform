@@ -108,9 +108,6 @@ module.exports = function(config) {
     sauceLabs: {
       testName: 'Hyperform functional tests',
       recordScreenshots: true,
-      connectOptions: {
-        doctor: true,
-      },
     },
     customLaunchers: customLaunchers,
     browsers: Object.keys(customLaunchers),
