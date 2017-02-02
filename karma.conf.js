@@ -1,63 +1,30 @@
-var customLaunchers = {
-  sl_ios_safari: {
-    base: 'SauceLabs',
-    browserName: 'iphone',
-    platform: 'OS X 10.9',
-    version: '7.1',
-  },
-  sl_mac_safari: {
-    base: 'SauceLabs',
-    browserName: 'safari',
-    platform: 'mac=S 10.12',
-    version: '10.0',
-  },
-  sl_ie_10: {
-    base: 'SauceLabs',
-    browserName: 'internet explorer',
-    platform: 'Windows 7',
-    version: '10',
-  },
-  sl_ie_11: {
-    base: 'SauceLabs',
-    browserName: 'internet explorer',
-    platform: 'Windows 8.1',
-    version: '11',
-  },
-  sl_edge_14: {
-    base: 'SauceLabs',
-    browserName: 'microsoft edge',
-    platform: 'Windows 10',
-    version: '14',
-  },
-};
+var customLaunchers = {};
 
-['53', '54', '55', 'beta', 'dev'].forEach(version => {
-  customLaunchers['sl_chrome_'+version+'_win'] = {
+[
+  ['chrome', 'dev', 'Windows 10'],
+  ['chrome', 'beta', 'Windows 10'],
+  ['chrome', '55.0', 'Windows 10'],
+  ['chrome', '54.0', 'Windows 10'],
+  ['chrome', '53.0', 'Windows 10'],
+  ['chrome', '48.0', 'Linux'],
+  ['firefox', 'dev', 'Windows 10'],
+  ['firefox', 'beta', 'Windows 10'],
+  ['firefox', '50.0', 'Windows 10'],
+  ['firefox', '49.0', 'Windows 10'],
+  ['firefox', '48.0', 'Windows 10'],
+  ['firefox', '45.0', 'Windows 10'], /* ESR */
+  ['firefox', '45.0', 'Linux'],
+  ['microsoft edge', '14.14393', 'Windows 10'],
+  ['internet explorer', '11.0', 'Windows 8.1'],
+  // TODO: ['internet explorer', '10.0', 'Windows 7'],
+  ['safari', '10.0', 'macOS 10.12'],
+  ['iphone', '7.1', 'OS X 10.9'],
+].forEach(set => {
+  customLaunchers['sl_'+set.join('_').replace(/[^a-zA-Z0-9_]+/g, '_')] = {
       base: 'SauceLabs',
-      browserName: 'chrome',
-      platform: 'Windows 10',
-      version: version,
-  };
-  customLaunchers['sl_chrome_'+version+'_lin'] = {
-      base: 'SauceLabs',
-      browserName: 'chrome',
-      platform: 'Linux',
-      version: version,
-  };
-});
-
-[/*ESR*/'45', '49', '50', '51', 'beta', 'dev'].forEach(version => {
-  customLaunchers['sl_firefox_'+version+'_win'] = {
-      base: 'SauceLabs',
-      browserName: 'firefox',
-      platform: 'Windows 10',
-      version: version,
-  };
-  customLaunchers['sl_firefox_'+version+'_lin'] = {
-      base: 'SauceLabs',
-      browserName: 'firefox',
-      platform: 'Linux',
-      version: version,
+      browserName: set[0],
+      version: set[1],
+      platform: set[2],
   };
 });
 
@@ -76,6 +43,8 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+      // for IE 10 support
+      'test/functional/weakmap.min.js',
       'dist/hyperform.js',
       'test/functional/test.*.js',
       { pattern: 'test/functional/blank.html', watched: false, included: true, served: true, nocache: true, }
@@ -134,10 +103,11 @@ module.exports = function(config) {
 
     // Concurrency level
     // how many browser should be started simultaneous
-    concurrency: Infinity,
+    concurrency: 5,
 
     sauceLabs: {
-      testName: 'Hyperform functional tests'
+      testName: 'Hyperform functional tests',
+      recordScreenshots: true,
     },
     customLaunchers: customLaunchers,
     browsers: Object.keys(customLaunchers),

@@ -1,9 +1,9 @@
 function make_hform(_doc) {
   _doc = _doc || document;
-  const form = _doc.createElement('form');
+  var form = _doc.createElement('form');
   form.innerHTML = '<input name="test" value="button_span">'+
                    '<button><span>submit</span></button>';
-  const hform = _doc.defaultView.hyperform(form);
+  var hform = _doc.defaultView.hyperform(form);
   _doc.body.appendChild(form);
   return hform;
 }
@@ -29,13 +29,13 @@ function once(element, event, handler) {
 describe('Issue 13', function() {
 
   it('should add name=value of submit button', function(done) {
-    const iframe = document.createElement('iframe');
+    var iframe = document.createElement('iframe');
     iframe.src = 'blank.html';
     document.body.appendChild(iframe);
 
     once(iframe, 'load', function() {
-      const hform = make_hform(iframe.contentDocument);
-      const form = hform.form;
+      var hform = make_hform(iframe.contentDocument);
+      var form = hform.form;
       form.method = 'get';
       form.addEventListener('submit', function(evt) {
         if (! evt.submittedVia || evt.submittedVia.nodeName !== 'BUTTON') {
@@ -43,7 +43,7 @@ describe('Issue 13', function() {
         }
       });
 
-      const button = form.querySelector('button');
+      var button = form.querySelector('button');
       button.name = 'test';
       button.value = 'value';
 
@@ -69,8 +69,8 @@ describe('Issue 13', function() {
 describe('Issue 34', function() {
 
   it('should catch submit when clicking on span nested in button', function(done) {
-    const hform = make_hform();
-    const form = hform.form;
+    var hform = make_hform();
+    var form = hform.form;
     form.addEventListener('submit', function(evt) {
       evt.preventDefault();
       if (! evt.submittedVia || evt.submittedVia.nodeName !== 'BUTTON') {
