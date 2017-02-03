@@ -1,9 +1,10 @@
-function make_hform(_doc) {
+function make_hform(_doc, settings) {
   _doc = _doc || document;
+  settings = settings || {};
   var form = _doc.createElement('form');
   form.innerHTML = '<input name="test" value="button_span">'+
                    '<button><span>submit</span></button>';
-  var hform = _doc.defaultView.hyperform(form);
+  var hform = _doc.defaultView.hyperform(form, settings);
   _doc.body.appendChild(form);
   return hform;
 }
@@ -26,9 +27,48 @@ function once(element, event, handler) {
 }
 
 
+describe('Issue 7', function() {
+
+  it('should publish validation methods on HTMLFormElements', function() {
+    var hform = make_hform();
+    var form = hform.form;
+    if (! ('reportValidity' in form)) {
+      throw Error('no reportValidity method found');
+    }
+    destroy_hform(hform);
+  });
+
+});
+
+
+describe('Issue 11', function() {
+
+  it('should fire a cancelable submit event', function(done) {
+    // revalidate:never was part of the original issue report
+    var hform = make_hform(document, { revalidate: 'never' });
+    var form = hform.form;
+
+    form.addEventListener('submit', function(evt) {
+      if (! evt.submittedVia || evt.submittedVia.nodeName !== 'BUTTON') {
+        throw Error('not a Hyperform submit event');
+      }
+      evt.preventDefault();
+      destroy_hform(hform);
+      done();
+    });
+
+    form.querySelector('button').click();
+  });
+
+});
+
+
 describe('Issue 13', function() {
 
   it('should add name=value of submit button', function(done) {
+    /* we're taking a deviation here by creating the form in an iframe, so
+     * we can submit the form and check that the button's name=value is
+     * really there. */
     var iframe = document.createElement('iframe');
     iframe.src = 'blank.html';
     document.body.appendChild(iframe);
@@ -80,6 +120,16 @@ describe('Issue 34', function() {
       done();
     });
     form.querySelector('button span').click();
+  });
+
+});
+
+
+describe('Issue 35', function() {
+
+  it('should work in IE <= 10 when called on non-window', function() {
+    // see https://github.com/hyperform/hyperform/issues/35#issuecomment-264213879
+    hyperform(document).destroy();
   });
 
 });
