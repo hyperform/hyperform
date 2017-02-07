@@ -124,32 +124,34 @@ accessible and has wide browser support. Just try it yourself!
 
 The target is 100% support for the [HTML5 validation
 API](https://html.spec.whatwg.org/multipage/forms.html#constraints). Currently
-are supported:
+supported:
 
-| feature                      | status      | comment            |
-| ---------------------------- | ----------- | ------------------ |
-| `willValidate`               | :full_moon: | :heavy_check_mark: |
-| `setCustomValidity(message)` | :full_moon: | :heavy_check_mark: |
-| `validity.valueMissing`      | :full_moon: | :heavy_check_mark: |
-| `validity.typeMismatch`      | :full_moon: | :heavy_check_mark: |
-| `validity.patternMismatch`   | :full_moon: | :heavy_check_mark: |
-| `validity.tooLong`           | :full_moon: | :heavy_check_mark: |
-| `validity.tooShort`          | :full_moon: | :heavy_check_mark: |
-| `validity.rangeUnderflow`    | :full_moon: | :heavy_check_mark: |
-| `validity.rangeOverflow`     | :full_moon: | :heavy_check_mark: |
-| `validity.stepMismatch`      | :full_moon: | :heavy_check_mark: |
-| `validity.badInput`          | :full_moon: | :heavy_check_mark: |
-| `validity.customError`       | :full_moon: | :heavy_check_mark: |
-| `validity.valid`             | :full_moon: | :heavy_check_mark: |
-| `checkValidity()`            | :full_moon: | :heavy_check_mark: |
-| `reportValidity()`           | :full_moon: | :heavy_check_mark: |
-| `validationMessage`          | :full_moon: | :heavy_check_mark: |
-| `valueAsDate`                | :full_moon: | :heavy_check_mark: |
-| `valueAsNumber`              | :full_moon: | :heavy_check_mark: |
-| `valueLow` / `valueHigh`     | :new_moon:  | not yet            |
-| `stepUp(n)` / `stepDown(n)`  | :full_moon: | :heavy_check_mark: |
-| `accept` attribute           | :full_moon: | :heavy_check_mark: |
-| support for `novalidate`     | :full_moon: | :heavy_check_mark: |
+| feature                      | status      |
+| ---------------------------- | ----------- |
+| `willValidate`               | :full_moon: |
+| `setCustomValidity(message)` | :full_moon: |
+| `validity.valueMissing`      | :full_moon: |
+| `validity.typeMismatch`      | :full_moon: |
+| `validity.patternMismatch`   | :full_moon: |
+| `validity.tooLong`           | :full_moon: |
+| `validity.tooShort`          | :full_moon: |
+| `validity.rangeUnderflow`    | :full_moon: |
+| `validity.rangeOverflow`     | :full_moon: |
+| `validity.stepMismatch`      | :full_moon: |
+| `validity.badInput`          | :full_moon: |
+| `validity.customError`       | :full_moon: |
+| `validity.valid`             | :full_moon: |
+| `checkValidity()`            | :full_moon: |
+| `reportValidity()`           | :full_moon: |
+| `validationMessage`          | :full_moon: |
+| `valueAsDate`                | :full_moon: |
+| `valueAsNumber`              | :full_moon: |
+| `valueLow` / `valueHigh`     | :new_moon:  |
+| `stepUp(n)` / `stepDown(n)`  | :full_moon: |
+| `accept` attribute           | :full_moon: |
+| support for `novalidate`     | :full_moon: |
+
+Current test status: [![View on Travis CI](https://api.travis-ci.org/hyperform/hyperform.svg?branch=master)](https://travis-ci.org/hyperform/hyperform)
 
 ### Browser Support
 
