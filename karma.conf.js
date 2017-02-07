@@ -55,7 +55,10 @@ module.exports = function(config) {
     ],
 
     proxies: {
+      // blank.html loading files from another base dir
       '/blank.html': '/base/test/functional/blank.html',
+      '/weakmap.min.js': '/base/test/functional/weakmap.min.js',
+      '/classList.min.js': '/base/test/functional/classList.min.js',
       '/dist/hyperform.js': '/base/dist/hyperform.js',
     },
 

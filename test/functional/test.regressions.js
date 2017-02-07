@@ -73,7 +73,7 @@ describe('Issue 13', function() {
     iframe.src = 'blank.html';
     document.body.appendChild(iframe);
 
-    once(iframe, 'load', function() {
+    once(iframe.contentWindow, 'load', function() {
       var hform = make_hform(iframe.contentDocument);
       var form = hform.form;
       form.method = 'get';
@@ -91,15 +91,17 @@ describe('Issue 13', function() {
       iframe.contentDocument.body.appendChild(form);
       form.action = '#';
 
-      once(iframe, 'load', function() {
-        if (iframe.contentWindow.location.search.search(/test=value/) === -1) {
-          throw Error('test value not found');
-        }
-        iframe.parentNode.removeChild(iframe);
-        done();
-      });
+      setTimeout(function(){
+        once(iframe, 'load', function() {
+          if (iframe.contentWindow.location.search.search(/test=value/) === -1) {
+            throw Error('test value not found');
+          }
+          iframe.parentNode.removeChild(iframe);
+          done();
+        });
 
-      button.click();
+        button.click();
+      }, 100);
     });
   });
 
