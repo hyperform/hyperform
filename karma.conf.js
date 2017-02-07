@@ -18,9 +18,11 @@ var customLaunchers = {};
   ['internet explorer', '11.0', 'Windows 8.1'],
   ['internet explorer', '10.0', 'Windows 7'],
   ['internet explorer', '9.0', 'Windows 7'],
+  ['safari', '9.0', 'OS X 10.11'],
   ['safari', '10.0', 'macOS 10.12'],
-  // TODO: doesn't work: ['iphone', '7.1', 'OS X 10.9'],
-  // TODO: Android
+  ['iphone', '8.1', 'OS X 10.10'],
+  ['iphone', '10.0', 'Mac 10.11'],
+  ['android', '4.4', 'Linux'],
 ].forEach(set => {
   customLaunchers['sl_'+set.join('_').replace(/[^a-zA-Z0-9_]+/g, '_')] = {
       base: 'SauceLabs',
