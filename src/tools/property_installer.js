@@ -22,6 +22,8 @@ export default function(element, property, descriptor) {
   if (original_descriptor) {
 
     if (original_descriptor.configurable === false) {
+      /* Safari <= 9 and PhantomJS will end up here :-( Nothing to do except
+       * warning */
       const wrapper = get_wrapper(element);
       if (wrapper && wrapper.settings.debug) {
         /* global console */

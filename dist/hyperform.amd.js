@@ -695,9 +695,19 @@ define(function () { 'use strict';
                        /**
                         * remove `property` from element and restore _original_property, if present
                         */
-
                        function uninstall_property (element, property) {
-                         delete element[property];
+                         try {
+                           delete element[property];
+                         } catch (e) {
+                           /* Safari <= 9 and PhantomJS will end up here :-( Nothing to do except
+                            * warning */
+                           var wrapper = get_wrapper(element);
+                           if (wrapper && wrapper.settings.debug) {
+                             /* global console */
+                             console.log('[hyperform] cannot uninstall custom property ' + property);
+                           }
+                           return false;
+                         }
 
                          var original_descriptor = Object.getOwnPropertyDescriptor(element, '_original_' + property);
 
@@ -724,6 +734,8 @@ define(function () { 'use strict';
                          if (original_descriptor) {
 
                            if (original_descriptor.configurable === false) {
+                             /* Safari <= 9 and PhantomJS will end up here :-( Nothing to do except
+                              * warning */
                              var wrapper = get_wrapper(element);
                              if (wrapper && wrapper.settings.debug) {
                                /* global console */
