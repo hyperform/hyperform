@@ -45,7 +45,7 @@ export default function Wrapper(form, settings) {
     ]);
     polyfill(window.HTMLFormElement);
   } else if (form instanceof window.HTMLFormElement ||
-              form instanceof window.HTMLFieldSetElement) {
+             form instanceof window.HTMLFieldSetElement) {
     this.install(form.elements);
     if (form instanceof window.HTMLFormElement) {
       polyfill(form);
@@ -54,14 +54,14 @@ export default function Wrapper(form, settings) {
 
   if (settings.revalidate === 'oninput' || settings.revalidate === 'hybrid') {
     /* in a perfect world we'd just bind to "input", but support here is
-      * abysmal: http://caniuse.com/#feat=input-event */
+     * abysmal: http://caniuse.com/#feat=input-event */
     form.addEventListener('keyup', this.revalidator);
     form.addEventListener('change', this.revalidator);
   }
   if (settings.revalidate === 'onblur' || settings.revalidate === 'hybrid') {
     /* useCapture=true, because `blur` doesn't bubble. See
-      * https://developer.mozilla.org/en-US/docs/Web/Events/blur#Event_delegation
-      * for a discussion */
+     * https://developer.mozilla.org/en-US/docs/Web/Events/blur#Event_delegation
+     * for a discussion */
     form.addEventListener('blur', this.revalidator, true);
   }
 }
