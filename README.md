@@ -102,112 +102,138 @@ if (hyperform.willValidate(some_input_element)) {
 }
 ```
 
+### What About the UI?
+
+You might be wondering, how to get nifty datepickers and range sliders and
+stuff. Unfortunately, this is out of topic for Hyperform, but despair not!
+[Hyperform UI](https://github.com/hyperform/hyperform-ui) (beta) is here to
+fill in the gaps with the help of jQuery UI.
+
+> “jQuery UI? Isn’t that that thing that they had before React?” — “No, that’s
+> Backbone.” — “But before that?” — “No, that was Kendo.” — “...?”
+
+If you had these thoughts right now, rest assured. For the purpose of input
+widgets there is still close to no other library, that is complete, themable,
+accessible and has wide browser support. Just try it yourself!
+
 ## Examples
 
 [Yes, please! The more the better.](https://hyperform.js.org/examples.html)
 
 ## Status
 
-What parts of the [HTML5 validation
-API](https://html.spec.whatwg.org/multipage/forms.html#constraints) are ready
-for prime time?
+The target is 100% support for the [HTML5 validation
+API](https://html.spec.whatwg.org/multipage/forms.html#constraints). Currently
+are supported:
 
 | feature                      | status      | comment            |
 | ---------------------------- | ----------- | ------------------ |
 | `willValidate`               | :full_moon: | :heavy_check_mark: |
 | `setCustomValidity(message)` | :full_moon: | :heavy_check_mark: |
-| `validity.valueMissing`      | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.typeMismatch`      | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.patternMismatch`   | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.tooLong`           | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.tooShort`          | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.rangeUnderflow`    | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.rangeOverflow`     | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.stepMismatch`      | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.badInput`          | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.customError`       | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
-| `validity.valid`             | :full_moon: | :heavy_check_mark: (access via `hyperform.validityState`) |
+| `validity.valueMissing`      | :full_moon: | :heavy_check_mark: |
+| `validity.typeMismatch`      | :full_moon: | :heavy_check_mark: |
+| `validity.patternMismatch`   | :full_moon: | :heavy_check_mark: |
+| `validity.tooLong`           | :full_moon: | :heavy_check_mark: |
+| `validity.tooShort`          | :full_moon: | :heavy_check_mark: |
+| `validity.rangeUnderflow`    | :full_moon: | :heavy_check_mark: |
+| `validity.rangeOverflow`     | :full_moon: | :heavy_check_mark: |
+| `validity.stepMismatch`      | :full_moon: | :heavy_check_mark: |
+| `validity.badInput`          | :full_moon: | :heavy_check_mark: |
+| `validity.customError`       | :full_moon: | :heavy_check_mark: |
+| `validity.valid`             | :full_moon: | :heavy_check_mark: |
 | `checkValidity()`            | :full_moon: | :heavy_check_mark: |
 | `reportValidity()`           | :full_moon: | :heavy_check_mark: |
 | `validationMessage`          | :full_moon: | :heavy_check_mark: |
 | `valueAsDate`                | :full_moon: | :heavy_check_mark: |
 | `valueAsNumber`              | :full_moon: | :heavy_check_mark: |
-| `valueLow` / `valueHigh`     | :new_moon:  | not started, yet   |
+| `valueLow` / `valueHigh`     | :new_moon:  | not yet            |
 | `stepUp(n)` / `stepDown(n)`  | :full_moon: | :heavy_check_mark: |
-| `accept` attribute           | :full_moon: | :heavy_check_mark: for `type=file` inputs. It’s useful to implement a check because there are browsers without support, that implement the File API. |
+| `accept` attribute           | :full_moon: | :heavy_check_mark: |
 | support for `novalidate`     | :full_moon: | :heavy_check_mark: |
 
-What parts of the high-level API are finished?
+### Browser Support
 
-*   :full_moon: Trigger a `validate` event before validating a form:
+Hyperform is fully tested and supported in
 
-    ```js
-    form.addEventListener('validate', event => {
-      /* cancel validation (will also cancel form submission!) */
-      event.preventDefault();
-    });
-    ```
+* Chrome (latest 3)
+* Firefox (latest 3 and ESR)
+* MS Edge (latest)
+* IE down to version 9 (yes, you've read that correctly) when `WeakMap` for IE
+    ≤ 10 and `classList` for IE 9 are polyfilled
+* Safari. _Caveat:_ In versions ≤ 9 [polyfills do not
+    work](https://github.com/hyperform/hyperform/issues/16). However, form
+    validation and direct method calling works as expected.)
 
-*   :new_moon: Trigger an event before validating individual elements.
+## Contributing
 
-*   :full_moon: Trigger a `valid` event, when an input becomes valid, again:
+Cool, yes! Welcome aboard! If you have Node.js and `make` installed, you are
+ready to start.
 
-    ```js
-    input.addEventListener('valid', () => alert('Yay!'));
-    ```
+**Before you start editing:** If you don’t directly fix an already reported
+issue, please do open a new one before! Otherwise there might be the chance,
+that your work is not fully aligned with Hyperform’s goals, and your time
+wasted.
 
-*   :new_moon: Allow functions to hook into the actual validations to accept or
-    reject inputs.
+### Set-Up
 
-*   :first_quarter_moon: Translate validation messages. We have some partial
-    translations ready: https://github.com/hyperform/hyperform-l10n
+Log in to [GitHub](https://github.com) and fork
+[Hyperform](https://github.com/hyperform/hyperform) (button in the upper-right
+corner). Then switch to your terminal:
 
-*   :full_moon: Provide a registry for user defined validators, that are called
-    automatically in the `validity.customError` step:
+```sh
+$ git clone git@github.com:YourUserName/hyperform.git
+$ cd hyperform
+$ npm install
+$ node_modules/.bin/jspm install
+# now you're ready to go. Try your first build to see if everything works:
+$ make -B && git status
+```
 
-    ```js
-    hyperform.register(element, function(element) {
-      return result_of_convoluted_validation_routine();
-    });
-    ```
+Git should show no file changes. Start editing the files in `src` and build
+again with `make`.
 
-*   :full_moon: Catch form submissions _before_ the `submit` event to do our
-    own validation (`click`s on submit buttons and `enter` keys in text inputs
-    in forms w/o submit buttons).
+### Testing Your Edit
 
-*   :full_moon: Add helper classes `hf-valid` and `hf-invalid` as well as
-    proper `aria-invalid` to elements to become independent of `:valid` /
-    `:invalid` pseudo-classes.
+For this you need a [SauceLabs](https://saucelabs.com/) account. It’s free to
+register and allows testing in a bunch of browsers concurrently. Export your
+SauceLabs API token from your profile page to your shell:
 
-*   :first_quarter_moon: Allow specifying settings to customize the behavior of
-    Hyperform (e. g., specifying a renderer for error messages).
+```sh
+$ export SAUCE_USERNAME=your_saucelabs_user
+$ export SAUCE_ACCESS_KEY=your_api_key
+```
 
-*   :full_moon: Take single `<input>` elements out of validation by supporting
-    a non-standard `novalidate` attribute and `noValidate` property for inputs:
+Then you can run all tests with a single command:
 
-    ```js
-    var element = document.querySelector('input[name="foo"]');
-    element.noValidate = true;
-    // done. element won't be validated.
-    ```
+```sh
+$ make test
+```
 
-*   :new_moon: Add support for declarative custom validation messages:
+If you do not want to create a SauceLabs account, you can also do the tests
+manually:
 
-    ```html
-    <input data-validation-message="We need this field!">
-    ```
+```sh
+$ make test-syntax
+$ make test-unit
+```
 
-*   :new_moon: Idea: Add a means of linking two `<input>`s together so they get
-    validated synchronously:
+and then open `test/functional/index.html` in your browser and verify, that
+all tests return green.
 
-    ```js
-    hyperform.link(element1, element2);
-    element1.reportValidity();
-    // element2.reportValidity gets triggered automatically
-    ```
+**Attention:** The functional tests are performed on `dist/hyperform.js`. Don’t
+forget to `make` that file prior to testing!
 
-Do you have a wish or an idea? [File an issue and let us discuss
-it!](https://github.com/hyperform/hyperform/issues/new)
+### Submitting a Pull Request
+
+See [Github’s help page](https://help.github.com/articles/using-pull-requests/)
+on how that works exactly (with screenshots!). Please try to make title and
+description of the change request meaningful.
+
+### If Something Goes Wrong
+
+If you encounter any problem, grab Manuel on
+[Twitter](https://twitter.com/m_strehl) or via
+[e-mail](http://www.manuel-strehl.de/about/contact).
 
 ## License
 
