@@ -16,8 +16,8 @@ var customLaunchers = {};
   ['firefox', '45.0', 'Linux'],
   ['MicrosoftEdge', '14.14393', 'Windows 10'],
   ['internet explorer', '11.0', 'Windows 8.1'],
-  // TODO: strange error: ['internet explorer', '10.0', 'Windows 7'],
-  // TODO: needs classList polyfill: ['internet explorer', '9.0', 'Windows 7'],
+  ['internet explorer', '10.0', 'Windows 7'],
+  ['internet explorer', '9.0', 'Windows 7'],
   ['safari', '10.0', 'macOS 10.12'],
   // TODO: doesn't work: ['iphone', '7.1', 'OS X 10.9'],
   // TODO: Android
@@ -47,6 +47,8 @@ module.exports = function(config) {
     files: [
       // for IE 10 support
       'test/functional/weakmap.min.js',
+      // for IE 9 support
+      'test/functional/classList.min.js',
       'dist/hyperform.js',
       'test/functional/test.*.js',
       { pattern: 'test/functional/blank.html', watched: false, included: true, served: true, nocache: true, }
