@@ -44,11 +44,23 @@ dist/hyperform.js: src/hyperform.js src/*.js src/*/*.js
 	@$(JSPM) build "$<" "$@" $(JSPM_ARGS)
 	@sed -i '1s#^#$(BANNER)\n#' "$@"
 
-test:
-	@echo "* run tests"
-	@$(JSHINT) $(JSHINT_ARGS) src
-	@npm test
+test: test-syntax test-unit test-functional
 .PHONY: test
+
+test-syntax:
+	@echo "* run syntax tests"
+	@$(JSHINT) $(JSHINT_ARGS) src
+.PHONY: test-syntax
+
+test-unit:
+	@echo "* run unit tests"
+	@node_modules/.bin/ava
+.PHONY: test-unit
+
+test-functional:
+	@echo "* run functional tests"
+	@node_modules/.bin/karma start karma.conf.js
+.PHONY: test-unit
 
 icons: stuff/icon.16.png
 	@echo "* generate icons"
