@@ -225,6 +225,18 @@ all tests return green.
 **Attention:** The functional tests are performed on `dist/hyperform.js`. Don’t
 forget to `make` that file prior to testing!
 
+### Keeping a Look at the File Size
+
+If you have [`gnuplot`](http://gnuplot.sourceforge.net/) installed, try
+
+```sh
+$ make cmpsize
+```
+
+This produces a nice little chart of how the size of `dist/hyperform.min.js`
+changed over time. If you notice a huge peak at the very end, maybe there could
+be one or the other byte shoved off before you commit :wink:.
+
 ### Submitting a Pull Request
 
 See [Github’s help page](https://help.github.com/articles/using-pull-requests/)
