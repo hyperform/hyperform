@@ -24,7 +24,7 @@ export default function reportValidity(element) {
   var event;
   if (valid) {
     const wrapped_form = get_wrapper(element);
-    if (wrapped_form && wrapped_form.settings.valid_event) {
+    if (wrapped_form && wrapped_form.settings.validEvent) {
       event = trigger_event(element, 'valid', { cancelable: true });
     }
   } else {

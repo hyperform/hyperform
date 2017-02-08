@@ -243,7 +243,7 @@ define(function () { 'use strict';
 
                            if (element instanceof window.HTMLFieldSetElement) {
                              var wrapped_form = get_wrapper(element);
-                             if (wrapped_form && !wrapped_form.settings.extend_fieldset) {
+                             if (wrapped_form && !wrapped_form.settings.extendFieldset) {
                                /* make this a no-op for <fieldset> in strict mode */
                                return message_store;
                              }
@@ -395,7 +395,7 @@ define(function () { 'use strict';
                          var event;
                          if (valid) {
                            var wrapped_form = get_wrapper(element);
-                           if (wrapped_form && wrapped_form.settings.valid_event) {
+                           if (wrapped_form && wrapped_form.settings.validEvent) {
                              event = trigger_event(element, 'valid', { cancelable: true });
                            }
                          } else {
@@ -634,7 +634,7 @@ define(function () { 'use strict';
                              event.preventDefault();
 
                              var wrapper = get_wrapper(event.target.form) || { settings: {} };
-                             if (wrapper.settings.prevent_implicit_submit) {
+                             if (wrapper.settings.preventImplicitSubmit) {
                                /* user doesn't want an implicit submit. Cancel here. */
                                return;
                              }
@@ -1670,7 +1670,7 @@ define(function () { 'use strict';
                                var wrapped_form = get_wrapper(element);
                                /* it hasn't got the (non-standard) attribute 'novalidate' or its
                                 * parent form has got the strict parameter */
-                               if (wrapped_form && wrapped_form.settings.novalidate_on_elements || !element.hasAttribute('novalidate') || !element.noValidate) {
+                               if (wrapped_form && wrapped_form.settings.novalidateOnElements || !element.hasAttribute('novalidate') || !element.noValidate) {
 
                                  /* it isn't part of a <fieldset disabled> */
                                  var p = element.parentNode;
@@ -2475,7 +2475,7 @@ define(function () { 'use strict';
                          var valid = ValidityState(element).valid;
                          if (valid) {
                            var wrapped_form = get_wrapper(element);
-                           if (wrapped_form && wrapped_form.settings.valid_event) {
+                           if (wrapped_form && wrapped_form.settings.validEvent) {
                              trigger_event(element, 'valid');
                            }
                          } else {
@@ -2487,44 +2487,80 @@ define(function () { 'use strict';
 
                        var version = '0.8.15';
 
+                       /* deprecate the old snake_case names
+                        * TODO: delme before next non-patch release
+                        */
+                       function w(name) {
+                         var deprecated_message = 'Please use camelCase method names! The name "%s" is deprecated and will be removed in the next non-patch release.';
+                         /* global console */
+                         console.log(sprintf(deprecated_message, name));
+                       }
+
                        /**
                         * public hyperform interface:
                         */
                        function hyperform(form) {
                          var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
+                         var classes = _ref.classes;
                          var _ref$debug = _ref.debug;
                          var debug = _ref$debug === undefined ? false : _ref$debug;
+                         var extend_fieldset = _ref.extend_fieldset;
+                         var extendFieldset = _ref.extendFieldset;
+                         var novalidate_on_elements = _ref.novalidate_on_elements;
+                         var novalidateOnElements = _ref.novalidateOnElements;
+                         var prevent_implicit_submit = _ref.prevent_implicit_submit;
+                         var preventImplicitSubmit = _ref.preventImplicitSubmit;
+                         var revalidate = _ref.revalidate;
                          var _ref$strict = _ref.strict;
                          var strict = _ref$strict === undefined ? false : _ref$strict;
-                         var _ref$prevent_implicit = _ref.prevent_implicit_submit;
-                         var prevent_implicit_submit = _ref$prevent_implicit === undefined ? false : _ref$prevent_implicit;
-                         var revalidate = _ref.revalidate;
                          var valid_event = _ref.valid_event;
-                         var extend_fieldset = _ref.extend_fieldset;
-                         var novalidate_on_elements = _ref.novalidate_on_elements;
-                         var classes = _ref.classes;
+                         var validEvent = _ref.validEvent;
 
 
+                         if (!classes) {
+                           classes = {};
+                         }
+                         // TODO: clean up before next non-patch release
+                         if (extendFieldset === undefined) {
+                           if (extend_fieldset === undefined) {
+                             extendFieldset = !strict;
+                           } else {
+                             w('extend_fieldset');
+                             extendFieldset = extend_fieldset;
+                           }
+                         }
+                         if (novalidateOnElements === undefined) {
+                           if (novalidate_on_elements === undefined) {
+                             novalidateOnElements = !strict;
+                           } else {
+                             w('novalidate_on_elements');
+                             novalidateOnElements = novalidate_on_elements;
+                           }
+                         }
+                         if (preventImplicitSubmit === undefined) {
+                           if (prevent_implicit_submit === undefined) {
+                             preventImplicitSubmit = false;
+                           } else {
+                             w('prevent_implicit_submit');
+                             preventImplicitSubmit = prevent_implicit_submit;
+                           }
+                         }
                          if (revalidate === undefined) {
                            /* other recognized values: 'oninput', 'onblur', 'onsubmit' and 'never' */
                            revalidate = strict ? 'onsubmit' : 'hybrid';
                          }
-                         if (valid_event === undefined) {
-                           valid_event = !strict;
-                         }
-                         if (extend_fieldset === undefined) {
-                           extend_fieldset = !strict;
-                         }
-                         if (novalidate_on_elements === undefined) {
-                           novalidate_on_elements = !strict;
-                         }
-                         if (!classes) {
-                           classes = {};
+                         if (validEvent === undefined) {
+                           if (valid_event === undefined) {
+                             validEvent = !strict;
+                           } else {
+                             w('valid_event');
+                             validEvent = valid_event;
+                           }
                          }
 
-                         var settings = { debug: debug, strict: strict, prevent_implicit_submit: prevent_implicit_submit, revalidate: revalidate,
-                           valid_event: valid_event, extend_fieldset: extend_fieldset, classes: classes };
+                         var settings = { debug: debug, strict: strict, preventImplicitSubmit: preventImplicitSubmit, revalidate: revalidate,
+                           validEvent: validEvent, extendFieldset: extendFieldset, classes: classes };
 
                          if (form instanceof window.NodeList || form instanceof window.HTMLCollection || form instanceof Array) {
                            return Array.prototype.map.call(form, function (element) {
@@ -2548,26 +2584,49 @@ define(function () { 'use strict';
                        hyperform.valueAsNumber = valueAsNumber;
                        hyperform.willValidate = willValidate;
 
-                       hyperform.set_language = function (lang) {
+                       hyperform.setLanguage = function (lang) {
                          set_language(lang);return hyperform;
                        };
-                       hyperform.add_translation = function (lang, catalog) {
+                       hyperform.addTranslation = function (lang, catalog) {
                          add_translation(lang, catalog);return hyperform;
                        };
-                       hyperform.set_renderer = function (renderer, action) {
+                       hyperform.setRenderer = function (renderer, action) {
                          Renderer.set(renderer, action);return hyperform;
                        };
-                       hyperform.add_validator = function (element, validator) {
+                       hyperform.addValidator = function (element, validator) {
                          custom_validator_registry.set(element, validator);return hyperform;
                        };
-                       hyperform.set_message = function (element, validator, message) {
+                       hyperform.setMessage = function (element, validator, message) {
                          custom_messages.set(element, validator, message);return hyperform;
                        };
-                       hyperform.add_hook = function (hook, action, position) {
+                       hyperform.addHook = function (hook, action, position) {
                          add_hook(hook, action, position);return hyperform;
                        };
-                       hyperform.remove_hook = function (hook, action) {
+                       hyperform.removeHook = function (hook, action) {
                          remove_hook(hook, action);return hyperform;
+                       };
+
+                       // TODO: Remove in next non-patch version
+                       hyperform.set_language = function (lang) {
+                         w('set_language');set_language(lang);return hyperform;
+                       };
+                       hyperform.add_translation = function (lang, catalog) {
+                         w('add_translation');add_translation(lang, catalog);return hyperform;
+                       };
+                       hyperform.set_renderer = function (renderer, action) {
+                         w('set_renderer');Renderer.set(renderer, action);return hyperform;
+                       };
+                       hyperform.add_validator = function (element, validator) {
+                         w('add_validator');custom_validator_registry.set(element, validator);return hyperform;
+                       };
+                       hyperform.set_message = function (element, validator, message) {
+                         w('set_message');custom_messages.set(element, validator, message);return hyperform;
+                       };
+                       hyperform.add_hook = function (hook, action, position) {
+                         w('add_hook');add_hook(hook, action, position);return hyperform;
+                       };
+                       hyperform.remove_hook = function (hook, action) {
+                         w('remove_hook');remove_hook(hook, action);return hyperform;
                        };
 
                        return hyperform;

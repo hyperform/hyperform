@@ -17,7 +17,7 @@ const message_store = {
   set(element, message, is_custom=false) {
     if (element instanceof window.HTMLFieldSetElement) {
       const wrapped_form = get_wrapper(element);
-      if (wrapped_form && ! wrapped_form.settings.extend_fieldset) {
+      if (wrapped_form && ! wrapped_form.settings.extendFieldset) {
         /* make this a no-op for <fieldset> in strict mode */
         return message_store;
       }

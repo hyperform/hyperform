@@ -22,7 +22,7 @@ const checkValidity = return_hook_or('checkValidity', function(element) {
   const valid = ValidityState(element).valid;
   if (valid) {
     const wrapped_form = get_wrapper(element);
-    if (wrapped_form && wrapped_form.settings.valid_event) {
+    if (wrapped_form && wrapped_form.settings.validEvent) {
       trigger_event(element, 'valid');
     }
   } else {

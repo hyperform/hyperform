@@ -246,7 +246,7 @@ function get_keypress_handler(ignore) {
       event.preventDefault();
 
       const wrapper = get_wrapper(event.target.form) || { settings: {} };
-      if (wrapper.settings.prevent_implicit_submit) {
+      if (wrapper.settings.preventImplicitSubmit) {
         /* user doesn't want an implicit submit. Cancel here. */
         return;
       }
