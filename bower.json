@@ -1,12 +1,12 @@
 {
   "name": "hyperform",
-  "version": "0.8.15",
+  "version": "0.8.16",
   "homepage": "https://github.com/hyperform/hyperform",
   "authors": [
     "Manuel Strehl"
   ],
   "description": "Capture form validation back from the browser",
-  "main": "dist/hyperform.min.js",
+  "main": "dist/hyperform.js",
   "moduleType": [
     "amd",
     "es6",
