@@ -167,3 +167,11 @@ Cool, yes! Head over to the [contributing guide](CONTRIBUTING.md) for details.
 ## License
 
 This library is released under the terms of the [MIT license](LICENSE.md).
+
+## Contributors
+
+Hyperform is developed by [Manuel Strehl](https://twitter.com/m_strehl) with
+contributions by
+[Andrey Volynkin](https://github.com/Avol-V),
+[Daniel Wang](https://github.com/pvnr0082t),
+and many people reporting issues.
