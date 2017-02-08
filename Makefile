@@ -82,9 +82,13 @@ version:
 	fi
 .PHONY: version
 
+GNUPLOT_STYLE := impulses
+
 cmpsize:
-	git log --pretty=format:%H | \
-	(while read x; do git show "$$x:dist/hyperform.min.js" | wc -c ; done ) | \
-	tac | \
-	gnuplot -p -e "plot '< cat -' using 1"
+	git log --reverse --pretty=format:%H dist/hyperform.min.js | \
+	( \
+	  while read x; do git show "$$x:dist/hyperform.min.js" | wc -c ; done; \
+	  wc -c dist/hyperform.min.js \
+	) | \
+	gnuplot -p -e "plot '< cat' using 1 title 'size of dist/hyperform.min.js' with $(GNUPLOT_STYLE)"
 .PHONY: cmpsize
