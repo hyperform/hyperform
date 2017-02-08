@@ -1022,12 +1022,21 @@ var hyperform = (function () {
                          }
                        };
 
+                       /**
+                        * the global language Hyperform will use
+                        */
                        var language = 'en';
 
+                       /**
+                        * set the language for Hyperform’s messages
+                        */
                        function set_language(newlang) {
                          language = newlang;
                        }
 
+                       /**
+                        * add a lookup catalog "string: translation" for a language
+                        */
                        function add_translation(lang, new_catalog) {
                          if (!(lang in catalog)) {
                            catalog[lang] = {};
@@ -1039,6 +1048,11 @@ var hyperform = (function () {
                          }
                        }
 
+                       /**
+                        * return `s` translated into the current language
+                        *
+                        * Defaults to English if the former has no translation for `s`.
+                        */
                        function _ (s) {
                          if (language in catalog && s in catalog[language]) {
                            return catalog[language][s];
