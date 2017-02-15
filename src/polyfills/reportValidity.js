@@ -32,7 +32,7 @@ export default function reportValidity(element) {
   }
 
   if (! event || ! event.defaultPrevented) {
-    Renderer.show_warning(element);
+    Renderer.showWarning(element);
   }
 
   return valid;

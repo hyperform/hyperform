@@ -6,7 +6,7 @@ import { get_wrapper } from './wrapper';
 import generate_id from '../tools/generate_id';
 
 
-const warnings_cache = new WeakMap();
+const warningsCache = new WeakMap();
 
 
 const DefaultRenderer = {
@@ -14,7 +14,7 @@ const DefaultRenderer = {
   /**
    * called when a warning should become visible
    */
-  attach_warning: function(warning, element) {
+  attachWarning: function(warning, element) {
     /* should also work, if element is last,
      * http://stackoverflow.com/a/4793630/113195 */
     element.parentNode.insertBefore(warning, element.nextSibling);
@@ -23,7 +23,7 @@ const DefaultRenderer = {
   /**
    * called when a warning should vanish
    */
-  detach_warning: function(warning, element) {
+  detachWarning: function(warning, element) {
     warning.parentNode.removeChild(warning);
   },
 
@@ -32,9 +32,9 @@ const DefaultRenderer = {
    *
    * i.e., showing and hiding warnings
    */
-  show_warning: function(element, sub_radio=false) {
+  showWarning: function(element, sub_radio=false) {
     const msg = message_store.get(element).toString();
-    var warning = warnings_cache.get(element);
+    var warning = warningsCache.get(element);
 
     if (msg) {
       if (! warning) {
@@ -43,16 +43,16 @@ const DefaultRenderer = {
         warning.className = wrapper && wrapper.settings.classes.warning || 'hf-warning';
         warning.id = generate_id();
         warning.setAttribute('aria-live', 'polite');
-        warnings_cache.set(element, warning);
+        warningsCache.set(element, warning);
       }
 
       element.setAttribute('aria-errormessage', warning.id);
       warning.textContent = msg;
-      Renderer.attach_warning(warning, element);
+      Renderer.attachWarning(warning, element);
 
     } else if (warning && warning.parentNode) {
       element.removeAttribute('aria-errormessage');
-      Renderer.detach_warning(warning, element);
+      Renderer.detachWarning(warning, element);
 
     }
 
@@ -63,7 +63,7 @@ const DefaultRenderer = {
                      radio => radio.name === element.name &&
                               radio.form === element.form
         )
-        .map(radio => Renderer.show_warning(radio, 'sub_radio'));
+        .map(radio => Renderer.showWarning(radio, 'sub_radio'));
     }
   },
 
@@ -72,11 +72,17 @@ const DefaultRenderer = {
 
 const Renderer = {
 
-  attach_warning: DefaultRenderer.attach_warning,
-  detach_warning: DefaultRenderer.detach_warning,
-  show_warning: DefaultRenderer.show_warning,
+  attachWarning: DefaultRenderer.attachWarning,
+  detachWarning: DefaultRenderer.detachWarning,
+  showWarning: DefaultRenderer.showWarning,
 
   set: function(renderer, action) {
+    if (renderer.indexOf('_') > -1) {
+      /* global console */
+      // TODO delete before next non-patch version
+      console.log('Renderer.set: please use camelCase names. '+renderer+' will be removed in the next non-patch release.');
+      renderer = renderer.replace(/_([a-z])/g, g => g[1].toUpperCase());
+    }
     if (! action) {
       action = DefaultRenderer[renderer];
     }

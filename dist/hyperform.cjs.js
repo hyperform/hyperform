@@ -302,14 +302,14 @@ function generate_id () {
   return prefix + uid++ + Math.random().toString(36).substr(2);
 }
 
-var warnings_cache = new WeakMap();
+var warningsCache = new WeakMap();
 
 var DefaultRenderer = {
 
   /**
    * called when a warning should become visible
    */
-  attach_warning: function attach_warning(warning, element) {
+  attachWarning: function attachWarning(warning, element) {
     /* should also work, if element is last,
      * http://stackoverflow.com/a/4793630/113195 */
     element.parentNode.insertBefore(warning, element.nextSibling);
@@ -318,7 +318,7 @@ var DefaultRenderer = {
   /**
    * called when a warning should vanish
    */
-  detach_warning: function detach_warning(warning, element) {
+  detachWarning: function detachWarning(warning, element) {
     warning.parentNode.removeChild(warning);
   },
 
@@ -327,11 +327,11 @@ var DefaultRenderer = {
    *
    * i.e., showing and hiding warnings
    */
-  show_warning: function show_warning(element) {
+  showWarning: function showWarning(element) {
     var sub_radio = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
     var msg = message_store.get(element).toString();
-    var warning = warnings_cache.get(element);
+    var warning = warningsCache.get(element);
 
     if (msg) {
       if (!warning) {
@@ -340,15 +340,15 @@ var DefaultRenderer = {
         warning.className = wrapper && wrapper.settings.classes.warning || 'hf-warning';
         warning.id = generate_id();
         warning.setAttribute('aria-live', 'polite');
-        warnings_cache.set(element, warning);
+        warningsCache.set(element, warning);
       }
 
       element.setAttribute('aria-errormessage', warning.id);
       warning.textContent = msg;
-      Renderer.attach_warning(warning, element);
+      Renderer.attachWarning(warning, element);
     } else if (warning && warning.parentNode) {
       element.removeAttribute('aria-errormessage');
-      Renderer.detach_warning(warning, element);
+      Renderer.detachWarning(warning, element);
     }
 
     if (!sub_radio && element.type === 'radio' && element.form) {
@@ -356,7 +356,7 @@ var DefaultRenderer = {
       Array.prototype.filter.call(document.getElementsByName(element.name), function (radio) {
         return radio.name === element.name && radio.form === element.form;
       }).map(function (radio) {
-        return Renderer.show_warning(radio, 'sub_radio');
+        return Renderer.showWarning(radio, 'sub_radio');
       });
     }
   }
@@ -365,11 +365,19 @@ var DefaultRenderer = {
 
 var Renderer = {
 
-  attach_warning: DefaultRenderer.attach_warning,
-  detach_warning: DefaultRenderer.detach_warning,
-  show_warning: DefaultRenderer.show_warning,
+  attachWarning: DefaultRenderer.attachWarning,
+  detachWarning: DefaultRenderer.detachWarning,
+  showWarning: DefaultRenderer.showWarning,
 
   set: function set(renderer, action) {
+    if (renderer.indexOf('_') > -1) {
+      /* global console */
+      // TODO delete before next non-patch version
+      console.log('Renderer.set: please use camelCase names. ' + renderer + ' will be removed in the next non-patch release.');
+      renderer = renderer.replace(/_([a-z])/g, function (g) {
+        return g[1].toUpperCase();
+      });
+    }
     if (!action) {
       action = DefaultRenderer[renderer];
     }
@@ -403,7 +411,7 @@ function reportValidity(element) {
   }
 
   if (!event || !event.defaultPrevented) {
-    Renderer.show_warning(element);
+    Renderer.showWarning(element);
   }
 
   return valid;
