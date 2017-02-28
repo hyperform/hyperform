@@ -2493,7 +2493,7 @@ var checkValidity = return_hook_or('checkValidity', function (element) {
   return valid;
 });
 
-var version = '0.9.3';
+var version = '0.9.4';
 
 /* deprecate the old snake_case names
  * TODO: delme before next non-patch release
