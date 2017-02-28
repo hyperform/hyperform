@@ -137,6 +137,50 @@ describe('Issue 35', function() {
 });
 
 
+describe('Issue 41', function() {
+
+  it('should autoload when requested', function(done) {
+    var iframe = document.createElement('iframe');
+    iframe.src = 'blank.html';
+    document.body.appendChild(iframe);
+
+    once(iframe.contentWindow, 'load', function() {
+      var el = iframe.contentDocument.createElement('script');
+      el.src = '../../dist/hyperform.js';
+      el.setAttribute('data-hf-autoload', '');
+      iframe.contentDocument.body.appendChild(el);
+      el.addEventListener('load', function() {
+        if (! iframe.contentWindow.HTMLInputElement.prototype.checkValidity.__hyperform) {
+          throw Error('no original checkValidity method detected');
+        }
+        iframe.parentNode.removeChild(iframe);
+        done();
+      });
+    });
+  });
+
+  it('should not autoload when not requested', function(done) {
+    var iframe = document.createElement('iframe');
+    iframe.src = 'blank.html';
+    document.body.appendChild(iframe);
+
+    once(iframe.contentWindow, 'load', function() {
+      var el = iframe.contentDocument.createElement('script');
+      el.src = '../../dist/hyperform.js';
+      iframe.contentDocument.body.appendChild(el);
+      el.addEventListener('load', function() {
+        if ('_original_checkValidity' in iframe.contentWindow.HTMLFormElement) {
+          throw Error('overwritten checkValidity method detected');
+        }
+        iframe.parentNode.removeChild(iframe);
+        done();
+      });
+    });
+  });
+
+});
+
+
 describe('Issue 45', function() {
 
   it('should use the minlength value in the "tooShort" warning string', function() {

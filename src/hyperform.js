@@ -133,4 +133,8 @@ hyperform.set_message = (element, validator, message) => { w('set_message'); cus
 hyperform.add_hook = (hook, action, position) => { w('add_hook'); add_hook(hook, action, position); return hyperform; };
 hyperform.remove_hook = (hook, action) => { w('remove_hook'); remove_hook(hook, action); return hyperform; };
 
+if (document.currentScript && document.currentScript.hasAttribute('data-hf-autoload')) {
+  hyperform(window);
+}
+
 export default hyperform;

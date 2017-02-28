@@ -2637,4 +2637,8 @@ hyperform.remove_hook = function (hook, action) {
   w('remove_hook');remove_hook(hook, action);return hyperform;
 };
 
+if (document.currentScript && document.currentScript.hasAttribute('data-hf-autoload')) {
+  hyperform(window);
+}
+
 module.exports = hyperform;
