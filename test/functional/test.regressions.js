@@ -159,7 +159,7 @@ describe('Issue 45', function() {
                   input.validationMessage);
     }
 
-    hyperform(document).destroy();
+    destroy_hform(hform);
   });
 
 });
