@@ -135,3 +135,31 @@ describe('Issue 35', function() {
   });
 
 });
+
+
+describe('Issue 45', function() {
+
+  it('should use the minlength value in the "tooShort" warning string', function() {
+    var hform = make_hform();
+    var form = hform.form;
+    var input = form.getElementsByTagName('input')[0];
+    input.setAttribute('minlength', '3');
+    input.setAttribute('maxlength', '5');
+    input.value = 'ab';
+    input.checkValidity();
+
+    if (input.validationMessage.search('5') > -1) {
+      throw Error('validation message uses maxlength value: '+
+                  input.validationMessage);
+    }
+
+    if (input.validationMessage.search('3') === -1 &&
+        input.validationMessage.search('2') === -1) {
+      throw Error('validation message does not reference values: '+
+                  input.validationMessage);
+    }
+
+    hyperform(document).destroy();
+  });
+
+});

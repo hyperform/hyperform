@@ -2307,7 +2307,7 @@ var tooLong = check$1(test_maxlength, function (element) {
 });
 
 var tooShort = check$1(test_minlength, function (element) {
-  set_msg(element, 'tooShort', sprintf(_('Please lengthen this text to %l characters or more (you are currently using %l characters).'), element.getAttribute('maxlength'), unicode_string_length(element.value)));
+  set_msg(element, 'tooShort', sprintf(_('Please lengthen this text to %l characters or more (you are currently using %l characters).'), element.getAttribute('minlength'), unicode_string_length(element.value)));
 });
 
 var typeMismatch = check$1(test_type, function (element) {
