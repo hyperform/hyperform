@@ -60,7 +60,7 @@ test-unit:
 test-functional:
 	@echo "* run functional tests"
 	@node_modules/.bin/karma start karma.conf.js
-.PHONY: test-unit
+.PHONY: test-functional
 
 icons: stuff/icon.16.png
 	@echo "* generate icons"
