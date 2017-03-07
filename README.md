@@ -1,4 +1,4 @@
-# ![Text “Hyperform - Insert Form” in 80s arcade game style](stuff/header.png)
+# ![Text “Hyperform - Insert Form” in 80s arcade game style](https://hyperform.js.org/statics/header.png)
 [![CDNJS](https://img.shields.io/cdnjs/v/hyperform.svg)](https://cdnjs.com/libraries/hyperform)
 ## Capture form validation back from the browser
 

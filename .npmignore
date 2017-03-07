@@ -9,6 +9,5 @@ jspm_packages
 Makefile
 node_modules
 src
-stuff
 test
 .travis.yml

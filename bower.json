@@ -26,7 +26,6 @@
     "jspm_packages",
     "Makefile",
     "src",
-    "stuff",
     "test",
     "tests"
   ]
