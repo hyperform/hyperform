@@ -532,6 +532,8 @@ var hyperform = (function () {
                          } else if (first_invalid) {
                            /* focus the first invalid element, if validation went south */
                            first_invalid.focus();
+                           /* tell the tale, if anyone wants to react to it */
+                           trigger_event(button.form, 'forminvalid');
                          }
                        }
 
