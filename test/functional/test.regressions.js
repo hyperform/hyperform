@@ -207,3 +207,29 @@ describe('Issue 45', function() {
   });
 
 });
+
+
+describe('Issue 49', function() {
+
+  it('should detect an invalid date when called on non-window', function() {
+    var form = document.createElement('form');
+    var input = document.createElement('input');
+    input.name = 'test';
+    input.type = 'date';
+    form.appendChild(input);
+    document.body.appendChild(form);
+    var hform = hyperform(form);
+
+    values = ['abc', '01.01.2000', '2000-01', '2000-13-32'];
+    for (var i = 0; i < values.length; i++) {
+      input.value = values[i];
+      if (! input.validity.badInput) {
+        throw Error(values[i]+' should not be a valid date');
+      }
+    }
+
+    hform.destroy();
+    document.body.removeChild(form);
+  });
+
+});
