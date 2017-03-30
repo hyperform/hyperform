@@ -313,6 +313,11 @@ var hyperform = (function () {
                          attachWarning: function attachWarning(warning, element) {
                            /* should also work, if element is last,
                             * http://stackoverflow.com/a/4793630/113195 */
+
+                           /* make warnings line up horizontally with their elements (ex: when multiple elements are on the same line) */
+                           var leftMargin = element.offsetLeft - element.parentElement.offsetLeft;
+                           warning.style['margin-left'] = leftMargin + 'px';
+
                            element.parentNode.insertBefore(warning, element.nextSibling);
                          },
 
