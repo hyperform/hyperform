@@ -63,7 +63,12 @@ In old browsers you will need polyfills for the following features:
 [`WeakMap`](https://github.com/Benvie/WeakMap) (IE 10 and lower),
 [`element.classList`](https://github.com/remy/polyfills) (IE 9 and lower),
 `array.filter`, `array.every`, `Object.keys` and
-`Object.defineProperty` (IE 8 and lower).
+`Object.defineProperty` (IE 8 and lower). For IE 9+ support simply add this
+line to use [Polyfill.io’s service](https://polyfill.io):
+
+```html
+<script src="https://polyfill.io/v2/polyfill.min.js?features=Element.prototype.classList,WeakMap"></script>
+```
 
 ## Usage
 
