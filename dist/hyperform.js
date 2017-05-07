@@ -345,9 +345,15 @@ var hyperform = (function () {
                              }
 
                              element.setAttribute('aria-errormessage', warning.id);
+                             if (!element.hasAttribute('aria-describedby')) {
+                               element.setAttribute('aria-describedby', warning.id);
+                             }
                              warning.textContent = msg;
                              Renderer.attachWarning(warning, element);
                            } else if (warning && warning.parentNode) {
+                             if (element.getAttribute('aria-describedby') === warning.id) {
+                               element.removeAttribute('aria-describedby');
+                             }
                              element.removeAttribute('aria-errormessage');
                              Renderer.detachWarning(warning, element);
                            }
