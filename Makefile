@@ -9,7 +9,7 @@ JSHINT_ARGS :=
 
 BANNER := /*! hyperform.js.org */
 
-all: js
+all: js es
 .PHONY: all
 
 js: dist/hyperform.js dist/hyperform.min.js \
@@ -43,6 +43,11 @@ dist/hyperform.js: src/hyperform.js src/*.js src/*/*.js
 	@mkdir -p dist
 	@$(JSPM) build "$<" "$@" $(JSPM_ARGS)
 	@sed -i '1s#^#$(BANNER)\n#' "$@"
+
+es:
+	@echo "* transpile to ES5"
+	@mkdir -p es
+	@node_modules/.bin/cross-env BABEL_ENV=es node_modules/.bin/babel src --out-dir es
 
 test: test-syntax test-unit test-functional
 .PHONY: test
