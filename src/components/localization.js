@@ -38,10 +38,17 @@ var language = 'en';
 
 
 /**
+ * the base language according to BCP47, i.e., only the piece before the first hyphen
+ */
+var base_lang = 'en';
+
+
+/**
  * set the language for Hyperform’s messages
  */
 export function set_language(newlang) {
   language = newlang;
+  base_lang = newlang.replace(/[-_].*/, '');
 }
 
 
@@ -63,11 +70,14 @@ export function add_translation(lang, new_catalog) {
 /**
  * return `s` translated into the current language
  *
- * Defaults to English if the former has no translation for `s`.
+ * Defaults to the base language and then English if the former has no
+ * translation for `s`.
  */
 export default function(s) {
   if ((language in catalog) && (s in catalog[language])) {
     return catalog[language][s];
+  } else if ((base_lang in catalog) && (s in catalog[base_lang])) {
+    return catalog[base_lang][s];
   } else if (s in catalog.en) {
     return catalog.en[s];
   }
