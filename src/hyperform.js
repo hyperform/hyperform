@@ -36,6 +36,7 @@ function w(name) {
  */
 function hyperform(form, {
                      classes,
+                     classSelector,
                      debug=false,
                      extend_fieldset,
                      extendFieldset,
@@ -91,7 +92,7 @@ function hyperform(form, {
   }
 
   const settings = { debug, strict, preventImplicitSubmit, revalidate,
-                     validEvent, extendFieldset, classes, };
+                     validEvent, extendFieldset, classes, classSelector };
 
   if (form instanceof window.NodeList ||
       form instanceof window.HTMLCollection ||

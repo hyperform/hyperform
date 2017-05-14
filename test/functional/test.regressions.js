@@ -233,3 +233,31 @@ describe('Issue 49', function() {
   });
 
 });
+
+describe('classSelector', function() {
+  it('allows configuration of the element to which validity classes are added', function() {
+    var form = document.createElement('form');
+    var inputWrapper = document.createElement('div');
+    var input = document.createElement('input');
+    input.name = 'test';
+    input.setAttribute('minlength', '3');
+    inputWrapper.appendChild(input);
+    form.appendChild(inputWrapper);
+    document.body.appendChild(form);
+
+    var hform = hyperform(form, {
+      classSelector: function(element) {
+        return element.parentNode;
+      }
+    });
+    input.value = 'ab';
+    input.checkValidity();
+
+    if (inputWrapper.classList.contains('hf-invalid')) {
+      throw Error('validity classes should be applied to the element returned by the supplied selector');
+    }
+
+    hform.destroy();
+    document.body.removeChild(form);
+  });
+});

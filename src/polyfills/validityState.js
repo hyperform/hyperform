@@ -66,6 +66,9 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
   enumerable: true,
   get: function() {
     const wrapper = get_wrapper(this.element);
+    const classElementTarget = wrapper && typeof wrapper.settings.classSelector === 'function' ?
+      wrapper.settings.classSelector(this.element) :
+      this.element;
     const validClass = wrapper && wrapper.settings.classes.valid || 'hf-valid';
     const invalidClass = wrapper && wrapper.settings.classes.invalid || 'hf-invalid';
     const userInvalidClass = wrapper && wrapper.settings.classes.userInvalid || 'hf-user-invalid';
@@ -74,18 +77,18 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
     const outOfRangeClass = wrapper && wrapper.settings.classes.outOfRange || 'hf-out-of-range';
     const validatedClass = wrapper && wrapper.settings.classes.validated || 'hf-validated';
 
-    this.element.classList.add(validatedClass);
+    classElementTarget.classList.add(validatedClass);
 
     if (is_validation_candidate(this.element)) {
       for (let prop in validity_state_checkers) {
         if (validity_state_checkers[prop](this.element)) {
-          this.element.classList.add(invalidClass);
-          this.element.classList.remove(validClass);
-          this.element.classList.remove(userValidClass);
+          classElementTarget.classList.add(invalidClass);
+          classElementTarget.classList.remove(validClass);
+          classElementTarget.classList.remove(userValidClass);
           if (this.element.value !== this.element.defaultValue) {
-            this.element.classList.add(userInvalidClass);
+            classElementTarget.classList.add(userInvalidClass);
           } else {
-            this.element.classList.remove(userInvalidClass);
+            classElementTarget.classList.remove(userInvalidClass);
           }
           this.element.setAttribute('aria-invalid', 'true');
           return false;
@@ -94,12 +97,12 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
     }
 
     message_store.delete(this.element);
-    this.element.classList.remove(invalidClass, userInvalidClass, outOfRangeClass);
-    this.element.classList.add(validClass, inRangeClass);
+    classElementTarget.classList.remove(invalidClass, userInvalidClass, outOfRangeClass);
+    classElementTarget.classList.add(validClass, inRangeClass);
     if (this.element.value !== this.element.defaultValue) {
-      this.element.classList.add(userValidClass);
+      classElementTarget.classList.add(userValidClass);
     } else {
-      this.element.classList.remove(userValidClass);
+      classElementTarget.classList.remove(userValidClass);
     }
     this.element.setAttribute('aria-invalid', 'false');
     return true;

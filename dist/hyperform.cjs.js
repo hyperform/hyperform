@@ -2433,6 +2433,7 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
   enumerable: true,
   get: function get() {
     var wrapper = get_wrapper(this.element);
+    var classElementTarget = wrapper && typeof wrapper.settings.classSelector === 'function' ? wrapper.settings.classSelector(this.element) : this.element;
     var validClass = wrapper && wrapper.settings.classes.valid || 'hf-valid';
     var invalidClass = wrapper && wrapper.settings.classes.invalid || 'hf-invalid';
     var userInvalidClass = wrapper && wrapper.settings.classes.userInvalid || 'hf-user-invalid';
@@ -2441,18 +2442,18 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
     var outOfRangeClass = wrapper && wrapper.settings.classes.outOfRange || 'hf-out-of-range';
     var validatedClass = wrapper && wrapper.settings.classes.validated || 'hf-validated';
 
-    this.element.classList.add(validatedClass);
+    classElementTarget.classList.add(validatedClass);
 
     if (is_validation_candidate(this.element)) {
       for (var _prop in validity_state_checkers) {
         if (validity_state_checkers[_prop](this.element)) {
-          this.element.classList.add(invalidClass);
-          this.element.classList.remove(validClass);
-          this.element.classList.remove(userValidClass);
+          classElementTarget.classList.add(invalidClass);
+          classElementTarget.classList.remove(validClass);
+          classElementTarget.classList.remove(userValidClass);
           if (this.element.value !== this.element.defaultValue) {
-            this.element.classList.add(userInvalidClass);
+            classElementTarget.classList.add(userInvalidClass);
           } else {
-            this.element.classList.remove(userInvalidClass);
+            classElementTarget.classList.remove(userInvalidClass);
           }
           this.element.setAttribute('aria-invalid', 'true');
           return false;
@@ -2461,12 +2462,12 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
     }
 
     message_store.delete(this.element);
-    this.element.classList.remove(invalidClass, userInvalidClass, outOfRangeClass);
-    this.element.classList.add(validClass, inRangeClass);
+    classElementTarget.classList.remove(invalidClass, userInvalidClass, outOfRangeClass);
+    classElementTarget.classList.add(validClass, inRangeClass);
     if (this.element.value !== this.element.defaultValue) {
-      this.element.classList.add(userValidClass);
+      classElementTarget.classList.add(userValidClass);
     } else {
-      this.element.classList.remove(userValidClass);
+      classElementTarget.classList.remove(userValidClass);
     }
     this.element.setAttribute('aria-invalid', 'false');
     return true;
@@ -2522,6 +2523,7 @@ function hyperform(form) {
   var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
   var classes = _ref.classes;
+  var classSelector = _ref.classSelector;
   var _ref$debug = _ref.debug;
   var debug = _ref$debug === undefined ? false : _ref$debug;
   var extend_fieldset = _ref.extend_fieldset;
@@ -2579,7 +2581,7 @@ function hyperform(form) {
   }
 
   var settings = { debug: debug, strict: strict, preventImplicitSubmit: preventImplicitSubmit, revalidate: revalidate,
-    validEvent: validEvent, extendFieldset: extendFieldset, classes: classes };
+    validEvent: validEvent, extendFieldset: extendFieldset, classes: classes, classSelector: classSelector };
 
   if (form instanceof window.NodeList || form instanceof window.HTMLCollection || form instanceof Array) {
     return Array.prototype.map.call(form, function (element) {
