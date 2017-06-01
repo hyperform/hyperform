@@ -1690,7 +1690,7 @@ var hyperform = (function () {
                                var wrapped_form = get_wrapper(element);
                                /* it hasn't got the (non-standard) attribute 'novalidate' or its
                                 * parent form has got the strict parameter */
-                               if (wrapped_form && wrapped_form.settings.novalidateOnElements || !element.hasAttribute('novalidate') || !element.noValidate) {
+                               if (wrapped_form && wrapped_form.settings.novalidateOnElements && !element.hasAttribute('novalidate') && !element.noValidate) {
 
                                  /* it isn't part of a <fieldset disabled> */
                                  var p = element.parentNode;
@@ -2579,7 +2579,7 @@ var hyperform = (function () {
                            }
                          }
 
-                         var settings = { debug: debug, strict: strict, preventImplicitSubmit: preventImplicitSubmit, revalidate: revalidate,
+                         var settings = { debug: debug, strict: strict, novalidateOnElements: novalidateOnElements, preventImplicitSubmit: preventImplicitSubmit, revalidate: revalidate,
                            validEvent: validEvent, extendFieldset: extendFieldset, classes: classes };
 
                          if (form instanceof window.NodeList || form instanceof window.HTMLCollection || form instanceof Array) {

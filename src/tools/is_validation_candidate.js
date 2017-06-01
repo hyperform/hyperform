@@ -42,8 +42,8 @@ export default function(element) {
         const wrapped_form = get_wrapper(element);
         /* it hasn't got the (non-standard) attribute 'novalidate' or its
          * parent form has got the strict parameter */
-        if ((wrapped_form && wrapped_form.settings.novalidateOnElements) ||
-            ! element.hasAttribute('novalidate') ||
+        if ((wrapped_form && wrapped_form.settings.novalidateOnElements) &&
+            ! element.hasAttribute('novalidate') &&
             ! element.noValidate) {
 
           /* it isn't part of a <fieldset disabled> */
