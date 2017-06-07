@@ -90,7 +90,7 @@ function hyperform(form, {
     }
   }
 
-  const settings = { debug, strict, preventImplicitSubmit, revalidate,
+  const settings = { debug, strict, novalidateOnElements, preventImplicitSubmit, revalidate,
                      validEvent, extendFieldset, classes, };
 
   if (form instanceof window.NodeList ||
