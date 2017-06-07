@@ -2578,7 +2578,7 @@ define(function () { 'use strict';
                            }
                          }
 
-                         var settings = { debug: debug, strict: strict, preventImplicitSubmit: preventImplicitSubmit, revalidate: revalidate,
+                         var settings = { debug: debug, strict: strict, novalidateOnElements: novalidateOnElements, preventImplicitSubmit: preventImplicitSubmit, revalidate: revalidate,
                            validEvent: validEvent, extendFieldset: extendFieldset, classes: classes };
 
                          if (form instanceof window.NodeList || form instanceof window.HTMLCollection || form instanceof Array) {
