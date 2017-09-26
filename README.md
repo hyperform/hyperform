@@ -180,4 +180,5 @@ contributions by
 [Andrey Volynkin](https://github.com/Avol-V),
 [Daniel Wang](https://github.com/pvnr0082t),
 [Darlan Mendonça](https://github.com/darlanmendonca),
+[Garbanas](https://github.com/Garbanas),
 and many people reporting issues.

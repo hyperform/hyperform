@@ -1687,9 +1687,9 @@ define(function () { 'use strict';
                              if (!element.hasAttribute('disabled') && !element.hasAttribute('readonly')) {
 
                                var wrapped_form = get_wrapper(element);
-                               /* it hasn't got the (non-standard) attribute 'novalidate' or its
-                                * parent form has got the strict parameter */
-                               if (wrapped_form && wrapped_form.settings.novalidateOnElements || !element.hasAttribute('novalidate') || !element.noValidate) {
+                               /* the parent form doesn't allow non-standard "novalidate" attributes
+                                * or it doesn't have such an attribute/property */
+                               if (wrapped_form && !wrapped_form.settings.novalidateOnElements || !element.hasAttribute('novalidate') || !element.noValidate) {
 
                                  /* it isn't part of a <fieldset disabled> */
                                  var p = element.parentNode;
@@ -2579,7 +2579,8 @@ define(function () { 'use strict';
                          }
 
                          var settings = { debug: debug, strict: strict, preventImplicitSubmit: preventImplicitSubmit, revalidate: revalidate,
-                           validEvent: validEvent, extendFieldset: extendFieldset, classes: classes };
+                           validEvent: validEvent, extendFieldset: extendFieldset, classes: classes, novalidateOnElements: novalidateOnElements
+                         };
 
                          if (form instanceof window.NodeList || form instanceof window.HTMLCollection || form instanceof Array) {
                            return Array.prototype.map.call(form, function (element) {

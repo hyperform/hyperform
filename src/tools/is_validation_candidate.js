@@ -40,9 +40,9 @@ export default function(element) {
           ! element.hasAttribute('readonly')) {
 
         const wrapped_form = get_wrapper(element);
-        /* it hasn't got the (non-standard) attribute 'novalidate' or its
-         * parent form has got the strict parameter */
-        if ((wrapped_form && wrapped_form.settings.novalidateOnElements) ||
+        /* the parent form doesn't allow non-standard "novalidate" attributes
+         * or it doesn't have such an attribute/property */
+        if ((wrapped_form && ! wrapped_form.settings.novalidateOnElements) ||
             ! element.hasAttribute('novalidate') ||
             ! element.noValidate) {
 
