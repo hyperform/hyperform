@@ -2508,7 +2508,7 @@ var hyperform = (function () {
                          return valid;
                        });
 
-                       var version = '0.9.8';
+                       var version = '0.9.9';
 
                        /* deprecate the old snake_case names
                         * TODO: delme before next non-patch release
