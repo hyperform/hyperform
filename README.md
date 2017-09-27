@@ -181,4 +181,5 @@ contributions by
 [Daniel Wang](https://github.com/pvnr0082t),
 [Darlan Mendonça](https://github.com/darlanmendonca),
 [Christoph Dörfel](https://github.com/Garbanas),
+[Josh Farneman](https://github.com/farneman),
 and many people reporting issues.
