@@ -2461,8 +2461,11 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
     }
 
     message_store.delete(this.element);
-    this.element.classList.remove(invalidClass, userInvalidClass, outOfRangeClass);
-    this.element.classList.add(validClass, inRangeClass);
+    this.element.classList.remove(invalidClass);
+    this.element.classList.remove(userInvalidClass);
+    this.element.classList.remove(outOfRangeClass);
+    this.element.classList.add(validClass);
+    this.element.classList.add(inRangeClass);
     if (this.element.value !== this.element.defaultValue) {
       this.element.classList.add(userValidClass);
     } else {
