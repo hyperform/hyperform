@@ -2513,7 +2513,7 @@ define(function () { 'use strict';
                          return valid;
                        });
 
-                       var version = '0.9.9';
+                       var version = '0.9.10';
 
                        /* deprecate the old snake_case names
                         * TODO: delme before next non-patch release
