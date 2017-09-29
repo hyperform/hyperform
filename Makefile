@@ -81,3 +81,6 @@ cmpsize:
 	) | \
 	gnuplot -p -e "set ylabel 'bytes'; plot '< cat' using 1 title 'size of dist/hyperform.min.js' with $(GNUPLOT_STYLE)"
 .PHONY: cmpsize
+
+translate.po: src/*.js src/*/*.js
+	xgettext -LJavascript -k_ -o $@ --from-code utf-8 $^
