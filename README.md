@@ -4,7 +4,7 @@
 
 Hyperform is your one-stop solution for client-side form handling.
 
-It features a complete implementation of the HTML 5 form validation API in
+It features a complete implementation of the HTML5 form validation API in
 Javascript, replaces the browser’s native methods (if they are even
 implemented…), and enriches your toolbox with custom events and hooks.
 
