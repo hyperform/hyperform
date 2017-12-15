@@ -2,12 +2,15 @@
   "name": "hyperform",
   "version": "0.9.10",
   "description": "Capture form validation back from the browser",
+  "browser": "dist/hyperform.js",
   "main": "dist/hyperform.cjs.js",
-  "jsnext:main": "src/hyperform.js",
-  "module": "src/hyperform.js",
+  "jsnext:main": "es/hyperform.js",
+  "module": "es/hyperform.js",
   "style": "css/hyperform.css",
   "scripts": {
     "test": "jshint src && ava",
+    "prepare": "rimraf es && npm run build:es",
+    "build:es": "cross-env BABEL_ENV=es babel src --out-dir es",
     "preversion": "npm test",
     "version": "make version VERSION=$npm_package_version && make all && git add src/version.js dist/ bower.json",
     "postversion": "git push && git push --tags"
@@ -31,9 +34,11 @@
   "homepage": "https://hyperform.js.org/",
   "devDependencies": {
     "ava": "^0.18.1",
+    "babel-cli": "^6.24.1",
     "babel-preset-es2015": "^6.22.0",
     "babel-preset-stage-2": "^6.22.0",
     "babel-register": "^6.7.2",
+    "cross-env": "^4.0.0",
     "jsdom": "^9.10.0",
     "jshint": "^2.9.1",
     "jspm": "0.17.0-beta.13",
@@ -43,12 +48,14 @@
     "karma-mocha": "^1.3.0",
     "karma-sauce-launcher": "^1.1.0",
     "mocha": "^3.2.0",
+    "rimraf": "^2.6.1",
     "selenium-webdriver": "^3.0.1",
     "uglify-js": "^2.6.2"
   },
   "files": [
     "css",
     "dist",
+    "es",
     "src"
   ],
   "jshintConfig": {
@@ -72,10 +79,20 @@
     "concurrency": 5
   },
   "babel": {
-    "presets": [
-      "es2015",
-      "stage-2"
-    ]
+    "env": {
+      "development": {
+        "presets": [
+          "es2015",
+          "stage-2"
+        ]
+      },
+      "es": {
+        "presets": [
+          ["es2015", {"modules": false}],
+          "stage-2"
+        ]
+      }
+    }
   },
   "jspm": {
     "dependencies": {},
