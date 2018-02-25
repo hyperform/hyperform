@@ -1,4 +1,3 @@
-/*! hyperform.js.org */
 var hyperform = (function () {
                        'use strict';
 
@@ -2659,7 +2658,12 @@ var hyperform = (function () {
                          w('remove_hook');remove_hook(hook, action);return hyperform;
                        };
 
-                       if (document.currentScript && document.currentScript.hasAttribute('data-hf-autoload')) {
+                       var currentScript = function () {
+                         var scripts = document.getElementsByTagName('script');
+                         return scripts[scripts.length - 1];
+                       }();
+
+                       if (currentScript && currentScript.hasAttribute('data-hf-autoload')) {
                          hyperform(window);
                        }
 
