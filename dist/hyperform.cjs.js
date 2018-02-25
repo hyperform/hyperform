@@ -2657,7 +2657,7 @@ hyperform.remove_hook = function (hook, action) {
   w('remove_hook');remove_hook(hook, action);return hyperform;
 };
 
-var currentScript = document.currentScript || function () {
+var currentScript = function () {
   var scripts = document.getElementsByTagName('script');
   return scripts[scripts.length - 1];
 }();

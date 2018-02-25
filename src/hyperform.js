@@ -134,7 +134,7 @@ hyperform.set_message = (element, validator, message) => { w('set_message'); cus
 hyperform.add_hook = (hook, action, position) => { w('add_hook'); add_hook(hook, action, position); return hyperform; };
 hyperform.remove_hook = (hook, action) => { w('remove_hook'); remove_hook(hook, action); return hyperform; };
 
-const currentScript = document.currentScript || (function() {
+const currentScript = (function() {
   const scripts = document.getElementsByTagName('script');
   return scripts[scripts.length - 1];
 })();
