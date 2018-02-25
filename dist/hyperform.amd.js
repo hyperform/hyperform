@@ -1,4 +1,3 @@
-/*! hyperform.js.org */
 define(function () { 'use strict';
 
                        var registry = Object.create(null);
@@ -2658,7 +2657,12 @@ define(function () { 'use strict';
                          w('remove_hook');remove_hook(hook, action);return hyperform;
                        };
 
-                       if (document.currentScript && document.currentScript.hasAttribute('data-hf-autoload')) {
+                       var currentScript = document.currentScript || function () {
+                         var scripts = document.getElementsByTagName('script');
+                         return scripts[scripts.length - 1];
+                       }();
+
+                       if (currentScript && currentScript.hasAttribute('data-hf-autoload')) {
                          hyperform(window);
                        }
 
