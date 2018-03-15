@@ -237,7 +237,13 @@ var hyperform = (function () {
                         */
                        var store = new WeakMap();
 
-                       /* jshint -W053 */
+                       /* jshint -W053 */ /* allow new String() */
+                       /**
+                        * handle validation messages
+                        *
+                        * Falls back to browser-native errors, if any are available. The messages
+                        * are String objects so that we can mark() them.
+                        */
                        var message_store = {
                          set: function set(element, message) {
                            var is_custom = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
@@ -320,7 +326,11 @@ var hyperform = (function () {
                           * called when a warning should vanish
                           */
                          detachWarning: function detachWarning(warning, element) {
-                           warning.parentNode.removeChild(warning);
+                           /* be conservative here, since an overwritten attachWarning() might not
+                            * actually have attached the warning. */
+                           if (warning.parentNode) {
+                             warning.parentNode.removeChild(warning);
+                           }
                          },
 
                          /**

@@ -24,7 +24,11 @@ const DefaultRenderer = {
    * called when a warning should vanish
    */
   detachWarning: function(warning, element) {
-    warning.parentNode.removeChild(warning);
+    /* be conservative here, since an overwritten attachWarning() might not
+     * actually have attached the warning. */
+    if (warning.parentNode) {
+      warning.parentNode.removeChild(warning);
+    }
   },
 
   /**
