@@ -1,7 +1,7 @@
 'use strict';
 
 
-import message_store from '../components/message_store';
+import { message_store } from '../components/message_store';
 
 
 /**

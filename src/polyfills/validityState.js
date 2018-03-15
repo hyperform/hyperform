@@ -3,7 +3,7 @@
 
 import is_validation_candidate from '../tools/is_validation_candidate';
 import mark from '../tools/mark';
-import message_store from '../components/message_store';
+import { message_store } from '../components/message_store';
 import { get_wrapper } from '../components/wrapper';
 import validity_state_checkers from '../tools/validity_state_checkers';
 

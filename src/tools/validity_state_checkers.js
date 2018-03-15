@@ -17,7 +17,7 @@ import string_to_date from './string_to_date';
 import unicode_string_length from './unicode_string_length';
 import custom_messages from '../components/custom_messages';
 import _ from '../components/localization';
-import message_store from '../components/message_store';
+import { message_store } from '../components/message_store';
 import CustomValidatorRegistry from '../components/registry';
 import { get_wrapper } from '../components/wrapper';
 import test_bad_input from '../validators/bad_input';

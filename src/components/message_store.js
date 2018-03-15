@@ -11,7 +11,13 @@ import mark from '../tools/mark';
 const store = new WeakMap();
 
 
-/* jshint -W053 */
+/* jshint -W053 *//* allow new String() */
+/**
+ * handle validation messages
+ *
+ * Falls back to browser-native errors, if any are available. The messages
+ * are String objects so that we can mark() them.
+ */
 const message_store = {
 
   set(element, message, is_custom=false) {
@@ -60,4 +66,4 @@ const message_store = {
 };
 /* jshint +W053 */
 
-export default message_store;
+export { message_store };

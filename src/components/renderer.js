@@ -1,7 +1,7 @@
 'use strict';
 
 
-import message_store from './message_store';
+import { message_store } from './message_store';
 import { get_wrapper } from './wrapper';
 import generate_id from '../tools/generate_id';
 
