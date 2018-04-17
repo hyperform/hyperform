@@ -6,6 +6,7 @@ import Registry from '../../../src/components/registry';
 
 test('ValidityState customError non-bool response', t => {
   var input = document.createElement('input');
+  input.setAttribute('name', 'foo');
   Registry.set(input, () => "a");
   t.false(ValidityState(input).customError);
   Registry.delete(input);
@@ -18,6 +19,7 @@ test('ValidityState customError non-bool response', t => {
 
 test('ValidityState rangeOverflow', t => {
   var input = document.createElement('input');
+  input.setAttribute('name', 'foo');
 
   input.value = 5;
   t.false(ValidityState(input).rangeOverflow);
@@ -38,6 +40,7 @@ test('ValidityState rangeOverflow', t => {
 
 test('ValidityState patternMismatch', t => {
   var input = document.createElement('input');
+  input.setAttribute('name', 'foo');
   t.false(ValidityState(input).patternMismatch);
 
   input.pattern = 'X';

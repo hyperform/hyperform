@@ -47,6 +47,7 @@ function hyperform(form, {
                      strict=false,
                      valid_event,
                      validEvent,
+                     validateNameless=false,
                    }={}) {
 
   if (! classes) {
@@ -92,6 +93,7 @@ function hyperform(form, {
 
   const settings = { debug, strict, preventImplicitSubmit, revalidate,
                      validEvent, extendFieldset, classes, novalidateOnElements,
+                     validateNameless,
                    };
 
   if (form instanceof window.NodeList ||

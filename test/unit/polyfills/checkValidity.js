@@ -6,6 +6,7 @@ import { add_hook, remove_hook } from '../../../src/components/hooks';
 
 test('checkValidity', t => {
   var input = document.createElement('input');
+  input.setAttribute('name', 'foo');
   input.type = 'hidden';
   t.true(checkValidity(input));
   input.type = 'text';
@@ -18,6 +19,7 @@ test('checkValidity', t => {
 
 test('checkValidity invalid event', t => {
   var input = document.createElement('input');
+  input.setAttribute('name', 'foo');
   input.setAttribute('required', 'required');
   input.value = '';
 
@@ -32,6 +34,7 @@ test('checkValidity invalid event', t => {
 
 test('checkValidity hook', t => {
   const input = document.createElement('input');
+  input.setAttribute('name', 'foo');
   input.setAttribute('required', 'required');
   input.value = '';
   const func = () => 'green';

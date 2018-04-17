@@ -5,6 +5,7 @@ import type from '../../../src/validators/type';
 
 test('validator-type others', t => {
   var el = document.createElement('input');
+  el.name = 'foo';
   el.setAttribute('type', 'number');
   el.value = '10';
   t.is(type(el), true);
@@ -12,6 +13,7 @@ test('validator-type others', t => {
 
 test('validator-type url', t => {
   var el = document.createElement('input');
+  el.name = 'foo';
   el.setAttribute('type', 'url');
   el.value = 'foo';
   t.is(type(el), false);
@@ -28,6 +30,7 @@ test('validator-type url', t => {
 
 test('validator-type email', t => {
   var el = document.createElement('input');
+  el.name = 'foo';
   el.setAttribute('type', 'email');
   el.value = 'info@example.com';
   t.is(type(el), true);
@@ -44,6 +47,7 @@ test('validator-type email', t => {
 
 test('validator-type file', t => {
   var el = document.createElement('input');
+  el.name = 'foo';
   el.setAttribute('type', 'file');
   el.value = '';
   t.is(type(el), true);

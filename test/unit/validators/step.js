@@ -5,6 +5,7 @@ import step from '../../../src/validators/step';
 
 test('validator-step', t => {
   var el = document.createElement('input');
+  el.name = 'foo';
   el.type = 'number';
   el.setAttribute('step', '10');
   el.value = '';
@@ -25,6 +26,7 @@ test('validator-step', t => {
 
 test('validator-step for month', t => {
   var el = document.createElement('input');
+  el.name = 'foo';
   el.type = 'month';
   el.setAttribute('step', '2');
   el.setAttribute('min', '2015-01');

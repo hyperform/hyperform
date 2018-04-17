@@ -5,6 +5,7 @@ import required from '../../../src/validators/required';
 
 test('validator-required', t => {
   var el = document.createElement('input');
+  el.name = 'foo';
 
   // missing attribute: do nothing.
   t.true(required(el));

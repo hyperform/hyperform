@@ -8,6 +8,7 @@ import validationMessage from '../../../src/polyfills/validationMessage';
 test('custom_messages', t => {
   var msg = 'hello from the tests';
   var el = document.createElement('input');
+  el.name = 'foo';
   el.required = true;
 
   custom_messages.set(el, 'valueMissing', msg);

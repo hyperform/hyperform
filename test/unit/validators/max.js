@@ -5,6 +5,7 @@ import max from '../../../src/validators/max';
 
 test('validator-max', t => {
   var el = document.createElement('input');
+  el.name = 'foo';
   el.type = 'number';
   el.setAttribute('max', '10');
   el.value = '';
@@ -23,6 +24,7 @@ test('validator-max', t => {
 
 test('validator-max for date', t => {
   var el = document.createElement('input');
+  el.name = 'foo';
   el.type = 'date';
   el.setAttribute('max', '2015-01-01');
   el.value = '';

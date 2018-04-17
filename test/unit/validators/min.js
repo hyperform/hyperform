@@ -5,6 +5,7 @@ import min from '../../../src/validators/min';
 
 test('validator-min', t => {
   var el = document.createElement('input');
+  el.name = 'foo';
   el.type = 'number';
   el.setAttribute('min', '10');
   el.value = '';
@@ -23,6 +24,7 @@ test('validator-min', t => {
 
 test('validator-min for date', t => {
   var el = document.createElement('input');
+  el.name = 'foo';
   el.type = 'date';
   el.setAttribute('min', '2015-01-01');
   el.value = '';

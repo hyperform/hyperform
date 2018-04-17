@@ -5,6 +5,7 @@ import maxlength from '../../../src/validators/maxlength';
 
 test('validator-maxlength', t => {
   var el = document.createElement('input');
+  el.name = 'foo';
 
   el.setAttribute('maxlength', '2');
   el.value = '';

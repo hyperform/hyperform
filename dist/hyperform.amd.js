@@ -1696,40 +1696,45 @@ define(function () { 'use strict';
                          if (element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement) {
 
                            var type = get_type(element);
-                           /* its type must be in the whitelist or missing (select, textarea) */
-                           if (!type || non_inputs.indexOf(type) > -1 || validation_candidates.indexOf(type) > -1) {
+                           /* its type must be in the whitelist */
+                           if (non_inputs.indexOf(type) > -1 || validation_candidates.indexOf(type) > -1) {
 
                              /* it mustn't be disabled or readonly */
                              if (!element.hasAttribute('disabled') && !element.hasAttribute('readonly')) {
 
                                var wrapped_form = get_wrapper(element);
-                               /* the parent form doesn't allow non-standard "novalidate" attributes
-                                * or it doesn't have such an attribute/property */
-                               if (wrapped_form && !wrapped_form.settings.novalidateOnElements || !element.hasAttribute('novalidate') || !element.noValidate) {
 
-                                 /* it isn't part of a <fieldset disabled> */
-                                 var p = element.parentNode;
-                                 while (p && p.nodeType === 1) {
-                                   if (p instanceof window.HTMLFieldSetElement && p.hasAttribute('disabled')) {
-                                     /* quick return, if it's a child of a disabled fieldset */
-                                     return false;
-                                   } else if (p.nodeName.toUpperCase() === 'DATALIST') {
-                                     /* quick return, if it's a child of a datalist
-                                      * Do not use HTMLDataListElement to support older browsers,
-                                      * too.
-                                      * @see https://html.spec.whatwg.org/multipage/forms.html#the-datalist-element:barred-from-constraint-validation
-                                      */
-                                     return false;
-                                   } else if (p === element.form) {
-                                     /* the outer boundary. We can stop looking for relevant
-                                      * fieldsets. */
-                                     break;
+                               /* it must have a name (or validating nameless inputs is allowed) */
+                               if (element.getAttribute('name') || wrapped_form && wrapped_form.settings.validateNameless) {
+
+                                 /* the parent form doesn't allow non-standard "novalidate" attributes
+                                  * or it doesn't have such an attribute/property */
+                                 if (wrapped_form && !wrapped_form.settings.novalidateOnElements || !element.hasAttribute('novalidate') || !element.noValidate) {
+
+                                   /* it isn't part of a <fieldset disabled> */
+                                   var p = element.parentNode;
+                                   while (p && p.nodeType === 1) {
+                                     if (p instanceof window.HTMLFieldSetElement && p.hasAttribute('disabled')) {
+                                       /* quick return, if it's a child of a disabled fieldset */
+                                       return false;
+                                     } else if (p.nodeName.toUpperCase() === 'DATALIST') {
+                                       /* quick return, if it's a child of a datalist
+                                        * Do not use HTMLDataListElement to support older browsers,
+                                        * too.
+                                        * @see https://html.spec.whatwg.org/multipage/forms.html#the-datalist-element:barred-from-constraint-validation
+                                        */
+                                       return false;
+                                     } else if (p === element.form) {
+                                       /* the outer boundary. We can stop looking for relevant
+                                        * fieldsets. */
+                                       break;
+                                     }
+                                     p = p.parentNode;
                                    }
-                                   p = p.parentNode;
-                                 }
 
-                                 /* then it's a candidate */
-                                 return true;
+                                   /* then it's a candidate */
+                                   return true;
+                                 }
                                }
                              }
                            }
@@ -2554,6 +2559,8 @@ define(function () { 'use strict';
                          var strict = _ref$strict === undefined ? false : _ref$strict;
                          var valid_event = _ref.valid_event;
                          var validEvent = _ref.validEvent;
+                         var _ref$validateNameless = _ref.validateNameless;
+                         var validateNameless = _ref$validateNameless === undefined ? false : _ref$validateNameless;
 
 
                          if (!classes) {
@@ -2598,7 +2605,8 @@ define(function () { 'use strict';
                          }
 
                          var settings = { debug: debug, strict: strict, preventImplicitSubmit: preventImplicitSubmit, revalidate: revalidate,
-                           validEvent: validEvent, extendFieldset: extendFieldset, classes: classes, novalidateOnElements: novalidateOnElements
+                           validEvent: validEvent, extendFieldset: extendFieldset, classes: classes, novalidateOnElements: novalidateOnElements,
+                           validateNameless: validateNameless
                          };
 
                          if (form instanceof window.NodeList || form instanceof window.HTMLCollection || form instanceof Array) {
