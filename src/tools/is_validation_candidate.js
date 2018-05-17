@@ -44,11 +44,12 @@ export default function(element) {
         if (element.getAttribute('name') ||
             (wrapped_form && wrapped_form.settings.validateNameless)) {
 
-          /* the parent form doesn't allow non-standard "novalidate" attributes
-           * or it doesn't have such an attribute/property */
-          if ((wrapped_form && ! wrapped_form.settings.novalidateOnElements) ||
-              ! element.hasAttribute('novalidate') ||
-              ! element.noValidate) {
+          if (
+              /* the parent form doesn't allow non-standard "novalidate" attributes... */
+              (wrapped_form && ! wrapped_form.settings.novalidateOnElements) ||
+              /* ...or it doesn't have such an attribute/property */
+              (! element.hasAttribute('novalidate') && ! element.noValidate)
+              ) {
 
             /* it isn't part of a <fieldset disabled> */
             let p = element.parentNode;
