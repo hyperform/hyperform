@@ -2533,7 +2533,7 @@ var hyperform = (function () {
                          return valid;
                        });
 
-                       var version = '0.9.12';
+                       var version = '0.9.13';
 
                        /* deprecate the old snake_case names
                         * TODO: delme before next non-patch release
