@@ -113,7 +113,8 @@ Wrapper.prototype = {
            * default or when the element is valid (possibly removing a still
            * standing invalidity report). */
           reportValidity(event.target);
-        } else if (event.type === 'keyup' || event.type === 'change') {
+        } else if ((event.type === 'keyup' && event.keyCode !== 9) ||
+                    event.type === 'change') {
           if (ValidityState(event.target).valid) {
             // report instantly, when an element becomes valid,
             // postpone report to blur event, when an element is invalid
@@ -121,7 +122,9 @@ Wrapper.prototype = {
           }
         }
 
-      } else {
+      } else if (event.type !== 'keyup' || event.keyCode !== 9) {
+        /* do _not_ validate, when the user "tabbed" into the field initially,
+         * i.e., a keyup event with keyCode 9 */
         reportValidity(event.target);
       }
 

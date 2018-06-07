@@ -233,3 +233,34 @@ describe('Issue 49', function() {
   });
 
 });
+
+
+describe('Issue 78', function() {
+
+  it('should not run validation when tabbing into an element', function() {
+    var hform = make_hform(document, { revalidate: 'oninput' });
+    var validated = false;
+    hyperform.addValidator(hform.form.elements[0], function() {
+      validated = true;
+    });
+    hform.form.elements[0].focus();
+    var e = document.createEvent('HTMLEvents');
+    e.keyCode = 9;
+    e.initEvent('keyup', true, true);
+    hform.form.elements[0].dispatchEvent(e);
+    if (validated) {
+      throw Error('should not have validated on tab');
+    }
+    var e = document.createEvent('HTMLEvents');
+    e.keyCode = 65;
+    e.initEvent('keyup', true, true);
+    hform.form.elements[0].dispatchEvent(e);
+    if (! validated) {
+      throw Error('should have validated on other keyCode');
+    }
+
+    hform.destroy();
+    document.body.removeChild(hform.form);
+  });
+
+});
