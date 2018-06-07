@@ -2458,6 +2458,11 @@ var hyperform = (function () {
                          configurable: true,
                          enumerable: true,
                          get: function get() {
+                           if (!is_validation_candidate(this.element)) {
+                             /* not being validated == valid by default */
+                             return true;
+                           }
+
                            var wrapper = get_wrapper(this.element);
                            var validClass = wrapper && wrapper.settings.classes.valid || 'hf-valid';
                            var invalidClass = wrapper && wrapper.settings.classes.invalid || 'hf-invalid';
@@ -2469,20 +2474,18 @@ var hyperform = (function () {
 
                            this.element.classList.add(validatedClass);
 
-                           if (is_validation_candidate(this.element)) {
-                             for (var _prop in validity_state_checkers) {
-                               if (validity_state_checkers[_prop](this.element)) {
-                                 this.element.classList.add(invalidClass);
-                                 this.element.classList.remove(validClass);
-                                 this.element.classList.remove(userValidClass);
-                                 if (this.element.value !== this.element.defaultValue) {
-                                   this.element.classList.add(userInvalidClass);
-                                 } else {
-                                   this.element.classList.remove(userInvalidClass);
-                                 }
-                                 this.element.setAttribute('aria-invalid', 'true');
-                                 return false;
+                           for (var _prop in validity_state_checkers) {
+                             if (validity_state_checkers[_prop](this.element)) {
+                               this.element.classList.add(invalidClass);
+                               this.element.classList.remove(validClass);
+                               this.element.classList.remove(userValidClass);
+                               if (this.element.value !== this.element.defaultValue) {
+                                 this.element.classList.add(userInvalidClass);
+                               } else {
+                                 this.element.classList.remove(userInvalidClass);
                                }
+                               this.element.setAttribute('aria-invalid', 'true');
+                               return false;
                              }
                            }
 

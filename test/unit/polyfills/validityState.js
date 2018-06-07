@@ -56,3 +56,13 @@ test('ValidityState patternMismatch', t => {
   input.value = 'XA';
   t.true(ValidityState(input).patternMismatch);
 });
+
+test('ValidityState valid', t => {
+  var input = document.createElement('input');
+  input.required = true;
+
+  /* no validation candidate: no validation */
+  t.true(ValidityState(input).valid);
+  t.false(input.classList.contains('hf-validated'));
+  t.false(input.hasAttribute('aria-invalid'));
+});

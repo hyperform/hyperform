@@ -65,6 +65,11 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
   configurable: true,
   enumerable: true,
   get: function() {
+    if (! is_validation_candidate(this.element)) {
+      /* not being validated == valid by default */
+      return true;
+    }
+
     const wrapper = get_wrapper(this.element);
     const validClass = wrapper && wrapper.settings.classes.valid || 'hf-valid';
     const invalidClass = wrapper && wrapper.settings.classes.invalid || 'hf-invalid';
@@ -76,20 +81,18 @@ Object.defineProperty(ValidityStatePrototype, 'valid', {
 
     this.element.classList.add(validatedClass);
 
-    if (is_validation_candidate(this.element)) {
-      for (let prop in validity_state_checkers) {
-        if (validity_state_checkers[prop](this.element)) {
-          this.element.classList.add(invalidClass);
-          this.element.classList.remove(validClass);
-          this.element.classList.remove(userValidClass);
-          if (this.element.value !== this.element.defaultValue) {
-            this.element.classList.add(userInvalidClass);
-          } else {
-            this.element.classList.remove(userInvalidClass);
-          }
-          this.element.setAttribute('aria-invalid', 'true');
-          return false;
+    for (let prop in validity_state_checkers) {
+      if (validity_state_checkers[prop](this.element)) {
+        this.element.classList.add(invalidClass);
+        this.element.classList.remove(validClass);
+        this.element.classList.remove(userValidClass);
+        if (this.element.value !== this.element.defaultValue) {
+          this.element.classList.add(userInvalidClass);
+        } else {
+          this.element.classList.remove(userInvalidClass);
         }
+        this.element.setAttribute('aria-invalid', 'true');
+        return false;
       }
     }
 
