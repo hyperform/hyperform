@@ -43,7 +43,7 @@
     "karma-sauce-launcher": "^1.1.0",
     "mocha": "^5.2.0",
     "selenium-webdriver": "^3.0.1",
-    "uglify-js": "^2.6.2"
+    "uglify-js": "^3.4.9"
   },
   "files": [
     "css",
