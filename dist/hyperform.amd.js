@@ -180,6 +180,20 @@ define(function () { 'use strict';
                          return prefix + uid++ + Math.random().toString(36).substr(2);
                        }
 
+                       /**
+                        * get all radio buttons (including `element`) that belong to element's
+                        * radio group
+                        */
+
+                       function get_radiogroup(element) {
+                         if (element.form) {
+                           return Array.prototype.filter.call(element.form.elements, function (radio) {
+                             return radio.type === 'radio' && radio.name === element.name;
+                           });
+                         }
+                         return [element];
+                       }
+
                        var warningsCache = new WeakMap();
 
                        var DefaultRenderer = {
@@ -1123,29 +1137,34 @@ define(function () { 'use strict';
                        /**
                         * test the required attribute
                         */
-
                        function test_required (element) {
+                         if (element.type === 'radio') {
+                           /* the happy (and quick) path for radios: */
+                           if (element.hasAttribute('required') && element.checked) {
+                             return true;
+                           }
+
+                           var radiogroup = get_radiogroup(element);
+
+                           /* if any radio in the group is required, we need any (not necessarily the
+                            * same) radio to be checked */
+                           if (radiogroup.some(function (radio) {
+                             return radio.hasAttribute('required');
+                           })) {
+                             return radiogroup.some(function (radio) {
+                               return radio.checked;
+                             });
+                           }
+                           /* not required, validation passes */
+                           return true;
+                         }
+
                          if (!element.hasAttribute('required')) {
                            /* nothing to do */
                            return true;
                          }
 
-                         /* we don't need get_type() for element.type, because "checkbox" and "radio"
-                          * are well supported. */
-                         switch (element.type) {
-                           case 'checkbox':
-                             return element.checked;
-                           //break;
-                           case 'radio':
-                             /* radio inputs have "required" fulfilled, if _any_ other radio
-                              * with the same name in this form is checked. */
-                             return !!(element.checked || element.form && Array.prototype.filter.call(document.getElementsByName(element.name), function (radio) {
-                               return radio.name === element.name && radio.form === element.form && radio.checked;
-                             }).length > 0);
-                           //break;
-                           default:
-                             return !!element.value;
-                         }
+                         return element.type === 'checkbox' ? element.checked : !!element.value;
                        }
 
                        /**
@@ -1636,9 +1655,12 @@ define(function () { 'use strict';
                        function reportValidity(element) {
                          /* if this is a <form>, report validity of all child inputs */
                          if (element instanceof window.HTMLFormElement) {
-                           return get_validated_elements(element).map(reportValidity).every(function (b) {
+                           element.__hf_form_validation = true;
+                           var form_valid = get_validated_elements(element).map(reportValidity).every(function (b) {
                              return b;
                            });
+                           delete element.__hf_form_validation;
+                           return form_valid;
                          }
 
                          /* we copy checkValidity() here, b/c we have to check if the "invalid"
@@ -1655,7 +1677,7 @@ define(function () { 'use strict';
                          }
 
                          if (!event || !event.defaultPrevented) {
-                           Renderer.showWarning(element);
+                           Renderer.showWarning(element); //, !!element.form.__hf_form_validation);
                          }
 
                          return valid;
