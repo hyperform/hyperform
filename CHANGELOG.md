@@ -7,6 +7,7 @@
 * prevent `is_validation_candidate()` from running twice for each validation
 * re-allow validation of elements without `name` attribute, if asked directly
 * fix validation for partly required radio groups
+* on form validation show only one warning per radio group
 
 ## v0.9.14
 

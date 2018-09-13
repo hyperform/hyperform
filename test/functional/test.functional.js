@@ -84,6 +84,15 @@ describe('required radio buttons', function() {
     if (input.validity.valueMissing || input.previousSibling.validity.valueMissing) {
       throw Error('required checked radio button should not be invalid');
     }
+    input.checked = false;
+    form.reportValidity();
+    var warnings = form.getElementsByClassName('hf-warning');
+    if (warnings.length !== 1) {
+      throw Error('there should exactly one error message be shown, not '+warnings.length);
+    }
+    if (input.previousSibling !== warnings[0]) {
+      throw Error('the warning should be attached to the first radio button');
+    }
     destroy_hform(hform);
   });
 
@@ -101,6 +110,7 @@ describe('required radio buttons', function() {
       throw Error('required unchecked radio button should be invalid, ignoring other radios outside form');
     }
     destroy_hform(hform);
+    document.body.removeChild(other);
   });
 
 });

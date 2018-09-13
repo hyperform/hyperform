@@ -34,7 +34,7 @@ export default function reportValidity(element) {
   }
 
   if (! event || ! event.defaultPrevented) {
-    Renderer.showWarning(element);
+    Renderer.showWarning(element, !!element.form.__hf_form_validation);
   }
 
   return valid;

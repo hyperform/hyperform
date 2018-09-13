@@ -4,6 +4,7 @@
 import { message_store } from './message_store';
 import { get_wrapper } from './wrapper';
 import generate_id from '../tools/generate_id';
+import { get_radiogroup } from '../tools/get_radiogroup';
 
 
 const warningsCache = new WeakMap();
@@ -36,7 +37,15 @@ const DefaultRenderer = {
    *
    * i.e., showing and hiding warnings
    */
-  showWarning: function(element, sub_radio=false) {
+  showWarning: function(element, whole_form_validated=false) {
+    /* don't render error messages on subsequent radio buttons of the
+     * same group. This assumes, that element.validity.valueMissing is the only
+     * possible validation failure for radio buttons. */
+    if (whole_form_validated && element.type === 'radio' &&
+        get_radiogroup(element)[0] !== element) {
+      return;
+    }
+
     const msg = message_store.get(element).toString();
     var warning = warningsCache.get(element);
 
@@ -64,16 +73,6 @@ const DefaultRenderer = {
       element.removeAttribute('aria-errormessage');
       Renderer.detachWarning(warning, element);
 
-    }
-
-    if (! sub_radio && element.type === 'radio' && element.form) {
-      /* render warnings for all other same-name radios, too */
-      Array.prototype
-        .filter.call(document.getElementsByName(element.name),
-                     radio => radio.name === element.name &&
-                              radio.form === element.form
-        )
-        .map(radio => Renderer.showWarning(radio, 'sub_radio'));
     }
   },
 

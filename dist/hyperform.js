@@ -225,7 +225,14 @@ var hyperform = (function () {
                           * i.e., showing and hiding warnings
                           */
                          showWarning: function showWarning(element) {
-                           var sub_radio = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+                           var whole_form_validated = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+                           /* don't render error messages on subsequent radio buttons of the
+                            * same group. This assumes, that element.validity.valueMissing is the only
+                            * possible validation failure for radio buttons. */
+                           if (whole_form_validated && element.type === 'radio' && get_radiogroup(element)[0] !== element) {
+                             return;
+                           }
 
                            var msg = message_store.get(element).toString();
                            var warning = warningsCache.get(element);
@@ -252,15 +259,6 @@ var hyperform = (function () {
                              }
                              element.removeAttribute('aria-errormessage');
                              Renderer.detachWarning(warning, element);
-                           }
-
-                           if (!sub_radio && element.type === 'radio' && element.form) {
-                             /* render warnings for all other same-name radios, too */
-                             Array.prototype.filter.call(document.getElementsByName(element.name), function (radio) {
-                               return radio.name === element.name && radio.form === element.form;
-                             }).map(function (radio) {
-                               return Renderer.showWarning(radio, 'sub_radio');
-                             });
                            }
                          }
 
@@ -1678,7 +1676,7 @@ var hyperform = (function () {
                          }
 
                          if (!event || !event.defaultPrevented) {
-                           Renderer.showWarning(element); //, !!element.form.__hf_form_validation);
+                           Renderer.showWarning(element, !!element.form.__hf_form_validation);
                          }
 
                          return valid;
