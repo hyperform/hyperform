@@ -8,6 +8,35 @@ import get_type from '../tools/get_type';
 
 
 /**
+ * check if an element should be ignored due to any of its parents
+ *
+ * Checks <fieldset disabled> and <datalist>.
+ */
+function is_in_disallowed_parent(element) {
+  let p = element.parentNode;
+  while (p && p.nodeType === 1) {
+    if (p instanceof window.HTMLFieldSetElement &&
+        p.hasAttribute('disabled')) {
+      /* quick return, if it's a child of a disabled fieldset */
+      return true;
+    } else if (p.nodeName.toUpperCase() === 'DATALIST') {
+      /* quick return, if it's a child of a datalist
+       * Do not use HTMLDataListElement to support older browsers,
+       * too.
+       * @see https://html.spec.whatwg.org/multipage/forms.html#the-datalist-element:barred-from-constraint-validation
+       */
+      return true;
+    } else if (p === element.form) {
+      /* the outer boundary. We can stop looking for relevant elements. */
+      break;
+    }
+    p = p.parentNode;
+  }
+  return false;
+}
+
+
+/**
  * check if an element is a candidate for constraint validation
  *
  * @see https://html.spec.whatwg.org/multipage/forms.html#barred-from-constraint-validation
@@ -40,47 +69,22 @@ export default function(element) {
 
         const wrapped_form = get_wrapper(element);
 
-        /* it must have a name (or validating nameless inputs is allowed) */
-        if (element.getAttribute('name') ||
-            (wrapped_form && wrapped_form.settings.validateNameless)) {
+        if (
+            /* the parent form doesn't allow non-standard "novalidate" attributes... */
+            (wrapped_form && ! wrapped_form.settings.novalidateOnElements) ||
+            /* ...or it doesn't have such an attribute/property */
+            (! element.hasAttribute('novalidate') && ! element.noValidate)
+            ) {
 
-          if (
-              /* the parent form doesn't allow non-standard "novalidate" attributes... */
-              (wrapped_form && ! wrapped_form.settings.novalidateOnElements) ||
-              /* ...or it doesn't have such an attribute/property */
-              (! element.hasAttribute('novalidate') && ! element.noValidate)
-              ) {
-
-            /* it isn't part of a <fieldset disabled> */
-            let p = element.parentNode;
-            while (p && p.nodeType === 1) {
-              if (p instanceof window.HTMLFieldSetElement &&
-                  p.hasAttribute('disabled')) {
-                /* quick return, if it's a child of a disabled fieldset */
-                return false;
-              } else if (p.nodeName.toUpperCase() === 'DATALIST') {
-                /* quick return, if it's a child of a datalist
-                 * Do not use HTMLDataListElement to support older browsers,
-                 * too.
-                 * @see https://html.spec.whatwg.org/multipage/forms.html#the-datalist-element:barred-from-constraint-validation
-                 */
-                return false;
-              } else if (p === element.form) {
-                /* the outer boundary. We can stop looking for relevant
-                 * fieldsets. */
-                break;
-              }
-              p = p.parentNode;
-            }
+          /* it isn't part of a <fieldset disabled> */
+          if (! is_in_disallowed_parent(element)) {
 
             /* then it's a candidate */
             return true;
           }
         }
       }
-
     }
-
   }
 
   /* this is no HTML5 validation candidate... */
