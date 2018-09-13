@@ -1,6 +1,7 @@
 'use strict';
 
 
+import { get_validated_elements } from '../tools/get_validated_elements';
 import return_hook_or from '../tools/return_hook_or';
 import trigger_event from '../tools/trigger_event';
 import ValidityState from './validityState';
@@ -13,9 +14,7 @@ import { get_wrapper } from '../components/wrapper';
 const checkValidity = return_hook_or('checkValidity', function(element) {
   /* if this is a <form>, check validity of all child inputs */
   if (element instanceof window.HTMLFormElement) {
-    return (
-             Array.prototype.map.call(element.elements, checkValidity)
-           ).every(b=>b);
+    return get_validated_elements(element).map(checkValidity).every(b=>b);
   }
 
   /* default is true, also for elements that are no validation candidates */

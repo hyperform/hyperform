@@ -1,6 +1,7 @@
 'use strict';
 
 
+import { get_validated_elements } from '../tools/get_validated_elements';
 import trigger_event from '../tools/trigger_event';
 import Renderer from '../components/renderer';
 import ValidityState from './validityState';
@@ -13,9 +14,7 @@ import { get_wrapper } from '../components/wrapper';
 export default function reportValidity(element) {
   /* if this is a <form>, report validity of all child inputs */
   if (element instanceof window.HTMLFormElement) {
-    return (
-             Array.prototype.map.call(element.elements, reportValidity)
-           ).every(b=>b);
+    return get_validated_elements(element).map(reportValidity).every(b=>b);
   }
 
   /* we copy checkValidity() here, b/c we have to check if the "invalid"

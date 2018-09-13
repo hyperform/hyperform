@@ -3,6 +3,7 @@
 
 import trigger_event, { create_event } from './trigger_event';
 import matches from './matches';
+import { get_validated_elements } from './get_validated_elements';
 import reportValidity from '../polyfills/reportValidity';
 import { text as text_types } from '../components/types';
 import { get_wrapper } from '../components/wrapper';
@@ -108,7 +109,7 @@ function check(button) {
 
   var valid = true;
   var first_invalid;
-  Array.prototype.map.call(button.form.elements, element => {
+  get_validated_elements(button.form).map(element => {
     if (! reportValidity(element)) {
       valid = false;
       if (! first_invalid && ('focus' in element)) {

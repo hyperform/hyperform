@@ -2,104 +2,6 @@
 var hyperform = (function () {
                        'use strict';
 
-                       var registry = Object.create(null);
-
-                       /**
-                        * run all actions registered for a hook
-                        *
-                        * Every action gets called with a state object as `this` argument and with the
-                        * hook's call arguments as call arguments.
-                        *
-                        * @return mixed the returned value of the action calls or undefined
-                        */
-                       function call_hook(hook) {
-                         var result;
-                         var call_args = Array.prototype.slice.call(arguments, 1);
-
-                         if (hook in registry) {
-                           result = registry[hook].reduce(function (args) {
-
-                             return function (previousResult, currentAction) {
-                               var interimResult = currentAction.apply({
-                                 state: previousResult,
-                                 hook: hook
-                               }, args);
-                               return interimResult !== undefined ? interimResult : previousResult;
-                             };
-                           }(call_args), result);
-                         }
-
-                         return result;
-                       }
-
-                       /**
-                        * Filter a value through hooked functions
-                        *
-                        * Allows for additional parameters:
-                        * js> do_filter('foo', null, current_element)
-                        */
-                       function do_filter(hook, initial_value) {
-                         var result = initial_value;
-                         var call_args = Array.prototype.slice.call(arguments, 1);
-
-                         if (hook in registry) {
-                           result = registry[hook].reduce(function (previousResult, currentAction) {
-                             call_args[0] = previousResult;
-                             var interimResult = currentAction.apply({
-                               state: previousResult,
-                               hook: hook
-                             }, call_args);
-                             return interimResult !== undefined ? interimResult : previousResult;
-                           }, result);
-                         }
-
-                         return result;
-                       }
-
-                       /**
-                        * remove an action again
-                        */
-                       function remove_hook(hook, action) {
-                         if (hook in registry) {
-                           for (var i = 0; i < registry[hook].length; i++) {
-                             if (registry[hook][i] === action) {
-                               registry[hook].splice(i, 1);
-                               break;
-                             }
-                           }
-                         }
-                       }
-                       /**
-                        * add an action to a hook
-                        */
-                       function add_hook(hook, action, position) {
-                         if (!(hook in registry)) {
-                           registry[hook] = [];
-                         }
-                         if (position === undefined) {
-                           position = registry[hook].length;
-                         }
-                         registry[hook].splice(position, 0, action);
-                       }
-
-                       /**
-                        * return either the data of a hook call or the result of action, if the
-                        * former is undefined
-                        *
-                        * @return function a function wrapper around action
-                        */
-                       function return_hook_or (hook, action) {
-                         return function () {
-                           var data = call_hook(hook, Array.prototype.slice.call(arguments));
-
-                           if (data !== undefined) {
-                             return data;
-                           }
-
-                           return action.apply(this, arguments);
-                         };
-                       }
-
                        /* the following code is borrowed from the WebComponents project, licensed
                         * under the BSD license. Source:
                         * <https://github.com/webcomponents/webcomponentsjs/blob/5283db1459fa2323e5bfc8b9b5cc1753ed85e3d0/src/WebComponents/dom.js#L53-L78>
@@ -171,36 +73,6 @@ var hyperform = (function () {
 
                          return event;
                        }
-
-                       /* and datetime-local? Spec says “Nah!” */
-
-                       var dates = ['datetime', 'date', 'month', 'week', 'time'];
-
-                       var plain_numbers = ['number', 'range'];
-
-                       /* everything that returns something meaningful for valueAsNumber and
-                        * can have the step attribute */
-                       var numbers = dates.concat(plain_numbers, 'datetime-local');
-
-                       /* the spec says to only check those for syntax in validity.typeMismatch.
-                        * ¯\_(ツ)_/¯ */
-                       var type_checked = ['email', 'url'];
-
-                       /* check these for validity.badInput */
-                       var input_checked = ['email', 'date', 'month', 'week', 'time', 'datetime', 'datetime-local', 'number', 'range', 'color'];
-
-                       var text_types = ['text', 'search', 'tel', 'password'].concat(type_checked);
-
-                       /* input element types, that are candidates for the validation API.
-                        * Missing from this set are: button, hidden, menu (from <button>), reset and
-                        * the types for non-<input> elements. */
-                       var validation_candidates = ['checkbox', 'color', 'file', 'image', 'radio', 'submit'].concat(numbers, text_types);
-
-                       /* all known types of <input> */
-                       var inputs = ['button', 'hidden', 'reset'].concat(validation_candidates);
-
-                       /* apparently <select> and <textarea> have types of their own */
-                       var non_inputs = ['select-one', 'select-multiple', 'textarea'];
 
                        /* shim layer for the Element.matches method */
 
@@ -403,398 +275,231 @@ var hyperform = (function () {
 
                        };
 
+                       var registry = Object.create(null);
+
                        /**
-                        * check element's validity and report an error back to the user
+                        * run all actions registered for a hook
+                        *
+                        * Every action gets called with a state object as `this` argument and with the
+                        * hook's call arguments as call arguments.
+                        *
+                        * @return mixed the returned value of the action calls or undefined
                         */
-                       function reportValidity(element) {
-                         /* if this is a <form>, report validity of all child inputs */
-                         if (element instanceof window.HTMLFormElement) {
-                           return Array.prototype.map.call(element.elements, reportValidity).every(function (b) {
-                             return b;
-                           });
+                       function call_hook(hook) {
+                         var result;
+                         var call_args = Array.prototype.slice.call(arguments, 1);
+
+                         if (hook in registry) {
+                           result = registry[hook].reduce(function (args) {
+
+                             return function (previousResult, currentAction) {
+                               var interimResult = currentAction.apply({
+                                 state: previousResult,
+                                 hook: hook
+                               }, args);
+                               return interimResult !== undefined ? interimResult : previousResult;
+                             };
+                           }(call_args), result);
                          }
 
-                         /* we copy checkValidity() here, b/c we have to check if the "invalid"
-                          * event was canceled. */
-                         var valid = ValidityState(element).valid;
-                         var event;
-                         if (valid) {
-                           var wrapped_form = get_wrapper(element);
-                           if (wrapped_form && wrapped_form.settings.validEvent) {
-                             event = trigger_event(element, 'valid', { cancelable: true });
-                           }
-                         } else {
-                           event = trigger_event(element, 'invalid', { cancelable: true });
-                         }
-
-                         if (!event || !event.defaultPrevented) {
-                           Renderer.showWarning(element);
-                         }
-
-                         return valid;
+                         return result;
                        }
 
                        /**
-                        * submit a form, because `element` triggered it
+                        * Filter a value through hooked functions
                         *
-                        * This method also dispatches a submit event on the form prior to the
-                        * submission. The event contains the trigger element as `submittedVia`.
-                        *
-                        * If the element is a button with a name, the name=value pair will be added
-                        * to the submitted data.
+                        * Allows for additional parameters:
+                        * js> do_filter('foo', null, current_element)
                         */
-                       function submit_form_via(element) {
-                         /* apparently, the submit event is not triggered in most browsers on
-                          * the submit() method, so we do it manually here to model a natural
-                          * submit as closely as possible.
-                          * Now to the fun fact: If you trigger a submit event from a form, what
-                          * do you think should happen?
-                          * 1) the form will be automagically submitted by the browser, or
-                          * 2) nothing.
-                          * And as you already suspected, the correct answer is: both! Firefox
-                          * opts for 1), Chrome for 2). Yay! */
-                         var event_got_cancelled;
+                       function do_filter(hook, initial_value) {
+                         var result = initial_value;
+                         var call_args = Array.prototype.slice.call(arguments, 1);
 
-                         var submit_event = create_event('submit', { cancelable: true });
-                         /* force Firefox to not submit the form, then fake preventDefault() */
-                         submit_event.preventDefault();
-                         Object.defineProperty(submit_event, 'defaultPrevented', {
-                           value: false,
-                           writable: true
-                         });
-                         Object.defineProperty(submit_event, 'preventDefault', {
-                           value: function value() {
-                             return submit_event.defaultPrevented = event_got_cancelled = true;
-                           },
-                           writable: true
-                         });
-                         trigger_event(element.form, submit_event, {}, { submittedVia: element });
-
-                         if (!event_got_cancelled) {
-                           add_submit_field(element);
-                           window.HTMLFormElement.prototype.submit.call(element.form);
-                           window.setTimeout(function () {
-                             return remove_submit_field(element);
-                           });
+                         if (hook in registry) {
+                           result = registry[hook].reduce(function (previousResult, currentAction) {
+                             call_args[0] = previousResult;
+                             var interimResult = currentAction.apply({
+                               state: previousResult,
+                               hook: hook
+                             }, call_args);
+                             return interimResult !== undefined ? interimResult : previousResult;
+                           }, result);
                          }
+
+                         return result;
                        }
 
                        /**
-                        * if a submit button was clicked, add its name=value by means of a type=hidden
-                        * input field
+                        * remove an action again
                         */
-                       function add_submit_field(button) {
-                         if (['image', 'submit'].indexOf(button.type) > -1 && button.name) {
-                           var wrapper = get_wrapper(button.form) || {};
-                           var submit_helper = wrapper.submit_helper;
-                           if (submit_helper) {
-                             if (submit_helper.parentNode) {
-                               submit_helper.parentNode.removeChild(submit_helper);
+                       function remove_hook(hook, action) {
+                         if (hook in registry) {
+                           for (var i = 0; i < registry[hook].length; i++) {
+                             if (registry[hook][i] === action) {
+                               registry[hook].splice(i, 1);
+                               break;
                              }
+                           }
+                         }
+                       }
+                       /**
+                        * add an action to a hook
+                        */
+                       function add_hook(hook, action, position) {
+                         if (!(hook in registry)) {
+                           registry[hook] = [];
+                         }
+                         if (position === undefined) {
+                           position = registry[hook].length;
+                         }
+                         registry[hook].splice(position, 0, action);
+                       }
+
+                       /* and datetime-local? Spec says “Nah!” */
+
+                       var dates = ['datetime', 'date', 'month', 'week', 'time'];
+
+                       var plain_numbers = ['number', 'range'];
+
+                       /* everything that returns something meaningful for valueAsNumber and
+                        * can have the step attribute */
+                       var numbers = dates.concat(plain_numbers, 'datetime-local');
+
+                       /* the spec says to only check those for syntax in validity.typeMismatch.
+                        * ¯\_(ツ)_/¯ */
+                       var type_checked = ['email', 'url'];
+
+                       /* check these for validity.badInput */
+                       var input_checked = ['email', 'date', 'month', 'week', 'time', 'datetime', 'datetime-local', 'number', 'range', 'color'];
+
+                       var text_types = ['text', 'search', 'tel', 'password'].concat(type_checked);
+
+                       /* input element types, that are candidates for the validation API.
+                        * Missing from this set are: button, hidden, menu (from <button>), reset and
+                        * the types for non-<input> elements. */
+                       var validation_candidates = ['checkbox', 'color', 'file', 'image', 'radio', 'submit'].concat(numbers, text_types);
+
+                       /* all known types of <input> */
+                       var inputs = ['button', 'hidden', 'reset'].concat(validation_candidates);
+
+                       /* apparently <select> and <textarea> have types of their own */
+                       var non_inputs = ['select-one', 'select-multiple', 'textarea'];
+
+                       /**
+                        * get the element's type in a backwards-compatible way
+                        */
+                       function get_type (element) {
+                         if (element instanceof window.HTMLTextAreaElement) {
+                           return 'textarea';
+                         } else if (element instanceof window.HTMLSelectElement) {
+                           return element.hasAttribute('multiple') ? 'select-multiple' : 'select-one';
+                         } else if (element instanceof window.HTMLButtonElement) {
+                           return (element.getAttribute('type') || 'submit').toLowerCase();
+                         } else if (element instanceof window.HTMLInputElement) {
+                           var attr = (element.getAttribute('type') || '').toLowerCase();
+                           if (attr && inputs.indexOf(attr) > -1) {
+                             return attr;
                            } else {
-                             submit_helper = document.createElement('input');
-                             submit_helper.type = 'hidden';
-                             wrapper.submit_helper = submit_helper;
+                             /* perhaps the DOM has in-depth knowledge. Take that before returning
+                              * 'text'. */
+                             return element.type || 'text';
                            }
-                           submit_helper.name = button.name;
-                           submit_helper.value = button.value;
-                           button.form.appendChild(submit_helper);
                          }
+
+                         return '';
                        }
 
                        /**
-                        * remove a possible helper input, that was added by `add_submit_field`
-                        */
-                       function remove_submit_field(button) {
-                         if (['image', 'submit'].indexOf(button.type) > -1 && button.name) {
-                           var wrapper = get_wrapper(button.form) || {};
-                           var submit_helper = wrapper.submit_helper;
-                           if (submit_helper && submit_helper.parentNode) {
-                             submit_helper.parentNode.removeChild(submit_helper);
-                           }
-                         }
-                       }
-
-                       /**
-                        * check a form's validity and submit it
+                        * check if an element should be ignored due to any of its parents
                         *
-                        * The method triggers a cancellable `validate` event on the form. If the
-                        * event is cancelled, form submission will be aborted, too.
+                        * Checks <fieldset disabled> and <datalist>.
+                        */
+                       function is_in_disallowed_parent(element) {
+                         var p = element.parentNode;
+                         while (p && p.nodeType === 1) {
+                           if (p instanceof window.HTMLFieldSetElement && p.hasAttribute('disabled')) {
+                             /* quick return, if it's a child of a disabled fieldset */
+                             return true;
+                           } else if (p.nodeName.toUpperCase() === 'DATALIST') {
+                             /* quick return, if it's a child of a datalist
+                              * Do not use HTMLDataListElement to support older browsers,
+                              * too.
+                              * @see https://html.spec.whatwg.org/multipage/forms.html#the-datalist-element:barred-from-constraint-validation
+                              */
+                             return true;
+                           } else if (p === element.form) {
+                             /* the outer boundary. We can stop looking for relevant elements. */
+                             break;
+                           }
+                           p = p.parentNode;
+                         }
+                         return false;
+                       }
+
+                       /**
+                        * check if an element is a candidate for constraint validation
                         *
-                        * If the form is found to contain invalid fields, focus the first field.
+                        * @see https://html.spec.whatwg.org/multipage/forms.html#barred-from-constraint-validation
                         */
-                       function check(button) {
-                         /* trigger a "validate" event on the form to be submitted */
-                         var val_event = trigger_event(button.form, 'validate', { cancelable: true });
-                         if (val_event.defaultPrevented) {
-                           /* skip the whole submit thing, if the validation is canceled. A user
-                            * can still call form.submit() afterwards. */
-                           return;
+                       function is_validation_candidate (element) {
+
+                         /* allow a shortcut via filters, e.g. to validate type=hidden fields */
+                         var filtered = do_filter('is_validation_candidate', null, element);
+                         if (filtered !== null) {
+                           return !!filtered;
                          }
 
-                         var valid = true;
-                         var first_invalid;
-                         Array.prototype.map.call(button.form.elements, function (element) {
-                           if (!reportValidity(element)) {
-                             valid = false;
-                             if (!first_invalid && 'focus' in element) {
-                               first_invalid = element;
-                             }
-                           }
-                         });
+                         /* it must be any of those elements */
+                         if (element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement) {
 
-                         if (valid) {
-                           submit_form_via(button);
-                         } else if (first_invalid) {
-                           /* focus the first invalid element, if validation went south */
-                           first_invalid.focus();
-                           /* tell the tale, if anyone wants to react to it */
-                           trigger_event(button.form, 'forminvalid');
-                         }
-                       }
+                           var type = get_type(element);
+                           /* its type must be in the whitelist */
+                           if (non_inputs.indexOf(type) > -1 || validation_candidates.indexOf(type) > -1) {
 
-                       /**
-                        * test if node is a submit button
-                        */
-                       function is_submit_button(node) {
-                         return (
-                           /* must be an input or button element... */
-                           (node.nodeName === 'INPUT' || node.nodeName === 'BUTTON') && (
+                             /* it mustn't be disabled or readonly */
+                             if (!element.hasAttribute('disabled') && !element.hasAttribute('readonly')) {
 
-                           /* ...and have a submitting type */
-                           node.type === 'image' || node.type === 'submit')
-                         );
-                       }
+                               var wrapped_form = get_wrapper(element);
 
-                       /**
-                        * test, if the click event would trigger a submit
-                        */
-                       function is_submitting_click(event, button) {
-                         return (
-                           /* prevented default: won't trigger a submit */
-                           !event.defaultPrevented && (
+                               if (
+                               /* the parent form doesn't allow non-standard "novalidate" attributes... */
+                               wrapped_form && !wrapped_form.settings.novalidateOnElements ||
+                               /* ...or it doesn't have such an attribute/property */
+                               !element.hasAttribute('novalidate') && !element.noValidate) {
 
-                           /* left button or middle button (submits in Chrome) */
-                           !('button' in event) || event.button < 2) &&
+                                 /* it isn't part of a <fieldset disabled> */
+                                 if (!is_in_disallowed_parent(element)) {
 
-                           /* must be a submit button... */
-                           is_submit_button(button) &&
-
-                           /* the button needs a form, that's going to be submitted */
-                           button.form &&
-
-                           /* again, if the form should not be validated, we're out of the game */
-                           !button.form.hasAttribute('novalidate')
-                         );
-                       }
-
-                       /**
-                        * test, if the keypress event would trigger a submit
-                        */
-                       function is_submitting_keypress(event) {
-                         return (
-                           /* prevented default: won't trigger a submit */
-                           !event.defaultPrevented && (
-                           /* ...and <Enter> was pressed... */
-                           event.keyCode === 13 &&
-
-                           /* ...on an <input> that is... */
-                           event.target.nodeName === 'INPUT' &&
-
-                           /* ...a standard text input field (not checkbox, ...) */
-                           text_types.indexOf(event.target.type) > -1 ||
-                           /* or <Enter> or <Space> was pressed... */
-                           (event.keyCode === 13 || event.keyCode === 32) &&
-
-                           /* ...on a submit button */
-                           is_submit_button(event.target)) &&
-
-                           /* there's a form... */
-                           event.target.form &&
-
-                           /* ...and the form allows validation */
-                           !event.target.form.hasAttribute('novalidate')
-                         );
-                       }
-
-                       /**
-                        * catch clicks to children of <button>s
-                        */
-                       function get_clicked_button(element) {
-                         if (is_submit_button(element)) {
-                           return element;
-                         } else if (matches(element, 'button:not([type]) *, button[type="submit"] *')) {
-                           return get_clicked_button(element.parentNode);
-                         } else {
-                           return null;
-                         }
-                       }
-
-                       /**
-                        * return event handler to catch explicit submission by click on a button
-                        */
-                       function get_click_handler() {
-                         var ignore = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-
-                         return function (event) {
-                           var button = get_clicked_button(event.target);
-                           if (button && is_submitting_click(event, button)) {
-                             event.preventDefault();
-                             if (ignore || button.hasAttribute('formnovalidate')) {
-                               /* if validation should be ignored, we're not interested in any checks */
-                               submit_form_via(button);
-                             } else {
-                               check(button);
-                             }
-                           }
-                         };
-                       }
-                       var click_handler = get_click_handler();
-                       var ignored_click_handler = get_click_handler(true);
-
-                       /**
-                        * catch implicit submission by pressing <Enter> in some situations
-                        */
-                       function get_keypress_handler(ignore) {
-                         return function keypress_handler(event) {
-                           if (is_submitting_keypress(event)) {
-                             event.preventDefault();
-
-                             var wrapper = get_wrapper(event.target.form) || { settings: {} };
-                             if (wrapper.settings.preventImplicitSubmit) {
-                               /* user doesn't want an implicit submit. Cancel here. */
-                               return;
-                             }
-
-                             /* check, that there is no submit button in the form. Otherwise
-                             * that should be clicked. */
-                             var el = event.target.form.elements.length;
-                             var submit;
-                             for (var i = 0; i < el; i++) {
-                               if (['image', 'submit'].indexOf(event.target.form.elements[i].type) > -1) {
-                                 submit = event.target.form.elements[i];
-                                 break;
+                                   /* then it's a candidate */
+                                   return true;
+                                 }
                                }
                              }
-
-                             if (submit) {
-                               submit.click();
-                             } else if (ignore) {
-                               submit_form_via(event.target);
-                             } else {
-                               check(event.target);
-                             }
                            }
-                         };
-                       }
-                       var keypress_handler = get_keypress_handler();
-                       var ignored_keypress_handler = get_keypress_handler(true);
-
-                       /**
-                        * catch all relevant events _prior_ to a form being submitted
-                        *
-                        * @param bool ignore bypass validation, when an attempt to submit the
-                        *                    form is detected. True, when the wrapper's revalidate
-                        *                    setting is 'never'.
-                        */
-                       function catch_submit(listening_node) {
-                         var ignore = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
-                         if (ignore) {
-                           listening_node.addEventListener('click', ignored_click_handler);
-                           listening_node.addEventListener('keypress', ignored_keypress_handler);
-                         } else {
-                           listening_node.addEventListener('click', click_handler);
-                           listening_node.addEventListener('keypress', keypress_handler);
-                         }
-                       }
-
-                       /**
-                        * decommission the event listeners from catch_submit() again
-                        */
-                       function uncatch_submit(listening_node) {
-                         listening_node.removeEventListener('click', ignored_click_handler);
-                         listening_node.removeEventListener('keypress', ignored_keypress_handler);
-                         listening_node.removeEventListener('click', click_handler);
-                         listening_node.removeEventListener('keypress', keypress_handler);
-                       }
-
-                       /**
-                        * remove `property` from element and restore _original_property, if present
-                        */
-                       function uninstall_property (element, property) {
-                         try {
-                           delete element[property];
-                         } catch (e) {
-                           /* Safari <= 9 and PhantomJS will end up here :-( Nothing to do except
-                            * warning */
-                           var wrapper = get_wrapper(element);
-                           if (wrapper && wrapper.settings.debug) {
-                             /* global console */
-                             console.log('[hyperform] cannot uninstall custom property ' + property);
-                           }
-                           return false;
                          }
 
-                         var original_descriptor = Object.getOwnPropertyDescriptor(element, '_original_' + property);
-
-                         if (original_descriptor) {
-                           Object.defineProperty(element, property, original_descriptor);
-                         }
+                         /* this is no HTML5 validation candidate... */
+                         return false;
                        }
 
-                       /**
-                        * add `property` to an element
-                        *
-                        * js> installer(element, 'foo', { value: 'bar' });
-                        * js> assert(element.foo === 'bar');
-                        */
-                       function install_property (element, property, descriptor) {
-                         descriptor.configurable = true;
-                         descriptor.enumerable = true;
-                         if ('value' in descriptor) {
-                           descriptor.writable = true;
+                       function format_date (date) {
+                         var part = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+
+                         switch (part) {
+                           case 'date':
+                             return (date.toLocaleDateString || date.toDateString).call(date);
+                           case 'time':
+                             return (date.toLocaleTimeString || date.toTimeString).call(date);
+                           case 'month':
+                             return 'toLocaleDateString' in date ? date.toLocaleDateString(undefined, {
+                               year: 'numeric',
+                               month: '2-digit'
+                             }) : date.toDateString();
+                           // case 'week':
+                           // TODO
+                           default:
+                             return (date.toLocaleString || date.toString).call(date);
                          }
-
-                         var original_descriptor = Object.getOwnPropertyDescriptor(element, property);
-
-                         if (original_descriptor) {
-
-                           if (original_descriptor.configurable === false) {
-                             /* Safari <= 9 and PhantomJS will end up here :-( Nothing to do except
-                              * warning */
-                             var wrapper = get_wrapper(element);
-                             if (wrapper && wrapper.settings.debug) {
-                               /* global console */
-                               console.log('[hyperform] cannot install custom property ' + property);
-                             }
-                             return false;
-                           }
-
-                           /* we already installed that property... */
-                           if (original_descriptor.get && original_descriptor.get.__hyperform || original_descriptor.value && original_descriptor.value.__hyperform) {
-                             return;
-                           }
-
-                           /* publish existing property under new name, if it's not from us */
-                           Object.defineProperty(element, '_original_' + property, original_descriptor);
-                         }
-
-                         delete element[property];
-                         Object.defineProperty(element, property, descriptor);
-
-                         return true;
-                       }
-
-                       function is_field (element) {
-                               return element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement || element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLFieldSetElement || element === window.HTMLButtonElement.prototype || element === window.HTMLInputElement.prototype || element === window.HTMLSelectElement.prototype || element === window.HTMLTextAreaElement.prototype || element === window.HTMLFieldSetElement.prototype;
-                       }
-
-                       /**
-                        * set a custom validity message or delete it with an empty string
-                        */
-                       function setCustomValidity(element, msg) {
-                         message_store.set(element, msg, true);
                        }
 
                        function sprintf (str) {
@@ -995,30 +700,6 @@ var hyperform = (function () {
                        }
 
                        /**
-                        * get the element's type in a backwards-compatible way
-                        */
-                       function get_type (element) {
-                         if (element instanceof window.HTMLTextAreaElement) {
-                           return 'textarea';
-                         } else if (element instanceof window.HTMLSelectElement) {
-                           return element.hasAttribute('multiple') ? 'select-multiple' : 'select-one';
-                         } else if (element instanceof window.HTMLButtonElement) {
-                           return (element.getAttribute('type') || 'submit').toLowerCase();
-                         } else if (element instanceof window.HTMLInputElement) {
-                           var attr = (element.getAttribute('type') || '').toLowerCase();
-                           if (attr && inputs.indexOf(attr) > -1) {
-                             return attr;
-                           } else {
-                             /* perhaps the DOM has in-depth knowledge. Take that before returning
-                              * 'text'. */
-                             return element.type || 'text';
-                           }
-                         }
-
-                         return '';
-                       }
-
-                       /**
                         * the following validation messages are from Firefox source,
                         * http://mxr.mozilla.org/mozilla-central/source/dom/locales/en-US/chrome/dom/dom.properties
                         * released under MPL license, http://mozilla.org/MPL/2.0/.
@@ -1196,577 +877,6 @@ var hyperform = (function () {
                          }
 
                          return [prev, next];
-                       }
-
-                       /**
-                        * implement the valueAsDate functionality
-                        *
-                        * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasdate
-                        */
-                       function valueAsDate(element) {
-                         var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
-
-                         var type = get_type(element);
-                         if (dates.indexOf(type) > -1) {
-                           if (value !== undefined) {
-                             /* setter: value must be null or a Date() */
-                             if (value === null) {
-                               element.value = '';
-                             } else if (value instanceof Date) {
-                               if (isNaN(value.getTime())) {
-                                 element.value = '';
-                               } else {
-                                 element.value = date_to_string(value, type);
-                               }
-                             } else {
-                               throw new window.DOMException('valueAsDate setter encountered invalid value', 'TypeError');
-                             }
-                             return;
-                           }
-
-                           var value_date = string_to_date(element.value, type);
-                           return value_date instanceof Date ? value_date : null;
-                         } else if (value !== undefined) {
-                           /* trying to set a date on a not-date input fails */
-                           throw new window.DOMException('valueAsDate setter cannot set date on this element', 'InvalidStateError');
-                         }
-
-                         return null;
-                       }
-
-                       /**
-                        * implement the valueAsNumber functionality
-                        *
-                        * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasnumber
-                        */
-                       function valueAsNumber(element) {
-                         var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
-
-                         var type = get_type(element);
-                         if (numbers.indexOf(type) > -1) {
-                           if (type === 'range' && element.hasAttribute('multiple')) {
-                             /* @see https://html.spec.whatwg.org/multipage/forms.html#do-not-apply */
-                             return NaN;
-                           }
-
-                           if (value !== undefined) {
-                             /* setter: value must be NaN or a finite number */
-                             if (isNaN(value)) {
-                               element.value = '';
-                             } else if (typeof value === 'number' && window.isFinite(value)) {
-                               try {
-                                 /* try setting as a date, but... */
-                                 valueAsDate(element, new Date(value));
-                               } catch (e) {
-                                 /* ... when valueAsDate is not responsible, ... */
-                                 if (!(e instanceof window.DOMException)) {
-                                   throw e;
-                                 }
-                                 /* ... set it via Number.toString(). */
-                                 element.value = value.toString();
-                               }
-                             } else {
-                               throw new window.DOMException('valueAsNumber setter encountered invalid value', 'TypeError');
-                             }
-                             return;
-                           }
-
-                           return string_to_number(element.value, type);
-                         } else if (value !== undefined) {
-                           /* trying to set a number on a not-number input fails */
-                           throw new window.DOMException('valueAsNumber setter cannot set number on this element', 'InvalidStateError');
-                         }
-
-                         return NaN;
-                       }
-
-                       /**
-                        *
-                        */
-                       function stepDown(element) {
-                         var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
-
-                         if (numbers.indexOf(get_type(element)) === -1) {
-                           throw new window.DOMException('stepDown encountered invalid type', 'InvalidStateError');
-                         }
-                         if ((element.getAttribute('step') || '').toLowerCase() === 'any') {
-                           throw new window.DOMException('stepDown encountered step "any"', 'InvalidStateError');
-                         }
-
-                         var prev = get_next_valid(element, n)[0];
-
-                         if (prev !== null) {
-                           valueAsNumber(element, prev);
-                         }
-                       }
-
-                       /**
-                        *
-                        */
-                       function stepUp(element) {
-                         var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
-
-                         if (numbers.indexOf(get_type(element)) === -1) {
-                           throw new window.DOMException('stepUp encountered invalid type', 'InvalidStateError');
-                         }
-                         if ((element.getAttribute('step') || '').toLowerCase() === 'any') {
-                           throw new window.DOMException('stepUp encountered step "any"', 'InvalidStateError');
-                         }
-
-                         var next = get_next_valid(element, n)[1];
-
-                         if (next !== null) {
-                           valueAsNumber(element, next);
-                         }
-                       }
-
-                       /**
-                        * get the validation message for an element, empty string, if the element
-                        * satisfies all constraints.
-                        */
-                       function validationMessage(element) {
-                         var msg = message_store.get(element);
-                         if (!msg) {
-                           return '';
-                         }
-
-                         /* make it a primitive again, since message_store returns String(). */
-                         return msg.toString();
-                       }
-
-                       /**
-                        * check, if an element will be subject to HTML5 validation at all
-                        */
-                       function willValidate(element) {
-                         return is_validation_candidate(element);
-                       }
-
-                       var gA = function gA(prop) {
-                         return function () {
-                           return do_filter('attr_get_' + prop, this.getAttribute(prop), this);
-                         };
-                       };
-
-                       var sA = function sA(prop) {
-                         return function (value) {
-                           this.setAttribute(prop, do_filter('attr_set_' + prop, value, this));
-                         };
-                       };
-
-                       var gAb = function gAb(prop) {
-                         return function () {
-                           return do_filter('attr_get_' + prop, this.hasAttribute(prop), this);
-                         };
-                       };
-
-                       var sAb = function sAb(prop) {
-                         return function (value) {
-                           if (do_filter('attr_set_' + prop, value, this)) {
-                             this.setAttribute(prop, prop);
-                           } else {
-                             this.removeAttribute(prop);
-                           }
-                         };
-                       };
-
-                       var gAn = function gAn(prop) {
-                         return function () {
-                           return do_filter('attr_get_' + prop, Math.max(0, Number(this.getAttribute(prop))), this);
-                         };
-                       };
-
-                       var sAn = function sAn(prop) {
-                         return function (value) {
-                           value = do_filter('attr_set_' + prop, value, this);
-                           if (/^[0-9]+$/.test(value)) {
-                             this.setAttribute(prop, value);
-                           }
-                         };
-                       };
-
-                       function install_properties(element) {
-                         var _arr = ['accept', 'max', 'min', 'pattern', 'placeholder', 'step'];
-
-                         for (var _i = 0; _i < _arr.length; _i++) {
-                           var prop = _arr[_i];
-                           install_property(element, prop, {
-                             get: gA(prop),
-                             set: sA(prop)
-                           });
-                         }
-
-                         var _arr2 = ['multiple', 'required', 'readOnly'];
-                         for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
-                           var _prop = _arr2[_i2];
-                           install_property(element, _prop, {
-                             get: gAb(_prop.toLowerCase()),
-                             set: sAb(_prop.toLowerCase())
-                           });
-                         }
-
-                         var _arr3 = ['minLength', 'maxLength'];
-                         for (var _i3 = 0; _i3 < _arr3.length; _i3++) {
-                           var _prop2 = _arr3[_i3];
-                           install_property(element, _prop2, {
-                             get: gAn(_prop2.toLowerCase()),
-                             set: sAn(_prop2.toLowerCase())
-                           });
-                         }
-                       }
-
-                       function uninstall_properties(element) {
-                         var _arr4 = ['accept', 'max', 'min', 'pattern', 'placeholder', 'step', 'multiple', 'required', 'readOnly', 'minLength', 'maxLength'];
-
-                         for (var _i4 = 0; _i4 < _arr4.length; _i4++) {
-                           var prop = _arr4[_i4];
-                           uninstall_property(element, prop);
-                         }
-                       }
-
-                       var polyfills = {
-                         checkValidity: {
-                           value: mark(function () {
-                             return checkValidity(this);
-                           })
-                         },
-                         reportValidity: {
-                           value: mark(function () {
-                             return reportValidity(this);
-                           })
-                         },
-                         setCustomValidity: {
-                           value: mark(function (msg) {
-                             return setCustomValidity(this, msg);
-                           })
-                         },
-                         stepDown: {
-                           value: mark(function () {
-                             var n = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
-                             return stepDown(this, n);
-                           })
-                         },
-                         stepUp: {
-                           value: mark(function () {
-                             var n = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
-                             return stepUp(this, n);
-                           })
-                         },
-                         validationMessage: {
-                           get: mark(function () {
-                             return validationMessage(this);
-                           })
-                         },
-                         validity: {
-                           get: mark(function () {
-                             return ValidityState(this);
-                           })
-                         },
-                         valueAsDate: {
-                           get: mark(function () {
-                             return valueAsDate(this);
-                           }),
-                           set: mark(function (value) {
-                             valueAsDate(this, value);
-                           })
-                         },
-                         valueAsNumber: {
-                           get: mark(function () {
-                             return valueAsNumber(this);
-                           }),
-                           set: mark(function (value) {
-                             valueAsNumber(this, value);
-                           })
-                         },
-                         willValidate: {
-                           get: mark(function () {
-                             return willValidate(this);
-                           })
-                         }
-                       };
-
-                       function polyfill (element) {
-                         if (is_field(element)) {
-
-                           for (var prop in polyfills) {
-                             install_property(element, prop, polyfills[prop]);
-                           }
-
-                           install_properties(element);
-                         } else if (element instanceof window.HTMLFormElement || element === window.HTMLFormElement.prototype) {
-                           install_property(element, 'checkValidity', polyfills.checkValidity);
-                           install_property(element, 'reportValidity', polyfills.reportValidity);
-                         }
-                       }
-
-                       function polyunfill (element) {
-                         if (is_field(element)) {
-
-                           uninstall_property(element, 'checkValidity');
-                           uninstall_property(element, 'reportValidity');
-                           uninstall_property(element, 'setCustomValidity');
-                           uninstall_property(element, 'stepDown');
-                           uninstall_property(element, 'stepUp');
-                           uninstall_property(element, 'validationMessage');
-                           uninstall_property(element, 'validity');
-                           uninstall_property(element, 'valueAsDate');
-                           uninstall_property(element, 'valueAsNumber');
-                           uninstall_property(element, 'willValidate');
-
-                           uninstall_properties(element);
-                         } else if (element instanceof window.HTMLFormElement) {
-                           uninstall_property(element, 'checkValidity');
-                           uninstall_property(element, 'reportValidity');
-                         }
-                       }
-
-                       var instances = new WeakMap();
-
-                       /**
-                        * wrap <form>s, window or document, that get treated with the global
-                        * hyperform()
-                        */
-                       function Wrapper(form, settings) {
-
-                         /* do not allow more than one instance per form. Otherwise we'd end
-                          * up with double event handlers, polyfills re-applied, ... */
-                         var existing = instances.get(form);
-                         if (existing) {
-                           existing.settings = settings;
-                           return existing;
-                         }
-
-                         this.form = form;
-                         this.settings = settings;
-                         this.revalidator = this.revalidate.bind(this);
-
-                         instances.set(form, this);
-
-                         catch_submit(form, settings.revalidate === 'never');
-
-                         if (form === window || form.nodeType === 9) {
-                           /* install on the prototypes, when called for the whole document */
-                           this.install([window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype]);
-                           polyfill(window.HTMLFormElement);
-                         } else if (form instanceof window.HTMLFormElement || form instanceof window.HTMLFieldSetElement) {
-                           this.install(form.elements);
-                           if (form instanceof window.HTMLFormElement) {
-                             polyfill(form);
-                           }
-                         }
-
-                         if (settings.revalidate === 'oninput' || settings.revalidate === 'hybrid') {
-                           /* in a perfect world we'd just bind to "input", but support here is
-                            * abysmal: http://caniuse.com/#feat=input-event */
-                           form.addEventListener('keyup', this.revalidator);
-                           form.addEventListener('change', this.revalidator);
-                         }
-                         if (settings.revalidate === 'onblur' || settings.revalidate === 'hybrid') {
-                           /* useCapture=true, because `blur` doesn't bubble. See
-                            * https://developer.mozilla.org/en-US/docs/Web/Events/blur#Event_delegation
-                            * for a discussion */
-                           form.addEventListener('blur', this.revalidator, true);
-                         }
-                       }
-
-                       Wrapper.prototype = {
-                         destroy: function destroy() {
-                           uncatch_submit(this.form);
-                           instances.delete(this.form);
-                           this.form.removeEventListener('keyup', this.revalidator);
-                           this.form.removeEventListener('change', this.revalidator);
-                           this.form.removeEventListener('blur', this.revalidator, true);
-                           if (this.form === window || this.form.nodeType === 9) {
-                             this.uninstall([window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype]);
-                             polyunfill(window.HTMLFormElement);
-                           } else if (this.form instanceof window.HTMLFormElement || this.form instanceof window.HTMLFieldSetElement) {
-                             this.uninstall(this.form.elements);
-                             if (this.form instanceof window.HTMLFormElement) {
-                               polyunfill(this.form);
-                             }
-                           }
-                         },
-
-
-                         /**
-                          * revalidate an input element
-                          */
-                         revalidate: function revalidate(event) {
-                           if (event.target instanceof window.HTMLButtonElement || event.target instanceof window.HTMLTextAreaElement || event.target instanceof window.HTMLSelectElement || event.target instanceof window.HTMLInputElement) {
-
-                             if (this.settings.revalidate === 'hybrid') {
-                               /* "hybrid" somewhat simulates what browsers do. See for example
-                                * Firefox's :-moz-ui-invalid pseudo-class:
-                                * https://developer.mozilla.org/en-US/docs/Web/CSS/:-moz-ui-invalid */
-                               if (event.type === 'blur' && event.target.value !== event.target.defaultValue || ValidityState(event.target).valid) {
-                                 /* on blur, update the report when the value has changed from the
-                                  * default or when the element is valid (possibly removing a still
-                                  * standing invalidity report). */
-                                 reportValidity(event.target);
-                               } else if (event.type === 'keyup' && event.keyCode !== 9 || event.type === 'change') {
-                                 if (ValidityState(event.target).valid) {
-                                   // report instantly, when an element becomes valid,
-                                   // postpone report to blur event, when an element is invalid
-                                   reportValidity(event.target);
-                                 }
-                               }
-                             } else if (event.type !== 'keyup' || event.keyCode !== 9) {
-                               /* do _not_ validate, when the user "tabbed" into the field initially,
-                                * i.e., a keyup event with keyCode 9 */
-                               reportValidity(event.target);
-                             }
-                           }
-                         },
-
-
-                         /**
-                          * install the polyfills on each given element
-                          *
-                          * If you add elements dynamically, you have to call install() on them
-                          * yourself:
-                          *
-                          * js> var form = hyperform(document.forms[0]);
-                          * js> document.forms[0].appendChild(input);
-                          * js> form.install(input);
-                          *
-                          * You can skip this, if you called hyperform on window or document.
-                          */
-                         install: function install(els) {
-                           if (els instanceof window.Element) {
-                             els = [els];
-                           }
-
-                           var els_length = els.length;
-
-                           for (var i = 0; i < els_length; i++) {
-                             polyfill(els[i]);
-                           }
-                         },
-                         uninstall: function uninstall(els) {
-                           if (els instanceof window.Element) {
-                             els = [els];
-                           }
-
-                           var els_length = els.length;
-
-                           for (var i = 0; i < els_length; i++) {
-                             polyunfill(els[i]);
-                           }
-                         }
-                       };
-
-                       /**
-                        * try to get the appropriate wrapper for a specific element by looking up
-                        * its parent chain
-                        *
-                        * @return Wrapper | undefined
-                        */
-                       function get_wrapper(element) {
-                         var wrapped;
-
-                         if (element.form) {
-                           /* try a shortcut with the element's <form> */
-                           wrapped = instances.get(element.form);
-                         }
-
-                         /* walk up the parent nodes until document (including) */
-                         while (!wrapped && element) {
-                           wrapped = instances.get(element);
-                           element = element.parentNode;
-                         }
-
-                         if (!wrapped) {
-                           /* try the global instance, if exists. This may also be undefined. */
-                           wrapped = instances.get(window);
-                         }
-
-                         return wrapped;
-                       }
-
-                       /**
-                        * check if an element is a candidate for constraint validation
-                        *
-                        * @see https://html.spec.whatwg.org/multipage/forms.html#barred-from-constraint-validation
-                        */
-                       function is_validation_candidate (element) {
-
-                         /* allow a shortcut via filters, e.g. to validate type=hidden fields */
-                         var filtered = do_filter('is_validation_candidate', null, element);
-                         if (filtered !== null) {
-                           return !!filtered;
-                         }
-
-                         /* it must be any of those elements */
-                         if (element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement) {
-
-                           var type = get_type(element);
-                           /* its type must be in the whitelist */
-                           if (non_inputs.indexOf(type) > -1 || validation_candidates.indexOf(type) > -1) {
-
-                             /* it mustn't be disabled or readonly */
-                             if (!element.hasAttribute('disabled') && !element.hasAttribute('readonly')) {
-
-                               var wrapped_form = get_wrapper(element);
-
-                               /* it must have a name (or validating nameless inputs is allowed) */
-                               if (element.getAttribute('name') || wrapped_form && wrapped_form.settings.validateNameless) {
-
-                                 if (
-                                 /* the parent form doesn't allow non-standard "novalidate" attributes... */
-                                 wrapped_form && !wrapped_form.settings.novalidateOnElements ||
-                                 /* ...or it doesn't have such an attribute/property */
-                                 !element.hasAttribute('novalidate') && !element.noValidate) {
-
-                                   /* it isn't part of a <fieldset disabled> */
-                                   var p = element.parentNode;
-                                   while (p && p.nodeType === 1) {
-                                     if (p instanceof window.HTMLFieldSetElement && p.hasAttribute('disabled')) {
-                                       /* quick return, if it's a child of a disabled fieldset */
-                                       return false;
-                                     } else if (p.nodeName.toUpperCase() === 'DATALIST') {
-                                       /* quick return, if it's a child of a datalist
-                                        * Do not use HTMLDataListElement to support older browsers,
-                                        * too.
-                                        * @see https://html.spec.whatwg.org/multipage/forms.html#the-datalist-element:barred-from-constraint-validation
-                                        */
-                                       return false;
-                                     } else if (p === element.form) {
-                                       /* the outer boundary. We can stop looking for relevant
-                                        * fieldsets. */
-                                       break;
-                                     }
-                                     p = p.parentNode;
-                                   }
-
-                                   /* then it's a candidate */
-                                   return true;
-                                 }
-                               }
-                             }
-                           }
-                         }
-
-                         /* this is no HTML5 validation candidate... */
-                         return false;
-                       }
-
-                       function format_date (date) {
-                         var part = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
-
-                         switch (part) {
-                           case 'date':
-                             return (date.toLocaleDateString || date.toDateString).call(date);
-                           case 'time':
-                             return (date.toLocaleTimeString || date.toTimeString).call(date);
-                           case 'month':
-                             return 'toLocaleDateString' in date ? date.toLocaleDateString(undefined, {
-                               year: 'numeric',
-                               month: '2-digit'
-                             }) : date.toDateString();
-                           // case 'week':
-                           // TODO
-                           default:
-                             return (date.toLocaleString || date.toString).call(date);
-                         }
                        }
 
                        /**
@@ -2512,12 +1622,926 @@ var hyperform = (function () {
                        mark(ValidityStatePrototype);
 
                        /**
+                        * check element's validity and report an error back to the user
+                        */
+                       function reportValidity(element) {
+                         /* if this is a <form>, report validity of all child inputs */
+                         if (element instanceof window.HTMLFormElement) {
+                           return get_validated_elements(element).map(reportValidity).every(function (b) {
+                             return b;
+                           });
+                         }
+
+                         /* we copy checkValidity() here, b/c we have to check if the "invalid"
+                          * event was canceled. */
+                         var valid = ValidityState(element).valid;
+                         var event;
+                         if (valid) {
+                           var wrapped_form = get_wrapper(element);
+                           if (wrapped_form && wrapped_form.settings.validEvent) {
+                             event = trigger_event(element, 'valid', { cancelable: true });
+                           }
+                         } else {
+                           event = trigger_event(element, 'invalid', { cancelable: true });
+                         }
+
+                         if (!event || !event.defaultPrevented) {
+                           Renderer.showWarning(element);
+                         }
+
+                         return valid;
+                       }
+
+                       /**
+                        * submit a form, because `element` triggered it
+                        *
+                        * This method also dispatches a submit event on the form prior to the
+                        * submission. The event contains the trigger element as `submittedVia`.
+                        *
+                        * If the element is a button with a name, the name=value pair will be added
+                        * to the submitted data.
+                        */
+                       function submit_form_via(element) {
+                         /* apparently, the submit event is not triggered in most browsers on
+                          * the submit() method, so we do it manually here to model a natural
+                          * submit as closely as possible.
+                          * Now to the fun fact: If you trigger a submit event from a form, what
+                          * do you think should happen?
+                          * 1) the form will be automagically submitted by the browser, or
+                          * 2) nothing.
+                          * And as you already suspected, the correct answer is: both! Firefox
+                          * opts for 1), Chrome for 2). Yay! */
+                         var event_got_cancelled;
+
+                         var submit_event = create_event('submit', { cancelable: true });
+                         /* force Firefox to not submit the form, then fake preventDefault() */
+                         submit_event.preventDefault();
+                         Object.defineProperty(submit_event, 'defaultPrevented', {
+                           value: false,
+                           writable: true
+                         });
+                         Object.defineProperty(submit_event, 'preventDefault', {
+                           value: function value() {
+                             return submit_event.defaultPrevented = event_got_cancelled = true;
+                           },
+                           writable: true
+                         });
+                         trigger_event(element.form, submit_event, {}, { submittedVia: element });
+
+                         if (!event_got_cancelled) {
+                           add_submit_field(element);
+                           window.HTMLFormElement.prototype.submit.call(element.form);
+                           window.setTimeout(function () {
+                             return remove_submit_field(element);
+                           });
+                         }
+                       }
+
+                       /**
+                        * if a submit button was clicked, add its name=value by means of a type=hidden
+                        * input field
+                        */
+                       function add_submit_field(button) {
+                         if (['image', 'submit'].indexOf(button.type) > -1 && button.name) {
+                           var wrapper = get_wrapper(button.form) || {};
+                           var submit_helper = wrapper.submit_helper;
+                           if (submit_helper) {
+                             if (submit_helper.parentNode) {
+                               submit_helper.parentNode.removeChild(submit_helper);
+                             }
+                           } else {
+                             submit_helper = document.createElement('input');
+                             submit_helper.type = 'hidden';
+                             wrapper.submit_helper = submit_helper;
+                           }
+                           submit_helper.name = button.name;
+                           submit_helper.value = button.value;
+                           button.form.appendChild(submit_helper);
+                         }
+                       }
+
+                       /**
+                        * remove a possible helper input, that was added by `add_submit_field`
+                        */
+                       function remove_submit_field(button) {
+                         if (['image', 'submit'].indexOf(button.type) > -1 && button.name) {
+                           var wrapper = get_wrapper(button.form) || {};
+                           var submit_helper = wrapper.submit_helper;
+                           if (submit_helper && submit_helper.parentNode) {
+                             submit_helper.parentNode.removeChild(submit_helper);
+                           }
+                         }
+                       }
+
+                       /**
+                        * check a form's validity and submit it
+                        *
+                        * The method triggers a cancellable `validate` event on the form. If the
+                        * event is cancelled, form submission will be aborted, too.
+                        *
+                        * If the form is found to contain invalid fields, focus the first field.
+                        */
+                       function check(button) {
+                         /* trigger a "validate" event on the form to be submitted */
+                         var val_event = trigger_event(button.form, 'validate', { cancelable: true });
+                         if (val_event.defaultPrevented) {
+                           /* skip the whole submit thing, if the validation is canceled. A user
+                            * can still call form.submit() afterwards. */
+                           return;
+                         }
+
+                         var valid = true;
+                         var first_invalid;
+                         get_validated_elements(button.form).map(function (element) {
+                           if (!reportValidity(element)) {
+                             valid = false;
+                             if (!first_invalid && 'focus' in element) {
+                               first_invalid = element;
+                             }
+                           }
+                         });
+
+                         if (valid) {
+                           submit_form_via(button);
+                         } else if (first_invalid) {
+                           /* focus the first invalid element, if validation went south */
+                           first_invalid.focus();
+                           /* tell the tale, if anyone wants to react to it */
+                           trigger_event(button.form, 'forminvalid');
+                         }
+                       }
+
+                       /**
+                        * test if node is a submit button
+                        */
+                       function is_submit_button(node) {
+                         return (
+                           /* must be an input or button element... */
+                           (node.nodeName === 'INPUT' || node.nodeName === 'BUTTON') && (
+
+                           /* ...and have a submitting type */
+                           node.type === 'image' || node.type === 'submit')
+                         );
+                       }
+
+                       /**
+                        * test, if the click event would trigger a submit
+                        */
+                       function is_submitting_click(event, button) {
+                         return (
+                           /* prevented default: won't trigger a submit */
+                           !event.defaultPrevented && (
+
+                           /* left button or middle button (submits in Chrome) */
+                           !('button' in event) || event.button < 2) &&
+
+                           /* must be a submit button... */
+                           is_submit_button(button) &&
+
+                           /* the button needs a form, that's going to be submitted */
+                           button.form &&
+
+                           /* again, if the form should not be validated, we're out of the game */
+                           !button.form.hasAttribute('novalidate')
+                         );
+                       }
+
+                       /**
+                        * test, if the keypress event would trigger a submit
+                        */
+                       function is_submitting_keypress(event) {
+                         return (
+                           /* prevented default: won't trigger a submit */
+                           !event.defaultPrevented && (
+                           /* ...and <Enter> was pressed... */
+                           event.keyCode === 13 &&
+
+                           /* ...on an <input> that is... */
+                           event.target.nodeName === 'INPUT' &&
+
+                           /* ...a standard text input field (not checkbox, ...) */
+                           text_types.indexOf(event.target.type) > -1 ||
+                           /* or <Enter> or <Space> was pressed... */
+                           (event.keyCode === 13 || event.keyCode === 32) &&
+
+                           /* ...on a submit button */
+                           is_submit_button(event.target)) &&
+
+                           /* there's a form... */
+                           event.target.form &&
+
+                           /* ...and the form allows validation */
+                           !event.target.form.hasAttribute('novalidate')
+                         );
+                       }
+
+                       /**
+                        * catch clicks to children of <button>s
+                        */
+                       function get_clicked_button(element) {
+                         if (is_submit_button(element)) {
+                           return element;
+                         } else if (matches(element, 'button:not([type]) *, button[type="submit"] *')) {
+                           return get_clicked_button(element.parentNode);
+                         } else {
+                           return null;
+                         }
+                       }
+
+                       /**
+                        * return event handler to catch explicit submission by click on a button
+                        */
+                       function get_click_handler() {
+                         var ignore = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+                         return function (event) {
+                           var button = get_clicked_button(event.target);
+                           if (button && is_submitting_click(event, button)) {
+                             event.preventDefault();
+                             if (ignore || button.hasAttribute('formnovalidate')) {
+                               /* if validation should be ignored, we're not interested in any checks */
+                               submit_form_via(button);
+                             } else {
+                               check(button);
+                             }
+                           }
+                         };
+                       }
+                       var click_handler = get_click_handler();
+                       var ignored_click_handler = get_click_handler(true);
+
+                       /**
+                        * catch implicit submission by pressing <Enter> in some situations
+                        */
+                       function get_keypress_handler(ignore) {
+                         return function keypress_handler(event) {
+                           if (is_submitting_keypress(event)) {
+                             event.preventDefault();
+
+                             var wrapper = get_wrapper(event.target.form) || { settings: {} };
+                             if (wrapper.settings.preventImplicitSubmit) {
+                               /* user doesn't want an implicit submit. Cancel here. */
+                               return;
+                             }
+
+                             /* check, that there is no submit button in the form. Otherwise
+                             * that should be clicked. */
+                             var el = event.target.form.elements.length;
+                             var submit;
+                             for (var i = 0; i < el; i++) {
+                               if (['image', 'submit'].indexOf(event.target.form.elements[i].type) > -1) {
+                                 submit = event.target.form.elements[i];
+                                 break;
+                               }
+                             }
+
+                             if (submit) {
+                               submit.click();
+                             } else if (ignore) {
+                               submit_form_via(event.target);
+                             } else {
+                               check(event.target);
+                             }
+                           }
+                         };
+                       }
+                       var keypress_handler = get_keypress_handler();
+                       var ignored_keypress_handler = get_keypress_handler(true);
+
+                       /**
+                        * catch all relevant events _prior_ to a form being submitted
+                        *
+                        * @param bool ignore bypass validation, when an attempt to submit the
+                        *                    form is detected. True, when the wrapper's revalidate
+                        *                    setting is 'never'.
+                        */
+                       function catch_submit(listening_node) {
+                         var ignore = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+                         if (ignore) {
+                           listening_node.addEventListener('click', ignored_click_handler);
+                           listening_node.addEventListener('keypress', ignored_keypress_handler);
+                         } else {
+                           listening_node.addEventListener('click', click_handler);
+                           listening_node.addEventListener('keypress', keypress_handler);
+                         }
+                       }
+
+                       /**
+                        * decommission the event listeners from catch_submit() again
+                        */
+                       function uncatch_submit(listening_node) {
+                         listening_node.removeEventListener('click', ignored_click_handler);
+                         listening_node.removeEventListener('keypress', ignored_keypress_handler);
+                         listening_node.removeEventListener('click', click_handler);
+                         listening_node.removeEventListener('keypress', keypress_handler);
+                       }
+
+                       /**
+                        * remove `property` from element and restore _original_property, if present
+                        */
+                       function uninstall_property (element, property) {
+                         try {
+                           delete element[property];
+                         } catch (e) {
+                           /* Safari <= 9 and PhantomJS will end up here :-( Nothing to do except
+                            * warning */
+                           var wrapper = get_wrapper(element);
+                           if (wrapper && wrapper.settings.debug) {
+                             /* global console */
+                             console.log('[hyperform] cannot uninstall custom property ' + property);
+                           }
+                           return false;
+                         }
+
+                         var original_descriptor = Object.getOwnPropertyDescriptor(element, '_original_' + property);
+
+                         if (original_descriptor) {
+                           Object.defineProperty(element, property, original_descriptor);
+                         }
+                       }
+
+                       /**
+                        * add `property` to an element
+                        *
+                        * js> installer(element, 'foo', { value: 'bar' });
+                        * js> assert(element.foo === 'bar');
+                        */
+                       function install_property (element, property, descriptor) {
+                         descriptor.configurable = true;
+                         descriptor.enumerable = true;
+                         if ('value' in descriptor) {
+                           descriptor.writable = true;
+                         }
+
+                         var original_descriptor = Object.getOwnPropertyDescriptor(element, property);
+
+                         if (original_descriptor) {
+
+                           if (original_descriptor.configurable === false) {
+                             /* Safari <= 9 and PhantomJS will end up here :-( Nothing to do except
+                              * warning */
+                             var wrapper = get_wrapper(element);
+                             if (wrapper && wrapper.settings.debug) {
+                               /* global console */
+                               console.log('[hyperform] cannot install custom property ' + property);
+                             }
+                             return false;
+                           }
+
+                           /* we already installed that property... */
+                           if (original_descriptor.get && original_descriptor.get.__hyperform || original_descriptor.value && original_descriptor.value.__hyperform) {
+                             return;
+                           }
+
+                           /* publish existing property under new name, if it's not from us */
+                           Object.defineProperty(element, '_original_' + property, original_descriptor);
+                         }
+
+                         delete element[property];
+                         Object.defineProperty(element, property, descriptor);
+
+                         return true;
+                       }
+
+                       function is_field (element) {
+                               return element instanceof window.HTMLButtonElement || element instanceof window.HTMLInputElement || element instanceof window.HTMLSelectElement || element instanceof window.HTMLTextAreaElement || element instanceof window.HTMLFieldSetElement || element === window.HTMLButtonElement.prototype || element === window.HTMLInputElement.prototype || element === window.HTMLSelectElement.prototype || element === window.HTMLTextAreaElement.prototype || element === window.HTMLFieldSetElement.prototype;
+                       }
+
+                       /**
+                        * set a custom validity message or delete it with an empty string
+                        */
+                       function setCustomValidity(element, msg) {
+                         message_store.set(element, msg, true);
+                       }
+
+                       /**
+                        * implement the valueAsDate functionality
+                        *
+                        * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasdate
+                        */
+                       function valueAsDate(element) {
+                         var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+
+                         var type = get_type(element);
+                         if (dates.indexOf(type) > -1) {
+                           if (value !== undefined) {
+                             /* setter: value must be null or a Date() */
+                             if (value === null) {
+                               element.value = '';
+                             } else if (value instanceof Date) {
+                               if (isNaN(value.getTime())) {
+                                 element.value = '';
+                               } else {
+                                 element.value = date_to_string(value, type);
+                               }
+                             } else {
+                               throw new window.DOMException('valueAsDate setter encountered invalid value', 'TypeError');
+                             }
+                             return;
+                           }
+
+                           var value_date = string_to_date(element.value, type);
+                           return value_date instanceof Date ? value_date : null;
+                         } else if (value !== undefined) {
+                           /* trying to set a date on a not-date input fails */
+                           throw new window.DOMException('valueAsDate setter cannot set date on this element', 'InvalidStateError');
+                         }
+
+                         return null;
+                       }
+
+                       /**
+                        * implement the valueAsNumber functionality
+                        *
+                        * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasnumber
+                        */
+                       function valueAsNumber(element) {
+                         var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+
+                         var type = get_type(element);
+                         if (numbers.indexOf(type) > -1) {
+                           if (type === 'range' && element.hasAttribute('multiple')) {
+                             /* @see https://html.spec.whatwg.org/multipage/forms.html#do-not-apply */
+                             return NaN;
+                           }
+
+                           if (value !== undefined) {
+                             /* setter: value must be NaN or a finite number */
+                             if (isNaN(value)) {
+                               element.value = '';
+                             } else if (typeof value === 'number' && window.isFinite(value)) {
+                               try {
+                                 /* try setting as a date, but... */
+                                 valueAsDate(element, new Date(value));
+                               } catch (e) {
+                                 /* ... when valueAsDate is not responsible, ... */
+                                 if (!(e instanceof window.DOMException)) {
+                                   throw e;
+                                 }
+                                 /* ... set it via Number.toString(). */
+                                 element.value = value.toString();
+                               }
+                             } else {
+                               throw new window.DOMException('valueAsNumber setter encountered invalid value', 'TypeError');
+                             }
+                             return;
+                           }
+
+                           return string_to_number(element.value, type);
+                         } else if (value !== undefined) {
+                           /* trying to set a number on a not-number input fails */
+                           throw new window.DOMException('valueAsNumber setter cannot set number on this element', 'InvalidStateError');
+                         }
+
+                         return NaN;
+                       }
+
+                       /**
+                        *
+                        */
+                       function stepDown(element) {
+                         var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+
+                         if (numbers.indexOf(get_type(element)) === -1) {
+                           throw new window.DOMException('stepDown encountered invalid type', 'InvalidStateError');
+                         }
+                         if ((element.getAttribute('step') || '').toLowerCase() === 'any') {
+                           throw new window.DOMException('stepDown encountered step "any"', 'InvalidStateError');
+                         }
+
+                         var prev = get_next_valid(element, n)[0];
+
+                         if (prev !== null) {
+                           valueAsNumber(element, prev);
+                         }
+                       }
+
+                       /**
+                        *
+                        */
+                       function stepUp(element) {
+                         var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+
+                         if (numbers.indexOf(get_type(element)) === -1) {
+                           throw new window.DOMException('stepUp encountered invalid type', 'InvalidStateError');
+                         }
+                         if ((element.getAttribute('step') || '').toLowerCase() === 'any') {
+                           throw new window.DOMException('stepUp encountered step "any"', 'InvalidStateError');
+                         }
+
+                         var next = get_next_valid(element, n)[1];
+
+                         if (next !== null) {
+                           valueAsNumber(element, next);
+                         }
+                       }
+
+                       /**
+                        * get the validation message for an element, empty string, if the element
+                        * satisfies all constraints.
+                        */
+                       function validationMessage(element) {
+                         var msg = message_store.get(element);
+                         if (!msg) {
+                           return '';
+                         }
+
+                         /* make it a primitive again, since message_store returns String(). */
+                         return msg.toString();
+                       }
+
+                       /**
+                        * check, if an element will be subject to HTML5 validation at all
+                        */
+                       function willValidate(element) {
+                         return is_validation_candidate(element);
+                       }
+
+                       var gA = function gA(prop) {
+                         return function () {
+                           return do_filter('attr_get_' + prop, this.getAttribute(prop), this);
+                         };
+                       };
+
+                       var sA = function sA(prop) {
+                         return function (value) {
+                           this.setAttribute(prop, do_filter('attr_set_' + prop, value, this));
+                         };
+                       };
+
+                       var gAb = function gAb(prop) {
+                         return function () {
+                           return do_filter('attr_get_' + prop, this.hasAttribute(prop), this);
+                         };
+                       };
+
+                       var sAb = function sAb(prop) {
+                         return function (value) {
+                           if (do_filter('attr_set_' + prop, value, this)) {
+                             this.setAttribute(prop, prop);
+                           } else {
+                             this.removeAttribute(prop);
+                           }
+                         };
+                       };
+
+                       var gAn = function gAn(prop) {
+                         return function () {
+                           return do_filter('attr_get_' + prop, Math.max(0, Number(this.getAttribute(prop))), this);
+                         };
+                       };
+
+                       var sAn = function sAn(prop) {
+                         return function (value) {
+                           value = do_filter('attr_set_' + prop, value, this);
+                           if (/^[0-9]+$/.test(value)) {
+                             this.setAttribute(prop, value);
+                           }
+                         };
+                       };
+
+                       function install_properties(element) {
+                         var _arr = ['accept', 'max', 'min', 'pattern', 'placeholder', 'step'];
+
+                         for (var _i = 0; _i < _arr.length; _i++) {
+                           var prop = _arr[_i];
+                           install_property(element, prop, {
+                             get: gA(prop),
+                             set: sA(prop)
+                           });
+                         }
+
+                         var _arr2 = ['multiple', 'required', 'readOnly'];
+                         for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
+                           var _prop = _arr2[_i2];
+                           install_property(element, _prop, {
+                             get: gAb(_prop.toLowerCase()),
+                             set: sAb(_prop.toLowerCase())
+                           });
+                         }
+
+                         var _arr3 = ['minLength', 'maxLength'];
+                         for (var _i3 = 0; _i3 < _arr3.length; _i3++) {
+                           var _prop2 = _arr3[_i3];
+                           install_property(element, _prop2, {
+                             get: gAn(_prop2.toLowerCase()),
+                             set: sAn(_prop2.toLowerCase())
+                           });
+                         }
+                       }
+
+                       function uninstall_properties(element) {
+                         var _arr4 = ['accept', 'max', 'min', 'pattern', 'placeholder', 'step', 'multiple', 'required', 'readOnly', 'minLength', 'maxLength'];
+
+                         for (var _i4 = 0; _i4 < _arr4.length; _i4++) {
+                           var prop = _arr4[_i4];
+                           uninstall_property(element, prop);
+                         }
+                       }
+
+                       var polyfills = {
+                         checkValidity: {
+                           value: mark(function () {
+                             return checkValidity(this);
+                           })
+                         },
+                         reportValidity: {
+                           value: mark(function () {
+                             return reportValidity(this);
+                           })
+                         },
+                         setCustomValidity: {
+                           value: mark(function (msg) {
+                             return setCustomValidity(this, msg);
+                           })
+                         },
+                         stepDown: {
+                           value: mark(function () {
+                             var n = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
+                             return stepDown(this, n);
+                           })
+                         },
+                         stepUp: {
+                           value: mark(function () {
+                             var n = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
+                             return stepUp(this, n);
+                           })
+                         },
+                         validationMessage: {
+                           get: mark(function () {
+                             return validationMessage(this);
+                           })
+                         },
+                         validity: {
+                           get: mark(function () {
+                             return ValidityState(this);
+                           })
+                         },
+                         valueAsDate: {
+                           get: mark(function () {
+                             return valueAsDate(this);
+                           }),
+                           set: mark(function (value) {
+                             valueAsDate(this, value);
+                           })
+                         },
+                         valueAsNumber: {
+                           get: mark(function () {
+                             return valueAsNumber(this);
+                           }),
+                           set: mark(function (value) {
+                             valueAsNumber(this, value);
+                           })
+                         },
+                         willValidate: {
+                           get: mark(function () {
+                             return willValidate(this);
+                           })
+                         }
+                       };
+
+                       function polyfill (element) {
+                         if (is_field(element)) {
+
+                           for (var prop in polyfills) {
+                             install_property(element, prop, polyfills[prop]);
+                           }
+
+                           install_properties(element);
+                         } else if (element instanceof window.HTMLFormElement || element === window.HTMLFormElement.prototype) {
+                           install_property(element, 'checkValidity', polyfills.checkValidity);
+                           install_property(element, 'reportValidity', polyfills.reportValidity);
+                         }
+                       }
+
+                       function polyunfill (element) {
+                         if (is_field(element)) {
+
+                           uninstall_property(element, 'checkValidity');
+                           uninstall_property(element, 'reportValidity');
+                           uninstall_property(element, 'setCustomValidity');
+                           uninstall_property(element, 'stepDown');
+                           uninstall_property(element, 'stepUp');
+                           uninstall_property(element, 'validationMessage');
+                           uninstall_property(element, 'validity');
+                           uninstall_property(element, 'valueAsDate');
+                           uninstall_property(element, 'valueAsNumber');
+                           uninstall_property(element, 'willValidate');
+
+                           uninstall_properties(element);
+                         } else if (element instanceof window.HTMLFormElement) {
+                           uninstall_property(element, 'checkValidity');
+                           uninstall_property(element, 'reportValidity');
+                         }
+                       }
+
+                       var instances = new WeakMap();
+
+                       /**
+                        * wrap <form>s, window or document, that get treated with the global
+                        * hyperform()
+                        */
+                       function Wrapper(form, settings) {
+
+                         /* do not allow more than one instance per form. Otherwise we'd end
+                          * up with double event handlers, polyfills re-applied, ... */
+                         var existing = instances.get(form);
+                         if (existing) {
+                           existing.settings = settings;
+                           return existing;
+                         }
+
+                         this.form = form;
+                         this.settings = settings;
+                         this.revalidator = this.revalidate.bind(this);
+
+                         instances.set(form, this);
+
+                         catch_submit(form, settings.revalidate === 'never');
+
+                         if (form === window || form.nodeType === 9) {
+                           /* install on the prototypes, when called for the whole document */
+                           this.install([window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype]);
+                           polyfill(window.HTMLFormElement);
+                         } else if (form instanceof window.HTMLFormElement || form instanceof window.HTMLFieldSetElement) {
+                           this.install(form.elements);
+                           if (form instanceof window.HTMLFormElement) {
+                             polyfill(form);
+                           }
+                         }
+
+                         if (settings.revalidate === 'oninput' || settings.revalidate === 'hybrid') {
+                           /* in a perfect world we'd just bind to "input", but support here is
+                            * abysmal: http://caniuse.com/#feat=input-event */
+                           form.addEventListener('keyup', this.revalidator);
+                           form.addEventListener('change', this.revalidator);
+                         }
+                         if (settings.revalidate === 'onblur' || settings.revalidate === 'hybrid') {
+                           /* useCapture=true, because `blur` doesn't bubble. See
+                            * https://developer.mozilla.org/en-US/docs/Web/Events/blur#Event_delegation
+                            * for a discussion */
+                           form.addEventListener('blur', this.revalidator, true);
+                         }
+                       }
+
+                       Wrapper.prototype = {
+                         destroy: function destroy() {
+                           uncatch_submit(this.form);
+                           instances.delete(this.form);
+                           this.form.removeEventListener('keyup', this.revalidator);
+                           this.form.removeEventListener('change', this.revalidator);
+                           this.form.removeEventListener('blur', this.revalidator, true);
+                           if (this.form === window || this.form.nodeType === 9) {
+                             this.uninstall([window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype]);
+                             polyunfill(window.HTMLFormElement);
+                           } else if (this.form instanceof window.HTMLFormElement || this.form instanceof window.HTMLFieldSetElement) {
+                             this.uninstall(this.form.elements);
+                             if (this.form instanceof window.HTMLFormElement) {
+                               polyunfill(this.form);
+                             }
+                           }
+                         },
+
+
+                         /**
+                          * revalidate an input element
+                          */
+                         revalidate: function revalidate(event) {
+                           if (event.target instanceof window.HTMLButtonElement || event.target instanceof window.HTMLTextAreaElement || event.target instanceof window.HTMLSelectElement || event.target instanceof window.HTMLInputElement) {
+
+                             if (this.settings.revalidate === 'hybrid') {
+                               /* "hybrid" somewhat simulates what browsers do. See for example
+                                * Firefox's :-moz-ui-invalid pseudo-class:
+                                * https://developer.mozilla.org/en-US/docs/Web/CSS/:-moz-ui-invalid */
+                               if (event.type === 'blur' && event.target.value !== event.target.defaultValue || ValidityState(event.target).valid) {
+                                 /* on blur, update the report when the value has changed from the
+                                  * default or when the element is valid (possibly removing a still
+                                  * standing invalidity report). */
+                                 reportValidity(event.target);
+                               } else if (event.type === 'keyup' && event.keyCode !== 9 || event.type === 'change') {
+                                 if (ValidityState(event.target).valid) {
+                                   // report instantly, when an element becomes valid,
+                                   // postpone report to blur event, when an element is invalid
+                                   reportValidity(event.target);
+                                 }
+                               }
+                             } else if (event.type !== 'keyup' || event.keyCode !== 9) {
+                               /* do _not_ validate, when the user "tabbed" into the field initially,
+                                * i.e., a keyup event with keyCode 9 */
+                               reportValidity(event.target);
+                             }
+                           }
+                         },
+
+
+                         /**
+                          * install the polyfills on each given element
+                          *
+                          * If you add elements dynamically, you have to call install() on them
+                          * yourself:
+                          *
+                          * js> var form = hyperform(document.forms[0]);
+                          * js> document.forms[0].appendChild(input);
+                          * js> form.install(input);
+                          *
+                          * You can skip this, if you called hyperform on window or document.
+                          */
+                         install: function install(els) {
+                           if (els instanceof window.Element) {
+                             els = [els];
+                           }
+
+                           var els_length = els.length;
+
+                           for (var i = 0; i < els_length; i++) {
+                             polyfill(els[i]);
+                           }
+                         },
+                         uninstall: function uninstall(els) {
+                           if (els instanceof window.Element) {
+                             els = [els];
+                           }
+
+                           var els_length = els.length;
+
+                           for (var i = 0; i < els_length; i++) {
+                             polyunfill(els[i]);
+                           }
+                         }
+                       };
+
+                       /**
+                        * try to get the appropriate wrapper for a specific element by looking up
+                        * its parent chain
+                        *
+                        * @return Wrapper | undefined
+                        */
+                       function get_wrapper(element) {
+                         var wrapped;
+
+                         if (element.form) {
+                           /* try a shortcut with the element's <form> */
+                           wrapped = instances.get(element.form);
+                         }
+
+                         /* walk up the parent nodes until document (including) */
+                         while (!wrapped && element) {
+                           wrapped = instances.get(element);
+                           element = element.parentNode;
+                         }
+
+                         if (!wrapped) {
+                           /* try the global instance, if exists. This may also be undefined. */
+                           wrapped = instances.get(window);
+                         }
+
+                         return wrapped;
+                       }
+
+                       /**
+                        * filter a form's elements for the ones needing validation prior to
+                        * a submit
+                        *
+                        * Returns an array of form elements.
+                        */
+                       function get_validated_elements(form) {
+                         var wrapped_form = get_wrapper(form);
+
+                         return Array.prototype.filter.call(form.elements, function (element) {
+                           /* it must have a name (or validating nameless inputs is allowed) */
+                           if (element.getAttribute('name') || wrapped_form && wrapped_form.settings.validateNameless) {
+                             return true;
+                           }
+                           return false;
+                         });
+                       }
+
+                       /**
+                        * return either the data of a hook call or the result of action, if the
+                        * former is undefined
+                        *
+                        * @return function a function wrapper around action
+                        */
+                       function return_hook_or (hook, action) {
+                         return function () {
+                           var data = call_hook(hook, Array.prototype.slice.call(arguments));
+
+                           if (data !== undefined) {
+                             return data;
+                           }
+
+                           return action.apply(this, arguments);
+                         };
+                       }
+
+                       /**
                         * check an element's validity with respect to it's form
                         */
                        var checkValidity = return_hook_or('checkValidity', function (element) {
                          /* if this is a <form>, check validity of all child inputs */
                          if (element instanceof window.HTMLFormElement) {
-                           return Array.prototype.map.call(element.elements, checkValidity).every(function (b) {
+                           return get_validated_elements(element).map(checkValidity).every(function (b) {
                              return b;
                            });
                          }
