@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+## v0.9.15
+
 * update some dependencies
 * add `CHANGELOG.md`
 * prevent `is_validation_candidate()` from running twice for each validation
