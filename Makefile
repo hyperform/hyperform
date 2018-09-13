@@ -68,6 +68,7 @@ version:
 	@if [ ! -z '$(VERSION)' ]; then \
 		sed -i '/^export default '"'"'[0-9.]\+'"'"';$$/c\export default '"'"'$(VERSION)'"'"';' src/version.js; \
 		sed -i '3c\  "version": "$(VERSION)",' bower.json; \
+		sed -i 's/## UNRELEASED$$/## UNRELEASED\n\n## v$(VERSION)/' CHANGELOG.md; \
 	fi
 .PHONY: version
 
