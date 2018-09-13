@@ -3,7 +3,6 @@
 
 import comma_split from '../tools/comma_split';
 import get_type from '../tools/get_type';
-import is_validation_candidate from '../tools/is_validation_candidate';
 import trim from '../tools/trim';
 import { type_checked } from '../components/types';
 
@@ -23,8 +22,7 @@ const email_pattern = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0
 export default function(element) {
   const type = get_type(element);
 
-  if (! is_validation_candidate(element) ||
-      (type !== 'file' && ! element.value) ||
+  if ((type !== 'file' && ! element.value) ||
       (type !== 'file' && type_checked.indexOf(type) === -1)) {
     /* we're not responsible for this element */
     return true;

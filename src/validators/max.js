@@ -2,7 +2,6 @@
 
 
 import get_type from '../tools/get_type';
-import is_validation_candidate from '../tools/is_validation_candidate';
 import { dates } from '../components/types';
 import string_to_date from '../tools/string_to_date';
 
@@ -16,8 +15,7 @@ import string_to_date from '../tools/string_to_date';
 export default function(element) {
   const type = get_type(element);
 
-  if (! is_validation_candidate(element) ||
-      ! element.value || ! element.hasAttribute('max')) {
+  if (! element.value || ! element.hasAttribute('max')) {
     /* we're not responsible here */
     return true;
   }

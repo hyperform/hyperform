@@ -969,7 +969,7 @@ var custom_validator_registry = {
 function test_bad_input (element) {
   var type = get_type(element);
 
-  if (!is_validation_candidate(element) || input_checked.indexOf(type) === -1) {
+  if (input_checked.indexOf(type) === -1) {
     /* we're not interested, thanks! */
     return true;
   }
@@ -1027,7 +1027,7 @@ function test_bad_input (element) {
 function test_max (element) {
   var type = get_type(element);
 
-  if (!is_validation_candidate(element) || !element.value || !element.hasAttribute('max')) {
+  if (!element.value || !element.hasAttribute('max')) {
     /* we're not responsible here */
     return true;
   }
@@ -1049,7 +1049,7 @@ function test_max (element) {
  * test the maxlength attribute
  */
 function test_maxlength (element) {
-  if (!is_validation_candidate(element) || !element.value || text_types.indexOf(get_type(element)) === -1 || !element.hasAttribute('maxlength') || !element.getAttribute('maxlength') // catch maxlength=""
+  if (!element.value || text_types.indexOf(get_type(element)) === -1 || !element.hasAttribute('maxlength') || !element.getAttribute('maxlength') // catch maxlength=""
   ) {
       return true;
     }
@@ -1075,7 +1075,7 @@ function test_maxlength (element) {
 function test_min (element) {
   var type = get_type(element);
 
-  if (!is_validation_candidate(element) || !element.value || !element.hasAttribute('min')) {
+  if (!element.value || !element.hasAttribute('min')) {
     /* we're not responsible here */
     return true;
   }
@@ -1097,7 +1097,7 @@ function test_min (element) {
  * test the minlength attribute
  */
 function test_minlength (element) {
-  if (!is_validation_candidate(element) || !element.value || text_types.indexOf(get_type(element)) === -1 || !element.hasAttribute('minlength') || !element.getAttribute('minlength') // catch minlength=""
+  if (!element.value || text_types.indexOf(get_type(element)) === -1 || !element.hasAttribute('minlength') || !element.getAttribute('minlength') // catch minlength=""
   ) {
       return true;
     }
@@ -1115,15 +1115,17 @@ function test_minlength (element) {
 /**
  * test the pattern attribute
  */
+
 function test_pattern (element) {
-    return !is_validation_candidate(element) || !element.value || !element.hasAttribute('pattern') || new RegExp('^(?:' + element.getAttribute('pattern') + ')$').test(element.value);
+    return !element.value || !element.hasAttribute('pattern') || new RegExp('^(?:' + element.getAttribute('pattern') + ')$').test(element.value);
 }
 
 /**
  * test the required attribute
  */
+
 function test_required (element) {
-  if (!is_validation_candidate(element) || !element.hasAttribute('required')) {
+  if (!element.hasAttribute('required')) {
     /* nothing to do */
     return true;
   }
@@ -1152,7 +1154,7 @@ function test_required (element) {
 function test_step (element) {
   var type = get_type(element);
 
-  if (!is_validation_candidate(element) || !element.value || numbers.indexOf(type) === -1 || (element.getAttribute('step') || '').toLowerCase() === 'any') {
+  if (!element.value || numbers.indexOf(type) === -1 || (element.getAttribute('step') || '').toLowerCase() === 'any') {
     /* we're not responsible here. Note: If no step attribute is given, we
      * need to validate against the default step as per spec. */
     return true;
@@ -1236,7 +1238,7 @@ var email_pattern = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9
 function test_type (element) {
   var type = get_type(element);
 
-  if (!is_validation_candidate(element) || type !== 'file' && !element.value || type !== 'file' && type_checked.indexOf(type) === -1) {
+  if (type !== 'file' && !element.value || type !== 'file' && type_checked.indexOf(type) === -1) {
     /* we're not responsible for this element */
     return true;
   }
@@ -1539,6 +1541,18 @@ ValidityState.prototype = ValidityStatePrototype;
 
 ValidityState.cache = new WeakMap();
 
+/* small wrapper around the actual validator to check if the validator
+ * should actually be called. `this` refers to the ValidityState object. */
+var checker_getter = function checker_getter(func) {
+  return function () {
+    if (!is_validation_candidate(this.element)) {
+      /* not being validated == valid by default */
+      return true;
+    }
+    return func(this.element);
+  };
+};
+
 /**
  * copy functionality from the validity checkers to the ValidityState
  * prototype
@@ -1547,11 +1561,7 @@ for (var prop in validity_state_checkers) {
   Object.defineProperty(ValidityStatePrototype, prop, {
     configurable: true,
     enumerable: true,
-    get: function (func) {
-      return function () {
-        return func(this.element);
-      };
-    }(validity_state_checkers[prop]),
+    get: checker_getter(validity_state_checkers[prop]),
     set: undefined
   });
 }

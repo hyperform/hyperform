@@ -2,7 +2,6 @@
 
 
 import get_type from '../tools/get_type';
-import is_validation_candidate from '../tools/is_validation_candidate';
 import string_to_date from '../tools/string_to_date';
 import { input_checked } from '../components/types';
 
@@ -13,8 +12,7 @@ import { input_checked } from '../components/types';
 export default function(element) {
   const type = get_type(element);
 
-  if (! is_validation_candidate(element) ||
-      input_checked.indexOf(type) === -1) {
+  if (input_checked.indexOf(type) === -1) {
     /* we're not interested, thanks! */
     return true;
   }

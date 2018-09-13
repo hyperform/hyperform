@@ -1,16 +1,11 @@
 'use strict';
 
 
-import is_validation_candidate from '../tools/is_validation_candidate';
-
-
 /**
  * test the required attribute
  */
 export default function(element) {
-  if (! is_validation_candidate(element)
-      ||
-      ! element.hasAttribute('required')) {
+  if (! element.hasAttribute('required')) {
     /* nothing to do */
     return true;
   }

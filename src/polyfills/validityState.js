@@ -39,6 +39,18 @@ ValidityState.prototype = ValidityStatePrototype;
 
 ValidityState.cache = new WeakMap();
 
+/* small wrapper around the actual validator to check if the validator
+ * should actually be called. `this` refers to the ValidityState object. */
+const checker_getter = func => {
+  return function() {
+    if (! is_validation_candidate(this.element)) {
+      /* not being validated == valid by default */
+      return true;
+    }
+    return func(this.element);
+  };
+};
+
 /**
  * copy functionality from the validity checkers to the ValidityState
  * prototype
@@ -47,9 +59,7 @@ for (let prop in validity_state_checkers) {
   Object.defineProperty(ValidityStatePrototype, prop, {
     configurable: true,
     enumerable: true,
-    get: (func => function() {
-      return func(this.element);
-    })(validity_state_checkers[prop]),
+    get: checker_getter(validity_state_checkers[prop]),
     set: undefined,
   });
 }

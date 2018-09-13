@@ -2,7 +2,6 @@
 
 
 import get_type from '../tools/get_type';
-import is_validation_candidate from '../tools/is_validation_candidate';
 import { numbers } from '../components/types';
 import { default_step, step_scale_factor, default_step_base } from '../components/step_defaults';
 import string_to_number from '../tools/string_to_number';
@@ -14,8 +13,7 @@ import string_to_number from '../tools/string_to_number';
 export default function(element) {
   const type = get_type(element);
 
-  if (! is_validation_candidate(element) ||
-      ! element.value ||
+  if (! element.value ||
       numbers.indexOf(type) === -1 ||
       (element.getAttribute('step') || '').toLowerCase() === 'any') {
     /* we're not responsible here. Note: If no step attribute is given, we
