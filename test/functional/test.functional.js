@@ -46,21 +46,22 @@ describe('required radio buttons', function() {
 
   it('should work when detached from document', function() {
     var input = document.createElement('input');
+    var validity = window.hyperform.ValidityState(input);
     input.type = 'radio';
     input.checked = false;
-    if (input.validity.valueMissing) {
+    if (validity.valueMissing) {
       throw Error('unrequired unchecked radio button should not be invalid');
     }
     input.checked = true;
-    if (input.validity.valueMissing) {
+    if (validity.valueMissing) {
       throw Error('unrequired checked radio button should not be invalid');
     }
     input.required = true;
-    if (input.validity.valueMissing) {
+    if (validity.valueMissing) {
       throw Error('required checked radio button should not be invalid');
     }
     input.checked = false;
-    if (! input.validity.valueMissing) {
+    if (! validity.valueMissing) {
       throw Error('required unchecked radio button should be invalid');
     }
   });
