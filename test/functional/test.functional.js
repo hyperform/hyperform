@@ -94,6 +94,13 @@ describe('required radio buttons', function() {
     if (input.previousSibling !== warnings[0]) {
       throw Error('the warning should be attached to the first radio button');
     }
+    form.getElementsByTagName('button')[0].click();
+    if (warnings.length !== 1) {
+      throw Error('there should exactly one error message be shown on submit, not '+warnings.length);
+    }
+    if (input.previousSibling !== warnings[0]) {
+      throw Error('the warning on submit should be attached to the first radio button');
+    }
     destroy_hform(hform);
   });
 

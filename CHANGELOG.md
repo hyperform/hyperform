@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+* fix radio button warnings still being multiplied on submit
+
 ## v0.9.15
 
 * update some dependencies

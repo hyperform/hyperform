@@ -1781,6 +1781,7 @@ define(function () { 'use strict';
 
                          var valid = true;
                          var first_invalid;
+                         button.form.__hf_form_validation = true;
                          get_validated_elements(button.form).map(function (element) {
                            if (!reportValidity(element)) {
                              valid = false;
@@ -1789,6 +1790,7 @@ define(function () { 'use strict';
                              }
                            }
                          });
+                         delete button.form.__hf_form_validation;
 
                          if (valid) {
                            submit_form_via(button);
