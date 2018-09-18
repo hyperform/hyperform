@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+* add tests to npm package
+
 ## v0.9.16
 
 * fix radio button warnings still being multiplied on submit
