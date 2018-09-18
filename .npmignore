@@ -8,6 +8,4 @@ jspm.config.js
 jspm_packages
 Makefile
 node_modules
-src
-test
 .travis.yml
