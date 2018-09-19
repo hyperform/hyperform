@@ -243,6 +243,58 @@ const valueMissing = check(test_required, element => {
 });
 
 
+/**
+ * the "valid" property calls all other validity checkers and returns true,
+ * if all those return false.
+ *
+ * This is the major access point for _all_ other API methods, namely
+ * (check|report)Validity().
+ */
+const valid = element => {
+  const wrapper = get_wrapper(element);
+  const validClass = wrapper && wrapper.settings.classes.valid || 'hf-valid';
+  const invalidClass = wrapper && wrapper.settings.classes.invalid || 'hf-invalid';
+  const userInvalidClass = wrapper && wrapper.settings.classes.userInvalid || 'hf-user-invalid';
+  const userValidClass = wrapper && wrapper.settings.classes.userValid || 'hf-user-valid';
+  const inRangeClass = wrapper && wrapper.settings.classes.inRange || 'hf-in-range';
+  const outOfRangeClass = wrapper && wrapper.settings.classes.outOfRange || 'hf-out-of-range';
+  const validatedClass = wrapper && wrapper.settings.classes.validated || 'hf-validated';
+
+  element.classList.add(validatedClass);
+
+  for (let checker of [badInput, customError, patternMismatch, rangeOverflow,
+                       rangeUnderflow, stepMismatch, tooLong, tooShort,
+                       typeMismatch, valueMissing]) {
+    if (checker(element)) {
+      element.classList.add(invalidClass);
+      element.classList.remove(validClass);
+      element.classList.remove(userValidClass);
+      if (element.value !== element.defaultValue) {
+        element.classList.add(userInvalidClass);
+      } else {
+        element.classList.remove(userInvalidClass);
+      }
+      element.setAttribute('aria-invalid', 'true');
+      return false;
+    }
+  }
+
+  message_store.delete(element);
+  element.classList.remove(invalidClass);
+  element.classList.remove(userInvalidClass);
+  element.classList.remove(outOfRangeClass);
+  element.classList.add(validClass);
+  element.classList.add(inRangeClass);
+  if (element.value !== element.defaultValue) {
+    element.classList.add(userValidClass);
+  } else {
+    element.classList.remove(userValidClass);
+  }
+  element.setAttribute('aria-invalid', 'false');
+  return true;
+};
+
+
 export default {
   badInput,
   customError,
@@ -254,4 +306,5 @@ export default {
   tooShort,
   typeMismatch,
   valueMissing,
+  valid,
 };
