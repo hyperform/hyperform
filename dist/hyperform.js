@@ -154,8 +154,15 @@ var hyperform = (function () {
                            return message ? message : new String('');
                          },
                          delete: function _delete(element) {
+                           var is_custom = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
                            if ('_original_setCustomValidity' in element) {
                              element._original_setCustomValidity('');
+                           }
+                           var message = store.get(element);
+                           if (message && is_custom && !message.is_custom) {
+                             /* do not delete "native" messages, if asked */
+                             return false;
                            }
                            return store.delete(element);
                          }
@@ -1531,6 +1538,57 @@ var hyperform = (function () {
                          set_msg(element, 'valueMissing', msg);
                        });
 
+                       /**
+                        * the "valid" property calls all other validity checkers and returns true,
+                        * if all those return false.
+                        *
+                        * This is the major access point for _all_ other API methods, namely
+                        * (check|report)Validity().
+                        */
+                       var valid = function valid(element) {
+                         var wrapper = get_wrapper(element);
+                         var validClass = wrapper && wrapper.settings.classes.valid || 'hf-valid';
+                         var invalidClass = wrapper && wrapper.settings.classes.invalid || 'hf-invalid';
+                         var userInvalidClass = wrapper && wrapper.settings.classes.userInvalid || 'hf-user-invalid';
+                         var userValidClass = wrapper && wrapper.settings.classes.userValid || 'hf-user-valid';
+                         var inRangeClass = wrapper && wrapper.settings.classes.inRange || 'hf-in-range';
+                         var outOfRangeClass = wrapper && wrapper.settings.classes.outOfRange || 'hf-out-of-range';
+                         var validatedClass = wrapper && wrapper.settings.classes.validated || 'hf-validated';
+
+                         element.classList.add(validatedClass);
+
+                         var _arr = [badInput, customError, patternMismatch, rangeOverflow, rangeUnderflow, stepMismatch, tooLong, tooShort, typeMismatch, valueMissing];
+                         for (var _i = 0; _i < _arr.length; _i++) {
+                           var checker = _arr[_i];
+                           if (checker(element)) {
+                             element.classList.add(invalidClass);
+                             element.classList.remove(validClass);
+                             element.classList.remove(userValidClass);
+                             if (element.value !== element.defaultValue) {
+                               element.classList.add(userInvalidClass);
+                             } else {
+                               element.classList.remove(userInvalidClass);
+                             }
+                             element.setAttribute('aria-invalid', 'true');
+                             return false;
+                           }
+                         }
+
+                         message_store.delete(element);
+                         element.classList.remove(invalidClass);
+                         element.classList.remove(userInvalidClass);
+                         element.classList.remove(outOfRangeClass);
+                         element.classList.add(validClass);
+                         element.classList.add(inRangeClass);
+                         if (element.value !== element.defaultValue) {
+                           element.classList.add(userValidClass);
+                         } else {
+                           element.classList.remove(userValidClass);
+                         }
+                         element.setAttribute('aria-invalid', 'false');
+                         return true;
+                       };
+
                        var validity_state_checkers = {
                          badInput: badInput,
                          customError: customError,
@@ -1541,7 +1599,8 @@ var hyperform = (function () {
                          tooLong: tooLong,
                          tooShort: tooShort,
                          typeMismatch: typeMismatch,
-                         valueMissing: valueMissing
+                         valueMissing: valueMissing,
+                         valid: valid
                        };
 
                        /**
@@ -1598,65 +1657,6 @@ var hyperform = (function () {
                            set: undefined
                          });
                        }
-
-                       /**
-                        * the "valid" property calls all other validity checkers and returns true,
-                        * if all those return false.
-                        *
-                        * This is the major access point for _all_ other API methods, namely
-                        * (check|report)Validity().
-                        */
-                       Object.defineProperty(ValidityStatePrototype, 'valid', {
-                         configurable: true,
-                         enumerable: true,
-                         get: function get() {
-                           if (!is_validation_candidate(this.element)) {
-                             /* not being validated == valid by default */
-                             return true;
-                           }
-
-                           var wrapper = get_wrapper(this.element);
-                           var validClass = wrapper && wrapper.settings.classes.valid || 'hf-valid';
-                           var invalidClass = wrapper && wrapper.settings.classes.invalid || 'hf-invalid';
-                           var userInvalidClass = wrapper && wrapper.settings.classes.userInvalid || 'hf-user-invalid';
-                           var userValidClass = wrapper && wrapper.settings.classes.userValid || 'hf-user-valid';
-                           var inRangeClass = wrapper && wrapper.settings.classes.inRange || 'hf-in-range';
-                           var outOfRangeClass = wrapper && wrapper.settings.classes.outOfRange || 'hf-out-of-range';
-                           var validatedClass = wrapper && wrapper.settings.classes.validated || 'hf-validated';
-
-                           this.element.classList.add(validatedClass);
-
-                           for (var _prop in validity_state_checkers) {
-                             if (validity_state_checkers[_prop](this.element)) {
-                               this.element.classList.add(invalidClass);
-                               this.element.classList.remove(validClass);
-                               this.element.classList.remove(userValidClass);
-                               if (this.element.value !== this.element.defaultValue) {
-                                 this.element.classList.add(userInvalidClass);
-                               } else {
-                                 this.element.classList.remove(userInvalidClass);
-                               }
-                               this.element.setAttribute('aria-invalid', 'true');
-                               return false;
-                             }
-                           }
-
-                           message_store.delete(this.element);
-                           this.element.classList.remove(invalidClass);
-                           this.element.classList.remove(userInvalidClass);
-                           this.element.classList.remove(outOfRangeClass);
-                           this.element.classList.add(validClass);
-                           this.element.classList.add(inRangeClass);
-                           if (this.element.value !== this.element.defaultValue) {
-                             this.element.classList.add(userValidClass);
-                           } else {
-                             this.element.classList.remove(userValidClass);
-                           }
-                           this.element.setAttribute('aria-invalid', 'false');
-                           return true;
-                         },
-                         set: undefined
-                       });
 
                        /**
                         * mark the validity prototype, because that is what the client-facing
@@ -2059,14 +2059,18 @@ var hyperform = (function () {
                         * set a custom validity message or delete it with an empty string
                         */
                        function setCustomValidity(element, msg) {
-                         message_store.set(element, msg, true);
+                         if (!msg) {
+                           message_store.delete(element, true);
+                         } else {
+                           message_store.set(element, msg, true);
+                         }
                          /* live-update the warning */
                          var warning = Renderer.getWarning(element);
                          if (warning) {
                            Renderer.setMessage(warning, msg, element);
                          }
                          /* update any classes if the validity state changes */
-                         ValidityState(element).valid;
+                         validity_state_checkers.valid(element);
                        }
 
                        /**

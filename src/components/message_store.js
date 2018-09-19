@@ -56,9 +56,14 @@ const message_store = {
     return message? message : new String('');
   },
 
-  delete(element) {
+  delete(element, is_custom=false) {
     if ('_original_setCustomValidity' in element) {
       element._original_setCustomValidity('');
+    }
+    var message = store.get(element);
+    if (message && is_custom && ! message.is_custom) {
+      /* do not delete "native" messages, if asked */
+      return false;
     }
     return store.delete(element);
   },
