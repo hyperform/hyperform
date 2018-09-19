@@ -3,7 +3,8 @@
 ## UNRELEASED
 
 * add tests to npm package
-* live-update warnings, when setCustomValidity is called
+* live-update warnings, when `setCustomValidity()` is called
+* properly delete custom messages
 
 ## v0.9.16
 
