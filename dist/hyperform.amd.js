@@ -1377,6 +1377,12 @@ define(function () { 'use strict';
                        });
 
                        function customError(element) {
+                         /* prevent infinite loops when the custom validators call setCustomValidity(),
+                          * which in turn calls this code again */
+                         if (element.__hf_custom_validation_running) {
+                           return false;
+                         }
+
                          /* check, if there are custom validators in the registry, and call
                           * them. */
                          var custom_validators = custom_validator_registry.get(element);
@@ -1384,6 +1390,7 @@ define(function () { 'use strict';
                          var valid = true;
 
                          if (cvl) {
+                           element.__hf_custom_validation_running = true;
                            for (var i = 0; i < cvl; i++) {
                              var result = custom_validators[i](element);
                              if (result !== undefined && !result) {
@@ -1392,6 +1399,7 @@ define(function () { 'use strict';
                                break;
                              }
                            }
+                           delete element.__hf_custom_validation_running;
                          }
 
                          /* check, if there are other validity messages already */

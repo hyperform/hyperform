@@ -123,6 +123,7 @@ describe('required radio buttons', function() {
 
 });
 
+
 describe('setCustomValidity', function() {
 
   it('should update classes', function() {
@@ -177,6 +178,27 @@ describe('setCustomValidity', function() {
     if (warning.textContent !== 'hijklm') {
       throw Error('warning not updated');
     }
+    destroy_hform(hform);
+  });
+
+});
+
+
+describe('addValidator', function() {
+
+  it('should not produce infinite loops when calling setCustomValidity', function() {
+    var hform = make_hform();
+    var form = hform.form;
+    var input = form.getElementsByTagName('input')[0];
+    hyperform.addValidator(input, function(element) {
+      if (element.value !== 'foo') {
+        element.setCustomValidity('oops');
+        return false;
+      }
+      element.setCustomValidity('');
+      return true;
+    });
+    input.reportValidity();
     destroy_hform(hform);
   });
 

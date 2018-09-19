@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+* prevent infinite loops from custom validators
+
 ## v0.9.17
 
 * add tests to npm package
