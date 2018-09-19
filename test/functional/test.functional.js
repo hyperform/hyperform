@@ -122,3 +122,62 @@ describe('required radio buttons', function() {
   });
 
 });
+
+describe('setCustomValidity', function() {
+
+  it('should update classes', function() {
+    var hform = make_hform();
+    var form = hform.form;
+    var input = form.getElementsByTagName('input')[0];
+    input.setCustomValidity('abcdef');
+    if (input.className.search('hf-invalid') === -1) {
+      throw Error('no hf-invalid class found');
+    }
+    input.setCustomValidity('');
+    if (input.className.search('hf-invalid') !== -1) {
+      throw Error('hf-invalid class found');
+    }
+    input.required = true;
+    input.value = '';
+    input.setCustomValidity('abcdef');
+    if (input.className.search('hf-invalid') === -1) {
+      throw Error('no hf-invalid class found although required');
+    }
+    input.setCustomValidity('');
+    if (input.className.search('hf-invalid') === -1) {
+      throw Error('no hf-invalid class found although required');
+    }
+    input.value = 'xyz';
+    input.setCustomValidity('abcdef');
+    if (input.className.search('hf-invalid') === -1) {
+      throw Error('no hf-invalid class found although required');
+    }
+    input.setCustomValidity('');
+    if (input.className.search('hf-invalid') !== -1) {
+      throw Error('hf-invalid class found although required and filled');
+    }
+    destroy_hform(hform);
+  });
+
+  it('should update visible messages', function() {
+    var hform = make_hform();
+    var form = hform.form;
+    var input = form.getElementsByTagName('input')[0];
+    input.setCustomValidity('abcdef');
+    input.reportValidity();
+    var warning = document.getElementById(input.getAttribute('aria-errormessage'));
+    if (! warning || warning.textContent !== 'abcdef') {
+      throw Error('no created warning found');
+    }
+    input.setCustomValidity('');
+    if (warning.textContent !== '') {
+      throw Error('warning not cleared');
+    }
+    input.setCustomValidity('hijklm');
+    if (warning.textContent !== 'hijklm') {
+      throw Error('warning not updated');
+    }
+    destroy_hform(hform);
+  });
+
+});
