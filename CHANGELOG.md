@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+## v0.9.17
+
 * add tests to npm package
 * live-update warnings, when `setCustomValidity()` is called
 * properly delete custom messages
