@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+## v0.9.18
+
 * prevent infinite loops from custom validators
 
 ## v0.9.17
