@@ -3,6 +3,7 @@
 ## UNRELEASED
 
 * add tests to npm package
+* live-update warnings, when setCustomValidity is called
 
 ## v0.9.16
 

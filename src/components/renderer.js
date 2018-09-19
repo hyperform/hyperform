@@ -63,7 +63,7 @@ const DefaultRenderer = {
       if (!element.hasAttribute('aria-describedby')) {
         element.setAttribute('aria-describedby', warning.id);
       }
-      warning.textContent = msg;
+      Renderer.setMessage(warning, msg, element);
       Renderer.attachWarning(warning, element);
 
     } else if (warning && warning.parentNode) {
@@ -76,6 +76,16 @@ const DefaultRenderer = {
     }
   },
 
+  /**
+   * set the warning's content
+   *
+   * Overwrite this method, if you want, e.g., to allow HTML in warnings
+   * or preprocess the content.
+   */
+  setMessage: function(warning, message, element) {
+    warning.textContent = message;
+  }
+
 };
 
 
@@ -84,6 +94,7 @@ const Renderer = {
   attachWarning: DefaultRenderer.attachWarning,
   detachWarning: DefaultRenderer.detachWarning,
   showWarning: DefaultRenderer.showWarning,
+  setMessage: DefaultRenderer.setMessage,
 
   set: function(renderer, action) {
     if (renderer.indexOf('_') > -1) {
@@ -97,6 +108,8 @@ const Renderer = {
     }
     Renderer[renderer] = action;
   },
+
+  getWarning: element => warningsCache.get(element),
 
 };
 

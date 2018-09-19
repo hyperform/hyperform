@@ -250,7 +250,7 @@ define(function () { 'use strict';
                              if (!element.hasAttribute('aria-describedby')) {
                                element.setAttribute('aria-describedby', warning.id);
                              }
-                             warning.textContent = msg;
+                             Renderer.setMessage(warning, msg, element);
                              Renderer.attachWarning(warning, element);
                            } else if (warning && warning.parentNode) {
                              if (element.getAttribute('aria-describedby') === warning.id) {
@@ -259,6 +259,16 @@ define(function () { 'use strict';
                              element.removeAttribute('aria-errormessage');
                              Renderer.detachWarning(warning, element);
                            }
+                         },
+
+                         /**
+                          * set the warning's content
+                          *
+                          * Overwrite this method, if you want, e.g., to allow HTML in warnings
+                          * or preprocess the content.
+                          */
+                         setMessage: function setMessage(warning, message, element) {
+                           warning.textContent = message;
                          }
 
                        };
@@ -268,6 +278,7 @@ define(function () { 'use strict';
                          attachWarning: DefaultRenderer.attachWarning,
                          detachWarning: DefaultRenderer.detachWarning,
                          showWarning: DefaultRenderer.showWarning,
+                         setMessage: DefaultRenderer.setMessage,
 
                          set: function set(renderer, action) {
                            if (renderer.indexOf('_') > -1) {
@@ -282,6 +293,10 @@ define(function () { 'use strict';
                              action = DefaultRenderer[renderer];
                            }
                            Renderer[renderer] = action;
+                         },
+
+                         getWarning: function getWarning(element) {
+                           return warningsCache.get(element);
                          }
 
                        };
@@ -2044,6 +2059,13 @@ define(function () { 'use strict';
                         */
                        function setCustomValidity(element, msg) {
                          message_store.set(element, msg, true);
+                         /* live-update the warning */
+                         var warning = Renderer.getWarning(element);
+                         if (warning) {
+                           Renderer.setMessage(warning, msg, element);
+                         }
+                         /* update any classes if the validity state changes */
+                         ValidityState(element).valid;
                        }
 
                        /**
