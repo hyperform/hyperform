@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+## v0.9.19
+
 * fix custom validation messages gone missing (regression from v0.9.17)
 
 ## v0.9.18
