@@ -14,13 +14,24 @@
   white-space: pre-line;
 }
 
-.hf-invalid + .hf-warning,
+.hf-warning:empty {
+  display: none;
+}
+
+/* :invalid is not yet supported in IE 9, so split selectors */
+
+.hf-invalid + .hf-warning {
+  display: none;
+  position: absolute;
+}
 :invalid + .hf-warning {
   display: none;
   position: absolute;
 }
 
-.hf-invalid:focus + .hf-warning,
-:invalid:focus + .hf-warning {
+.hf-invalid:focus + .hf-warning:not(:empty) {
+  display: block;
+}
+:invalid:focus + .hf-warning:not(:empty) {
   display: block;
 }
