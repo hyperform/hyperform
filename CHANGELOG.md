@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+## v0.9.20
+
 * hide empty warnings with CSS
 * fix select boxes with disabled options selected validating as required
 
