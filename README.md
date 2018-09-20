@@ -169,6 +169,11 @@ Hyperform is fully tested and supported in
 
 Cool, yes! Head over to the [contributing guide](CONTRIBUTING.md) for details.
 
+## Changelog
+
+We maintain an up-to date [changelog named `CHANGELOG.md`](CHANGELOG.md)
+alongside this file.
+
 ## License
 
 This library is released under the terms of the [MIT license](LICENSE.md).
