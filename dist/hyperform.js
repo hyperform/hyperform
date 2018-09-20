@@ -1155,6 +1155,12 @@ var hyperform = (function () {
                            return !element.value || !element.hasAttribute('pattern') || new RegExp('^(?:' + element.getAttribute('pattern') + ')$').test(element.value);
                        }
 
+                       function has_submittable_option(select) {
+                         return Array.prototype.some.call(select.options, function (option) {
+                           return option.selected && !option.disabled;
+                         });
+                       }
+
                        /**
                         * test the required attribute
                         */
@@ -1183,6 +1189,10 @@ var hyperform = (function () {
                          if (!element.hasAttribute('required')) {
                            /* nothing to do */
                            return true;
+                         }
+
+                         if (element instanceof window.HTMLSelectElement) {
+                           return has_submittable_option(element);
                          }
 
                          return element.type === 'checkbox' ? element.checked : !!element.value;

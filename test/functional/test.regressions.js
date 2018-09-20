@@ -223,9 +223,31 @@ describe('Issue 49', function() {
     values = ['abc', '01.01.2000', '2000-01', '2000-13-32'];
     for (var i = 0; i < values.length; i++) {
       input.value = values[i];
-      if (! input.validity.badInput) {
+      if (input.value && ! input.validity.badInput) {
         throw Error(values[i]+' should not be a valid date');
       }
+    }
+
+    hform.destroy();
+    document.body.removeChild(form);
+  });
+
+});
+
+
+describe('Issue 69', function() {
+
+  it('should check, if a required <select> option is not in fact disabled', function() {
+    var form = document.createElement('form');
+    var select = document.createElement('select');
+    select.innerHTML = '<option selected disabled>select another</option><option>another</option>';
+    select.required = true;
+    form.appendChild(select);
+    document.body.appendChild(form);
+    var hform = hyperform(form);
+
+    if (! select.validity.valueMissing) {
+      throw Error('select has no submittable option selected');
     }
 
     hform.destroy();

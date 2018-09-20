@@ -3,6 +3,7 @@
 ## UNRELEASED
 
 * hide empty warnings with CSS
+* fix select boxes with disabled options selected validating as required
 
 ## v0.9.19
 

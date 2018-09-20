@@ -4,6 +4,14 @@
 import { get_radiogroup } from '../tools/get_radiogroup';
 
 
+function has_submittable_option(select) {
+  return Array.prototype.some.call(
+    select.options,
+    option => option.selected && ! option.disabled
+  );
+}
+
+
 /**
  * test the required attribute
  */
@@ -28,6 +36,10 @@ export default function(element) {
   if (! element.hasAttribute('required')) {
     /* nothing to do */
     return true;
+  }
+
+  if (element instanceof window.HTMLSelectElement) {
+    return has_submittable_option(element);
   }
 
   return (element.type === 'checkbox')? element.checked : (!! element.value);
