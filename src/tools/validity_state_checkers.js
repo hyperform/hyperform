@@ -59,9 +59,11 @@ const badInput = check(test_bad_input, element => set_msg(element, 'badInput',
 
 function customError(element) {
   /* prevent infinite loops when the custom validators call setCustomValidity(),
-   * which in turn calls this code again */
+   * which in turn calls this code again. We check, if there is an already set
+   * custom validity message there. */
   if (element.__hf_custom_validation_running) {
-    return false;
+    const msg = message_store.get(element);
+    return (msg && msg.is_custom);
   }
 
   /* check, if there are custom validators in the registry, and call

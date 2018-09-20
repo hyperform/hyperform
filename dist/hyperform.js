@@ -1379,9 +1379,11 @@ var hyperform = (function () {
 
                        function customError(element) {
                          /* prevent infinite loops when the custom validators call setCustomValidity(),
-                          * which in turn calls this code again */
+                          * which in turn calls this code again. We check, if there is an already set
+                          * custom validity message there. */
                          if (element.__hf_custom_validation_running) {
-                           return false;
+                           var msg = message_store.get(element);
+                           return msg && msg.is_custom;
                          }
 
                          /* check, if there are custom validators in the registry, and call
@@ -1405,8 +1407,8 @@ var hyperform = (function () {
 
                          /* check, if there are other validity messages already */
                          if (valid) {
-                           var msg = message_store.get(element);
-                           valid = !(msg.toString() && 'is_custom' in msg);
+                           var _msg = message_store.get(element);
+                           valid = !(_msg.toString() && 'is_custom' in _msg);
                          }
 
                          return !valid;

@@ -202,4 +202,29 @@ describe('addValidator', function() {
     destroy_hform(hform);
   });
 
+  it('should show error messages when calling setCustomValidity', function() {
+    var hform = make_hform();
+    var form = hform.form;
+    var input = form.getElementsByTagName('input')[0];
+    hyperform.addValidator(input, function(element) {
+      if (element.value !== 'foo') {
+        element.setCustomValidity('oops');
+        return false;
+      }
+      element.setCustomValidity('');
+      return true;
+    });
+    input.reportValidity();
+    var warning = document.getElementById(input.getAttribute('aria-errormessage'));
+    if (! warning || warning.textContent !== 'oops') {
+      throw Error('no custom error message shown');
+    }
+    input.value = 'foo';
+    input.reportValidity();
+    if (input.hasAttribute('aria-errormessage') || warning.parentNode) {
+      throw Error('custom error message shown');
+    }
+    destroy_hform(hform);
+  });
+
 });
