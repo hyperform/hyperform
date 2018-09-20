@@ -48,7 +48,8 @@
   "files": [
     "css",
     "dist",
-    "src"
+    "src",
+    "test"
   ],
   "jshintConfig": {
     "esversion": 6,
