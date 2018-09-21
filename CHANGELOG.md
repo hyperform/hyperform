@@ -6,6 +6,7 @@
 
 * hide empty warnings with CSS
 * fix select boxes with disabled options selected validating as required
+* fix problem, where badInput was not detected with hyperform(form) calls (issue #49)
 
 ## v0.9.19
 

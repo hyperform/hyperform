@@ -2030,6 +2030,10 @@ define(function () { 'use strict';
                        /**
                         * add `property` to an element
                         *
+                        * ATTENTION! This function will search for an equally named property on the
+                        * *prototype* of an element, if element is a concrete DOM node. Do not use
+                        * it as general-purpose property installer.
+                        *
                         * js> installer(element, 'foo', { value: 'bar' });
                         * js> assert(element.foo === 'bar');
                         */
@@ -2040,7 +2044,13 @@ define(function () { 'use strict';
                            descriptor.writable = true;
                          }
 
+                         /* on concrete instances, i.e., <input> elements, the naive lookup
+                          * yields undefined. We have to look on its prototype then. On elements
+                          * like the actual HTMLInputElement object the first line works. */
                          var original_descriptor = Object.getOwnPropertyDescriptor(element, property);
+                         if (original_descriptor === undefined) {
+                           original_descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(element), property);
+                         }
 
                          if (original_descriptor) {
 
