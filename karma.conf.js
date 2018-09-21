@@ -13,7 +13,7 @@ var customLaunchers = {};
   ['firefox', '62.0', 'Windows 10'],
   ['firefox', '61.0', 'Windows 10'],
   ['firefox', '60.0', 'Windows 10'], /* ESR */
-  ['firefox', '45.0', 'Linux'], // !!!
+  ['firefox', '45.0', 'Linux'],
   ['firefox', '62.0', 'macOS 10.13'],
   ['MicrosoftEdge', '17', 'Windows 10'],
   ['MicrosoftEdge', '16', 'Windows 10'],
@@ -116,6 +116,8 @@ module.exports = function(config) {
     // Concurrency level
     // how many browser should be started simultaneous
     concurrency: 5,
+
+    browserDisconnectTimeout: 5000,
 
     sauceLabs: {
       testName: 'Hyperform functional tests',

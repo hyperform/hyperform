@@ -139,26 +139,30 @@ describe('Issue 35', function() {
 
 describe('Issue 41', function() {
 
-  it('should autoload when requested', function(done) {
-    var iframe = document.createElement('iframe');
-    iframe.src = 'blank.html';
+  /* IE has no document.currentScript, and apparently it can't be polyfilled
+   * in IE 11 anyway. */
+  if (navigator.userAgent.search('Trident') === -1) {
+    it('should autoload when requested', function(done) {
+      var iframe = document.createElement('iframe');
+      iframe.src = 'blank.html';
 
-    document.body.appendChild(iframe);
+      document.body.appendChild(iframe);
 
-    once(iframe.contentWindow, 'load', function() {
-      var el = iframe.contentDocument.createElement('script');
-      el.src = '../../dist/hyperform.js';
-      el.setAttribute('data-hf-autoload', '');
-      el.addEventListener('load', function() {
-        if (! iframe.contentWindow.HTMLInputElement.prototype.checkValidity.__hyperform) {
-          throw Error('no original checkValidity method detected');
-        }
-        iframe.parentNode.removeChild(iframe);
-        done();
+      once(iframe.contentWindow, 'load', function() {
+        var el = iframe.contentDocument.createElement('script');
+        el.src = '../../dist/hyperform.js';
+        el.setAttribute('data-hf-autoload', '');
+        el.addEventListener('load', function() {
+          if (! iframe.contentWindow.HTMLInputElement.prototype.checkValidity.__hyperform) {
+            throw Error('no original checkValidity method detected');
+          }
+          iframe.parentNode.removeChild(iframe);
+          done();
+        });
+        iframe.contentDocument.body.appendChild(el);
       });
-      iframe.contentDocument.body.appendChild(el);
     });
-  });
+  }
 
   it('should not autoload when not requested', function(done) {
     var iframe = document.createElement('iframe');
