@@ -17,13 +17,15 @@ test('property_installer', t => {
     value: 'baz',
   });
   t.is(dummy.foo, 'baz');
-  t.is(dummy._original_foo, 'bar');
+});
 
-  /* do not overwrite our own marked properties */
-  property_installer(dummy, 'ours', {
+test('property_installer on element', t => {
+  var dummy = document.createElement('input');
+
+  property_installer(dummy, 'name', {
     configurable: true,
     value: 'yay',
   });
-  t.is(dummy.ours, ours);
-  t.false('_original_ours' in dummy);
+  t.is(dummy.name, 'yay');
+  t.not(dummy._original_name, undefined);
 });

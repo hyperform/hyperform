@@ -232,6 +232,11 @@ describe('Issue 49', function() {
     document.body.removeChild(form);
   });
 
+  /* TODO we should not only test setting input.value but actually entering
+   * values. However, that's behind the input's shadow DOM where we cannot
+   * access fields. The test above is trivially true, but we need to make
+   * sure, that manually entered wrong values result in a badInput. */
+
 });
 
 

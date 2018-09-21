@@ -67,19 +67,26 @@ describe('required radio buttons', function() {
   });
 
   it('should work when part of a radio group', function() {
-    var hform = make_hform();
-    var form = hform.form;
+    var form = document.createElement('form');
+    form.innerHTML = '<input name="test" value="button_span">'+
+                    '<button><span>submit</span></button>';
     var input = form.getElementsByTagName('input')[0];
     input.type = 'radio';
     input.checked = false;
     form.insertBefore(input.cloneNode(), input);
     form.appendChild(input.cloneNode());
+    document.body.appendChild(form);
+    var hform = hyperform(form);
+
     if (input.validity.valueMissing) {
       throw Error('unrequired unchecked radio button should not be invalid');
     }
     input.required = true;
-    if (! input.validity.valueMissing || ! input.previousSibling.validity.valueMissing) {
+    if (! input.validity.valueMissing) {
       throw Error('required unchecked radio button should be invalid');
+    }
+    if (! input.previousSibling.validity.valueMissing) {
+      throw Error('unchecked radio button in required group should be invalid');
     }
     input.checked = true;
     if (input.validity.valueMissing || input.previousSibling.validity.valueMissing) {
