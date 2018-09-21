@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+* validate dates stricter
+
 ## v0.9.21
 
 * fix problem, where badInput was not detected with hyperform(form) calls (issue #49)
