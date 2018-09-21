@@ -142,13 +142,13 @@ describe('Issue 41', function() {
   it('should autoload when requested', function(done) {
     var iframe = document.createElement('iframe');
     iframe.src = 'blank.html';
+
     document.body.appendChild(iframe);
 
     once(iframe.contentWindow, 'load', function() {
       var el = iframe.contentDocument.createElement('script');
       el.src = '../../dist/hyperform.js';
       el.setAttribute('data-hf-autoload', '');
-      iframe.contentDocument.body.appendChild(el);
       el.addEventListener('load', function() {
         if (! iframe.contentWindow.HTMLInputElement.prototype.checkValidity.__hyperform) {
           throw Error('no original checkValidity method detected');
@@ -156,6 +156,7 @@ describe('Issue 41', function() {
         iframe.parentNode.removeChild(iframe);
         done();
       });
+      iframe.contentDocument.body.appendChild(el);
     });
   });
 

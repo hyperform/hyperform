@@ -34,7 +34,7 @@ test('validator-step for month', t => {
   t.is(step(el), true);
   el.value = '2015-01';
   t.is(step(el), true);
-  el.value = '0000-00';
+  el.value = '0000-02';
   t.is(step(el), false);
   el.value = '2014-13';
   t.is(step(el), true);

@@ -667,40 +667,31 @@ function get_date_from_week (week, year) {
  * calculate a date from a string according to HTML5
  */
 function string_to_date (string, element_type) {
-  var date = new Date(0);
-  var ms;
+  var date = void 0;
   switch (element_type) {
     case 'datetime':
-      if (!/^([0-9]{4,})-([0-9]{2})-([0-9]{2})T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
+      if (!/^([0-9]{4})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
         return null;
       }
-      ms = RegExp.$7 || '000';
-      while (ms.length < 3) {
-        ms += '0';
-      }
-      date.setUTCFullYear(Number(RegExp.$1));
-      date.setUTCMonth(Number(RegExp.$2) - 1, Number(RegExp.$3));
-      date.setUTCHours(Number(RegExp.$4), Number(RegExp.$5), Number(RegExp.$6 || 0), Number(ms));
-      return date;
+      date = new Date(string + 'z');
+      return isNaN(date.valueOf()) ? null : date;
 
     case 'date':
-      if (!/^([0-9]{4,})-([0-9]{2})-([0-9]{2})$/.test(string)) {
+      if (!/^([0-9]{4})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/.test(string)) {
         return null;
       }
-      date.setUTCFullYear(Number(RegExp.$1));
-      date.setUTCMonth(Number(RegExp.$2) - 1, Number(RegExp.$3));
-      return date;
+      date = new Date(string);
+      return isNaN(date.valueOf()) ? null : date;
 
     case 'month':
-      if (!/^([0-9]{4,})-([0-9]{2})$/.test(string)) {
+      if (!/^([0-9]{4})-(0[1-9]|1[012])$/.test(string)) {
         return null;
       }
-      date.setUTCFullYear(Number(RegExp.$1));
-      date.setUTCMonth(Number(RegExp.$2) - 1, 1);
-      return date;
+      date = new Date(string);
+      return isNaN(date.valueOf()) ? null : date;
 
     case 'week':
-      if (!/^([0-9]{4,})-W(0[1-9]|[1234][0-9]|5[0-3])$/.test(string)) {
+      if (!/^([0-9]{4})-W(0[1-9]|[1234][0-9]|5[0-3])$/.test(string)) {
         return null;
       }
       return get_date_from_week(Number(RegExp.$2), Number(RegExp.$1));
@@ -709,11 +700,7 @@ function string_to_date (string, element_type) {
       if (!/^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
         return null;
       }
-      ms = RegExp.$4 || '000';
-      while (ms.length < 3) {
-        ms += '0';
-      }
-      date.setUTCHours(Number(RegExp.$1), Number(RegExp.$2), Number(RegExp.$3 || 0), Number(ms));
+      date = new Date('1970-01-01T' + string + 'z');
       return date;
   }
 
@@ -721,7 +708,7 @@ function string_to_date (string, element_type) {
 }
 
 /**
- * calculate a date from a string according to HTML5
+ * calculate a number from a string according to HTML5
  */
 function string_to_number (string, element_type) {
   var rval = string_to_date(string, element_type);
@@ -1069,14 +1056,17 @@ function test_max (element) {
   var value = void 0,
       max = void 0;
   if (dates.indexOf(type) > -1) {
-    value = 1 * string_to_date(element.value, type);
-    max = 1 * (string_to_date(element.getAttribute('max'), type) || NaN);
+    value = string_to_date(element.value, type);
+    value = value === null ? NaN : +value;
+    max = string_to_date(element.getAttribute('max'), type);
+    max = max === null ? NaN : +max;
   } else {
     value = Number(element.value);
     max = Number(element.getAttribute('max'));
   }
 
-  return isNaN(max) || value <= max;
+  /* we cannot validate invalid values and trust on badInput, if isNaN(value) */
+  return isNaN(max) || isNaN(value) || value <= max;
 }
 
 /**
@@ -1117,14 +1107,17 @@ function test_min (element) {
   var value = void 0,
       min = void 0;
   if (dates.indexOf(type) > -1) {
-    value = 1 * string_to_date(element.value, type);
-    min = 1 * (string_to_date(element.getAttribute('min'), type) || NaN);
+    value = string_to_date(element.value, type);
+    value = value === null ? NaN : +value;
+    min = string_to_date(element.getAttribute('min'), type);
+    min = min === null ? NaN : +min;
   } else {
     value = Number(element.value);
     min = Number(element.getAttribute('min'));
   }
 
-  return isNaN(min) || value >= min;
+  /* we cannot validate invalid values and trust on badInput, if isNaN(value) */
+  return isNaN(min) || isNaN(value) || value >= min;
 }
 
 /**
@@ -1226,6 +1219,12 @@ function test_step (element) {
 
   var value = string_to_number(element.value, type);
   var min = string_to_number(element.getAttribute('min') || element.getAttribute('value') || '', type);
+
+  if (isNaN(value)) {
+    /* we cannot compare an invalid value and trust that the badInput validator
+     * takes over from here */
+    return true;
+  }
 
   if (isNaN(min)) {
     min = default_step_base[type] || 0;

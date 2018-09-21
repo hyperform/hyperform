@@ -31,7 +31,7 @@ test('validator-min for date', t => {
   t.is(min(el), true);
   el.value = '2015-01-01';
   t.is(min(el), true);
-  el.value = '0000-00-00';
+  el.value = '0000-01-01';
   t.is(min(el), false);
   el.value = '2000-02-29';
   t.is(min(el), false);

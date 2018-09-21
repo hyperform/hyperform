@@ -40,6 +40,12 @@ export default function(element) {
   let min = string_to_number(element.getAttribute('min') ||
                          element.getAttribute('value') || '', type);
 
+  if (isNaN(value)) {
+    /* we cannot compare an invalid value and trust that the badInput validator
+     * takes over from here */
+    return true;
+  }
+
   if (isNaN(min)) {
     min = default_step_base[type] || 0;
   }

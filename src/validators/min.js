@@ -22,12 +22,15 @@ export default function(element) {
 
   let value, min;
   if (dates.indexOf(type) > -1) {
-    value = 1 * string_to_date(element.value, type);
-    min = 1 * (string_to_date(element.getAttribute('min'), type) || NaN);
+    value = string_to_date(element.value, type);
+    value = value === null? NaN : +value;
+    min = string_to_date(element.getAttribute('min'), type);
+    min = min === null? NaN : +min;
   } else {
     value = Number(element.value);
     min = Number(element.getAttribute('min'));
   }
 
-  return (isNaN(min) || value >= min);
+  /* we cannot validate invalid values and trust on badInput, if isNaN(value) */
+  return (isNaN(min) || isNaN(value) || value >= min);
 }

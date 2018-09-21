@@ -22,12 +22,15 @@ export default function(element) {
 
   let value, max;
   if (dates.indexOf(type) > -1) {
-    value = 1 * string_to_date(element.value, type);
-    max = 1 * (string_to_date(element.getAttribute('max'), type) || NaN);
+    value = string_to_date(element.value, type);
+    value = value === null? NaN : +value;
+    max = string_to_date(element.getAttribute('max'), type);
+    max = max === null? NaN : +max;
   } else {
     value = Number(element.value);
     max = Number(element.getAttribute('max'));
   }
 
-  return (isNaN(max) || value <= max);
+  /* we cannot validate invalid values and trust on badInput, if isNaN(value) */
+  return (isNaN(max) || isNaN(value) || value <= max);
 }
