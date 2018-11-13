@@ -24,7 +24,7 @@ interface HyperFormOptions {
     invalid?: string,
     validated?: string
   }
-  
+
   /** Whether to include input elements without name attribute as validation candidates. Default: false. */
   validateNameless?: boolean;
 }
@@ -49,10 +49,12 @@ export interface HyperFormValidator {
 
 export interface HyperFormStatic {
   version: string;
-  ValidityState: ValidityState;
 
   /** initializes hyperform on a specific form or globally */
   (target: Window | HTMLFormElement, options?: HyperFormOptions): void;
+
+  /** TODO: add documentation */
+  ValidityState(element: HTMLElement): ValidityState;
 
   /** check, if an element will be subject to HTML5 validation at all */
   willValidate(element: HTMLElement): boolean;
