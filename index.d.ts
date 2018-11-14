@@ -1,4 +1,4 @@
-interface HyperFormOptions {
+interface HyperformOptions {
   /** When true, disable the high-level API. Default: false. */
   strict?: boolean;
 
@@ -29,7 +29,7 @@ interface HyperFormOptions {
   validateNameless?: boolean;
 }
 
-export interface HyperFormRenderer {
+export interface HyperformRenderer {
   /** called when a warning should become visible */
   attachWarning: (warning: HTMLElement, element: HTMLElement) => void;
 
@@ -43,15 +43,15 @@ export interface HyperFormRenderer {
   setMessage: (warning: HTMLElement, message: string, element: HTMLElement) => void;
 }
 
-export interface HyperFormValidator {
+export interface HyperformValidator {
   (element: HTMLElement): boolean;
 }
 
-export interface HyperFormStatic {
+export interface HyperformStatic {
   version: string;
 
   /** initializes hyperform on a specific form or globally */
-  (target: Window | HTMLFormElement, options?: HyperFormOptions): void;
+  (target: Window | HTMLFormElement, options?: HyperformOptions): void;
 
   /** TODO: add documentation */
   ValidityState(element: HTMLElement): ValidityState;
@@ -66,10 +66,10 @@ export interface HyperFormStatic {
   valueAsNumber(element: HTMLElement, value: any): Number;
   
   /** add custom validation logic for specific elements */
-  addValidator(element: HTMLElement, validate: HyperFormValidator): void;
+  addValidator(element: HTMLElement, validate: HyperformValidator): void;
   
   /** override default renderer methods */
-  setRenderer<T extends keyof HyperFormRenderer>(renderer: T, action: HyperFormRenderer[T]): void;
+  setRenderer<T extends keyof HyperformRenderer>(renderer: T, action: HyperformRenderer[T]): void;
   
   /** check an element's validity with respect to it's form */
   checkValidity(element: HTMLElement): boolean;
@@ -90,21 +90,21 @@ export interface HyperFormStatic {
   validationMessage(element: HTMLElement): string;
   
   /** set the language for Hyperform’s messages */
-  setLanguage(lang: string): HyperFormStatic;
+  setLanguage(lang: string): HyperformStatic;
   
   /** add a lookup catalog "string: translation" for a language */
-  addTranslation(lang: string, catalog: any): HyperFormStatic;
+  addTranslation(lang: string, catalog: any): HyperformStatic;
   
   /** register custom error messages per element */
-  setMessage(element: HTMLElement, validator: HyperFormValidator, message: string): HyperFormStatic;
+  setMessage(element: HTMLElement, validator: HyperformValidator, message: string): HyperformStatic;
   
   /** TODO: add documentation and types */
-  addHook(hook: any, action: any, position: any): HyperFormStatic;
+  addHook(hook: any, action: any, position: any): HyperformStatic;
   
   /** TODO: add documentation and types */
-  removeHook(hook: any, action: any): HyperFormStatic;
+  removeHook(hook: any, action: any): HyperformStatic;
 }
 
-declare const HyperForm: HyperFormStatic;
+declare const Hyperform: HyperformStatic;
 
-export default HyperForm;
+export default Hyperform;
