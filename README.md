@@ -187,4 +187,5 @@ contributions by
 [Darlan Mendonça](https://github.com/darlanmendonca),
 [Christoph Dörfel](https://github.com/Garbanas),
 [Josh Farneman](https://github.com/farneman),
+[Casey Corcoran](https://github.com/snaptopixel),
 and many people reporting issues.
