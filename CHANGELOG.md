@@ -3,6 +3,7 @@
 ## UNRELEASED
 
 * validate dates stricter
+* add TypeScript declarations
 
 ## v0.9.21
 
