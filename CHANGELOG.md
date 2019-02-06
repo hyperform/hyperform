@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+## v0.9.22
+
 * validate dates stricter
 * add TypeScript declarations
 
