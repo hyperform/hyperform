@@ -4,6 +4,7 @@
 
 ## v0.9.22
 
+* fix select boxes not respectin placeholder options
 * validate dates stricter
 * add TypeScript declarations
 
