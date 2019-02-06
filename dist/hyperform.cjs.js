@@ -1148,9 +1148,26 @@ function test_pattern (element) {
 }
 
 function has_submittable_option(select) {
-  return Array.prototype.some.call(select.options, function (option) {
-    return option.selected && !option.disabled;
-  });
+  /* Definition of the placeholder label option:
+   * https://www.w3.org/TR/html5/sec-forms.html#element-attrdef-select-required
+   * Being required (the first constraint in the spec) is trivially true, since
+   * this function is only called for such selects.
+   */
+  var has_placeholder_option = !select.multiple && select.size <= 1 && select.options.length > 0 && select.options[0].parentNode == select && select.options[0].value === '';
+  return (
+    /* anything selected at all? That's redundant with the .some() call below,
+     * but more performant in the most probable error case. */
+    select.selectedIndex > -1 && Array.prototype.some.call(select.options, function (option) {
+      return (
+        /* it isn't the placeholder option */
+        (!has_placeholder_option || option.index !== 0) &&
+        /* it isn't disabled */
+        !option.disabled &&
+        /* and it is, in fact, selected */
+        option.selected
+      );
+    })
+  );
 }
 
 /**
