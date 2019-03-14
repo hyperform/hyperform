@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+* fix application of class hf-user-invalid to checkboxes/radio buttons
+
 ## v0.9.22
 
 * fix select boxes not respectin placeholder options

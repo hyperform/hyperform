@@ -1599,7 +1599,9 @@ var valid = function valid(element) {
       element.classList.add(invalidClass);
       element.classList.remove(validClass);
       element.classList.remove(userValidClass);
-      if (element.value !== element.defaultValue) {
+      if ((element.type === 'checkbox' || element.type === 'radio') && element.checked !== element.defaultChecked ||
+      /* the following test is trivially false for checkboxes/radios */
+      element.value !== element.defaultValue) {
         element.classList.add(userInvalidClass);
       } else {
         element.classList.remove(userInvalidClass);
