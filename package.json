@@ -1,6 +1,6 @@
 {
   "name": "hyperform",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Capture form validation back from the browser",
   "main": "dist/hyperform.cjs.js",
   "types": "index.d.ts",

@@ -2677,7 +2677,7 @@ define(function () { 'use strict';
                          return valid;
                        });
 
-                       var version = '0.10.0';
+                       var version = '0.10.1';
 
                        /* deprecate the old snake_case names
                         * TODO: delme before next non-patch release

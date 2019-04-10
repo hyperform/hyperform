@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+## v0.10.1
+
 * fix event properties being set too late
 
 ## v0.10.0
