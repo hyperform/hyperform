@@ -2674,7 +2674,7 @@ var checkValidity = return_hook_or('checkValidity', function (element) {
   return valid;
 });
 
-var version = '0.9.23';
+var version = '0.10.0';
 
 /* deprecate the old snake_case names
  * TODO: delme before next non-patch release

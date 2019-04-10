@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+## v0.10.0
+
 * add new event "implicit_submit", that allows to prevent implicit submits
 
 ## v0.9.23
