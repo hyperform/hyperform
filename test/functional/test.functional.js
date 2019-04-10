@@ -1,9 +1,12 @@
-function make_hform(_doc, settings) {
+function functional_make_hform(_doc, settings) {
   _doc = _doc || document;
   settings = settings || {};
   var form = _doc.createElement('form');
   form.innerHTML = '<input name="test" value="button_span">'+
                    '<button><span>submit</span></button>';
+  form.addEventListener('submit', function() {
+    throw Error('Do not submit the test form from within tests!');
+  });
   var hform = _doc.defaultView.hyperform(form, settings);
   _doc.body.appendChild(form);
   return hform;
@@ -21,7 +24,7 @@ function destroy_hform(hform) {
 describe('required radio buttons', function() {
 
   it('should work when alone', function() {
-    var hform = make_hform();
+    var hform = functional_make_hform();
     var form = hform.form;
     var input = form.getElementsByTagName('input')[0];
     input.type = 'radio';
@@ -112,7 +115,7 @@ describe('required radio buttons', function() {
   });
 
   it('should ignore other forms’ radios', function() {
-    var hform = make_hform();
+    var hform = functional_make_hform();
     var form = hform.form;
     var input = form.getElementsByTagName('input')[0];
     input.type = 'radio';
@@ -134,7 +137,7 @@ describe('required radio buttons', function() {
 describe('setCustomValidity', function() {
 
   it('should update classes', function() {
-    var hform = make_hform();
+    var hform = functional_make_hform();
     var form = hform.form;
     var input = form.getElementsByTagName('input')[0];
     input.setCustomValidity('abcdef');
@@ -168,7 +171,7 @@ describe('setCustomValidity', function() {
   });
 
   it('should update visible messages', function() {
-    var hform = make_hform();
+    var hform = functional_make_hform();
     var form = hform.form;
     var input = form.getElementsByTagName('input')[0];
     input.setCustomValidity('abcdef');
@@ -194,7 +197,7 @@ describe('setCustomValidity', function() {
 describe('addValidator', function() {
 
   it('should not produce infinite loops when calling setCustomValidity', function() {
-    var hform = make_hform();
+    var hform = functional_make_hform();
     var form = hform.form;
     var input = form.getElementsByTagName('input')[0];
     hyperform.addValidator(input, function(element) {
@@ -210,7 +213,7 @@ describe('addValidator', function() {
   });
 
   it('should show error messages when calling setCustomValidity', function() {
-    var hform = make_hform();
+    var hform = functional_make_hform();
     var form = hform.form;
     var input = form.getElementsByTagName('input')[0];
     hyperform.addValidator(input, function(element) {
@@ -230,6 +233,41 @@ describe('addValidator', function() {
     input.reportValidity();
     if (input.hasAttribute('aria-errormessage') || warning.parentNode) {
       throw Error('custom error message shown');
+    }
+    destroy_hform(hform);
+  });
+
+});
+
+
+describe('implicit submit event', function() {
+
+  it('should have the expected properties set', function() {
+    var hform = functional_make_hform();
+    var form = hform.form;
+    var input = form.getElementsByTagName('input')[0];
+    input.required = true;
+    var event_occured = false;
+    form.addEventListener('implicit_submit', function(event) {
+      event_occured = true;
+      if (! ('trigger' in event)) {
+        throw Error('trigger not in event');
+      }
+      if (! ('submittedVia' in event)) {
+        throw Error('submittedVia not in event');
+      }
+      if (event.trigger !== input || event.submittedVia !== form.getElementsByTagName('button')[0]) {
+        throw Error('event properties not correctly set');
+      }
+      // the next line is needed, otherwise the test setup goes into an endless loop
+      event.preventDefault();
+    });
+    var e = document.createEvent('HTMLEvents');
+    e.keyCode = 13;
+    e.initEvent('keypress', true, true);
+    input.dispatchEvent(e);
+    if (! event_occured) {
+        throw Error('event didn\'t occur at all');
     }
     destroy_hform(hform);
   });

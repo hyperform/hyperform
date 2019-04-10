@@ -1980,10 +1980,13 @@ var hyperform = (function () {
                                }
                              }
 
-                             /* trigger a "validate" event on the form to be submitted */
-                             var implicit_event = trigger_event(event.target.form, 'implicit_submit', { cancelable: true });
-                             implicit_event.trigger = event.target;
-                             implicit_event.submittedVia = submit || event.target;
+                             /* trigger an "implicit_submit" event on the form to be submitted */
+                             var implicit_event = trigger_event(event.target.form, 'implicit_submit', {
+                               cancelable: true
+                             }, {
+                               trigger: event.target,
+                               submittedVia: submit || event.target
+                             });
                              if (implicit_event.defaultPrevented) {
                                /* skip the submit, if implicit submit is canceled */
                                return;

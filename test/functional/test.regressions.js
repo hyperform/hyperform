@@ -1,4 +1,4 @@
-function make_hform(_doc, settings) {
+function regressions_make_hform(_doc, settings) {
   _doc = _doc || document;
   settings = settings || {};
   var form = _doc.createElement('form');
@@ -30,7 +30,7 @@ function once(element, event, handler) {
 describe('Issue 7', function() {
 
   it('should publish validation methods on HTMLFormElements', function() {
-    var hform = make_hform();
+    var hform = regressions_make_hform();
     var form = hform.form;
     if (! ('reportValidity' in form)) {
       throw Error('no reportValidity method found');
@@ -45,7 +45,7 @@ describe('Issue 11', function() {
 
   it('should fire a cancelable submit event', function(done) {
     // revalidate:never was part of the original issue report
-    var hform = make_hform(document, { revalidate: 'never' });
+    var hform = regressions_make_hform(document, { revalidate: 'never' });
     var form = hform.form;
 
     form.addEventListener('submit', function(evt) {
@@ -74,7 +74,7 @@ describe('Issue 13', function() {
     document.body.appendChild(iframe);
 
     once(iframe.contentWindow, 'load', function() {
-      var hform = make_hform(iframe.contentDocument);
+      var hform = regressions_make_hform(iframe.contentDocument);
       var form = hform.form;
       form.method = 'get';
       form.addEventListener('submit', function(evt) {
@@ -111,7 +111,7 @@ describe('Issue 13', function() {
 describe('Issue 34', function() {
 
   it('should catch submit when clicking on span nested in button', function(done) {
-    var hform = make_hform();
+    var hform = regressions_make_hform();
     var form = hform.form;
     form.addEventListener('submit', function(evt) {
       evt.preventDefault();
@@ -189,7 +189,7 @@ describe('Issue 41', function() {
 describe('Issue 45', function() {
 
   it('should use the minlength value in the "tooShort" warning string', function() {
-    var hform = make_hform();
+    var hform = regressions_make_hform();
     var form = hform.form;
     var input = form.getElementsByTagName('input')[0];
     input.setAttribute('minlength', '3');
@@ -270,7 +270,7 @@ describe('Issue 69', function() {
 describe('Issue 78', function() {
 
   it('should not run validation when tabbing into an element', function() {
-    var hform = make_hform(document, { revalidate: 'oninput' });
+    var hform = regressions_make_hform(document, { revalidate: 'oninput' });
     var validated = false;
     hyperform.addValidator(hform.form.elements[0], function() {
       validated = true;

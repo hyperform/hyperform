@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+* fix event properties being set too late
+
 ## v0.10.0
 
 * add new event "implicit_submit", that allows to prevent implicit submits
