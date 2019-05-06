@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+## v0.10.2
+
 * fix form validation error for detached elements
 
 ## v0.10.1
