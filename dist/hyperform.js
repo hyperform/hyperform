@@ -1729,7 +1729,7 @@ var hyperform = (function () {
                          }
 
                          if (!event || !event.defaultPrevented) {
-                           Renderer.showWarning(element, !!element.form.__hf_form_validation);
+                           Renderer.showWarning(element, element.form && element.form.__hf_form_validation);
                          }
 
                          return valid;

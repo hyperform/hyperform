@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+* fix form validation error for detached elements
+
 ## v0.10.1
 
 * fix event properties being set too late
