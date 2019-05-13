@@ -18,7 +18,6 @@ corner). Then switch to your terminal:
 $ git clone git@github.com:YourUserName/hyperform.git
 $ cd hyperform
 $ npm install
-$ node_modules/.bin/jspm install
 # now you're ready to go. Try your first build to see if everything works:
 $ make -B && git status
 ```

@@ -1,5 +1,5 @@
-JSPM := node_modules/.bin/jspm
-JSPM_ARGS := --format global --global-name hyperform --skip-source-maps
+ROLLUP := ./node_modules/.bin/rollup
+ROLLUP_ARGS := -c
 
 UGLIFYJS := node_modules/.bin/uglifyjs
 UGLIFYJS_ARGS := --mangle --compress
@@ -26,23 +26,19 @@ dist/hyperform.min.js: dist/%.min.js : dist/%.js
 		<"$<" $(UGLIFYJS) $(UGLIFYJS_ARGS) ; \
 	) >"$@"
 
-dist/hyperform.amd.js: src/hyperform.js src/*.js src/*/*.js
-	@echo "* build $@"
-	@mkdir -p dist
-	@$(JSPM) build "$<" "$@" $(JSPM_ARGS) --format amd
+# see
+# https://stackoverflow.com/a/10609434/113195
+# for this trick to invoke rollup just once for all three files
+dist/hyperform.amd.js \
+dist/hyperform.cjs.js \
+dist/hyperform.js: intermediate-build-step
 	@sed -i '1s#^#$(BANNER)\n#' "$@"
 
-dist/hyperform.cjs.js: src/hyperform.js src/*.js src/*/*.js
+.INTERMEDIATE: intermediate-build-step
+intermediate-build-step: src/hyperform.js src/*.js src/*/*.js
 	@echo "* build $@"
 	@mkdir -p dist
-	@$(JSPM) build "$<" "$@" $(JSPM_ARGS) --format cjs
-	@sed -i '1s#^#$(BANNER)\n#' "$@"
-
-dist/hyperform.js: src/hyperform.js src/*.js src/*/*.js
-	@echo "* build $@"
-	@mkdir -p dist
-	@$(JSPM) build "$<" "$@" $(JSPM_ARGS)
-	@sed -i '1s#^#$(BANNER)\n#' "$@"
+	@$(ROLLUP) $(ROLLUP_ARGS)
 
 test: test-syntax test-unit test-functional
 .PHONY: test

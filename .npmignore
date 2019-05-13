@@ -3,9 +3,6 @@ bower.json
 bower_components
 examples
 .gitignore
-jspm.browser.js
-jspm.config.js
-jspm_packages
 Makefile
 node_modules
 .travis.yml
