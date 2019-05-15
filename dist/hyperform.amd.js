@@ -301,15 +301,6 @@ define(function () { 'use strict';
     showWarning: DefaultRenderer.showWarning,
     setMessage: DefaultRenderer.setMessage,
     set: function set(renderer, action) {
-      if (renderer.indexOf('_') > -1) {
-        /* global console */
-        // TODO delete before next non-patch version
-        console.log('Renderer.set: please use camelCase names. ' + renderer + ' will be removed in the next non-patch release.');
-        renderer = renderer.replace(/_([a-z])/g, function (g) {
-          return g[1].toUpperCase();
-        });
-      }
-
       if (!action) {
         action = DefaultRenderer[renderer];
       }
@@ -2827,36 +2818,22 @@ define(function () { 'use strict';
 
   var version = '0.10.2';
 
-  /* deprecate the old snake_case names
-   * TODO: delme before next non-patch release
-   */
-
-  function w(name) {
-    var deprecated_message = 'Please use camelCase method names! The name "%s" is deprecated and will be removed in the next non-patch release.';
-    /* global console */
-
-    console.log(sprintf(deprecated_message, name));
-  }
   /**
    * public hyperform interface:
    */
-
 
   function hyperform(form) {
     var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
         classes = _ref.classes,
         _ref$debug = _ref.debug,
         debug = _ref$debug === void 0 ? false : _ref$debug,
-        extend_fieldset = _ref.extend_fieldset,
         extendFieldset = _ref.extendFieldset,
-        novalidate_on_elements = _ref.novalidate_on_elements,
         novalidateOnElements = _ref.novalidateOnElements,
-        prevent_implicit_submit = _ref.prevent_implicit_submit,
-        preventImplicitSubmit = _ref.preventImplicitSubmit,
+        _ref$preventImplicitS = _ref.preventImplicitSubmit,
+        preventImplicitSubmit = _ref$preventImplicitS === void 0 ? false : _ref$preventImplicitS,
         revalidate = _ref.revalidate,
         _ref$strict = _ref.strict,
         strict = _ref$strict === void 0 ? false : _ref$strict,
-        valid_event = _ref.valid_event,
         validEvent = _ref.validEvent,
         _ref$validateNameless = _ref.validateNameless,
         validateNameless = _ref$validateNameless === void 0 ? false : _ref$validateNameless;
@@ -2867,30 +2844,15 @@ define(function () { 'use strict';
 
 
     if (extendFieldset === undefined) {
-      if (extend_fieldset === undefined) {
-        extendFieldset = !strict;
-      } else {
-        w('extend_fieldset');
-        extendFieldset = extend_fieldset;
-      }
+      extendFieldset = !strict;
     }
 
     if (novalidateOnElements === undefined) {
-      if (novalidate_on_elements === undefined) {
-        novalidateOnElements = !strict;
-      } else {
-        w('novalidate_on_elements');
-        novalidateOnElements = novalidate_on_elements;
-      }
+      novalidateOnElements = !strict;
     }
 
     if (preventImplicitSubmit === undefined) {
-      if (prevent_implicit_submit === undefined) {
-        preventImplicitSubmit = false;
-      } else {
-        w('prevent_implicit_submit');
-        preventImplicitSubmit = prevent_implicit_submit;
-      }
+      preventImplicitSubmit = false;
     }
 
     if (revalidate === undefined) {
@@ -2899,12 +2861,7 @@ define(function () { 'use strict';
     }
 
     if (validEvent === undefined) {
-      if (valid_event === undefined) {
-        validEvent = !strict;
-      } else {
-        w('valid_event');
-        validEvent = valid_event;
-      }
+      validEvent = !strict;
     }
 
     var settings = {
@@ -2971,49 +2928,6 @@ define(function () { 'use strict';
   };
 
   hyperform.removeHook = function (hook, action) {
-    remove_hook(hook, action);
-    return hyperform;
-  }; // TODO: Remove in next non-patch version
-
-
-  hyperform.set_language = function (lang) {
-    w('set_language');
-    set_language(lang);
-    return hyperform;
-  };
-
-  hyperform.add_translation = function (lang, catalog) {
-    w('add_translation');
-    add_translation(lang, catalog);
-    return hyperform;
-  };
-
-  hyperform.set_renderer = function (renderer, action) {
-    w('set_renderer');
-    Renderer.set(renderer, action);
-    return hyperform;
-  };
-
-  hyperform.add_validator = function (element, validator) {
-    w('add_validator');
-    custom_validator_registry.set(element, validator);
-    return hyperform;
-  };
-
-  hyperform.set_message = function (element, validator, message) {
-    w('set_message');
-    custom_messages.set(element, validator, message);
-    return hyperform;
-  };
-
-  hyperform.add_hook = function (hook, action, position) {
-    w('add_hook');
-    add_hook(hook, action, position);
-    return hyperform;
-  };
-
-  hyperform.remove_hook = function (hook, action) {
-    w('remove_hook');
     remove_hook(hook, action);
     return hyperform;
   };

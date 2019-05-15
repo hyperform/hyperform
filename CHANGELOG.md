@@ -3,6 +3,7 @@
 ## UNRELEASED
 
 * switch build tool to rollup
+* remove deprecated underscore names
 
 ## v0.10.2
 

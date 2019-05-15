@@ -29,9 +29,11 @@ dist/hyperform.min.js: dist/%.min.js : dist/%.js
 # see
 # https://stackoverflow.com/a/10609434/113195
 # for this trick to invoke rollup just once for all three files
-dist/hyperform.amd.js \
-dist/hyperform.cjs.js \
 dist/hyperform.js: intermediate-build-step
+	@sed -i '1s#^#$(BANNER)\n#' "$@"
+dist/hyperform.amd.js: intermediate-build-step
+	@sed -i '1s#^#$(BANNER)\n#' "$@"
+dist/hyperform.cjs.js: intermediate-build-step
 	@sed -i '1s#^#$(BANNER)\n#' "$@"
 
 .INTERMEDIATE: intermediate-build-step

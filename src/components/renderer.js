@@ -97,12 +97,6 @@ const Renderer = {
   setMessage: DefaultRenderer.setMessage,
 
   set: function(renderer, action) {
-    if (renderer.indexOf('_') > -1) {
-      /* global console */
-      // TODO delete before next non-patch version
-      console.log('Renderer.set: please use camelCase names. '+renderer+' will be removed in the next non-patch release.');
-      renderer = renderer.replace(/_([a-z])/g, g => g[1].toUpperCase());
-    }
     if (! action) {
       action = DefaultRenderer[renderer];
     }
