@@ -297,6 +297,7 @@ describe('Issue 78', function() {
 
 });
 
+
 describe('Issue 85', function() {
 
   it('should fail validation, when the placeholder option is selected', function() {
@@ -319,6 +320,37 @@ describe('Issue 85', function() {
     if (! select.validity.valueMissing) {
       throw Error('the placeholder option is not permissible.');
     }
+
+    destroy_hform(hform);
+  });
+
+});
+
+
+describe('Issue 87', function() {
+
+  it('should not validate elements of a form@novalidate', function() {
+    var hform = regressions_make_hform();
+    var form = hform.form;
+    form.setAttribute('novalidate', '');
+    var input = form.getElementsByTagName('input')[0];
+    input.setAttribute('minlength', '3');
+    input.value = 'ab';
+
+    if (input.validity.valid) {
+      throw Error('elements inside a form@novalidate should be validated, if explicitly requested');
+    }
+
+    input.addEventListener('invalid', function(event) {
+      throw Error('elements inside a form@novalidate should not be validated on submit');
+    });
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+    });
+    form.elements[0].click();
+    form.elements[0].focus();
+    form.elements[0].blur();
+    form.elements[1].click();
 
     destroy_hform(hform);
   });

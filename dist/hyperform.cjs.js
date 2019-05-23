@@ -1,4 +1,3 @@
-/*! hyperform.js.org */
 'use strict';
 
 /* the following code is borrowed from the WebComponents project, licensed
@@ -2658,6 +2657,13 @@ Wrapper.prototype = {
    */
   revalidate: function revalidate(event) {
     if (event.target instanceof window.HTMLButtonElement || event.target instanceof window.HTMLTextAreaElement || event.target instanceof window.HTMLSelectElement || event.target instanceof window.HTMLInputElement) {
+      if (event.target.form && event.target.form.hasAttribute('novalidate')) {
+        /* do nothing, if the form forbids it. This still allows manual
+         * validation via, e.g., input.reportValidity(), but mirrors browser
+         * behavior, that are also completely silent in this case. */
+        return;
+      }
+
       if (this.settings.revalidate === 'hybrid') {
         /* "hybrid" somewhat simulates what browsers do. See for example
          * Firefox's :-moz-ui-invalid pseudo-class:
