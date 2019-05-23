@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+## v0.11.0
+
 * switch build tool to rollup
 * remove deprecated underscore names
 * fix revalidation for forms with novalidate attribute
