@@ -31,7 +31,7 @@ export default function(element) {
   var is_valid = true;
 
   switch (type) {
-    case 'url':
+    case 'url': {
         if (! url_canary) {
           url_canary = document.createElement('a');
         }
@@ -40,6 +40,7 @@ export default function(element) {
         is_valid = (url_canary.href === value ||
                     url_canary.href === value+'/');
         break;
+    }
     case 'email':
         if (element.hasAttribute('multiple')) {
           is_valid = comma_split(element.value)

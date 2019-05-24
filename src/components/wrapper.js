@@ -4,7 +4,6 @@
 import { catch_submit, uncatch_submit } from '../tools/catch_submit';
 import ValidityState from '../polyfills/validityState';
 import reportValidity from '../polyfills/reportValidity';
-import uninstall from '../tools/property_uninstaller';
 import polyfill from '../tools/polyfill';
 import polyunfill from '../tools/polyunfill';
 

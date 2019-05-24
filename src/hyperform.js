@@ -17,7 +17,6 @@ import { set_language, add_translation } from './components/localization';
 import CustomValidatorRegistry from './components/registry';
 import Renderer from './components/renderer';
 import Wrapper from './components/wrapper';
-import sprintf from './tools/sprintf';
 import version from './version';
 
 

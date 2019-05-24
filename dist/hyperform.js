@@ -655,8 +655,10 @@ var hyperform = (function () {
         return sprintf('%s-%s', date.getUTCFullYear(), pad(date.getUTCMonth() + 1));
 
       case 'week':
-        var params = get_week_of_year(date);
-        return sprintf.call(null, '%s-W%s', params[0], pad(params[1]));
+        {
+          var params = get_week_of_year(date);
+          return sprintf.call(null, '%s-W%s', params[0], pad(params[1]));
+        }
 
       case 'time':
         return sprintf('%s:%s:%s.%s', pad(date.getUTCHours()), pad(date.getUTCMinutes()), pad(date.getUTCSeconds()), pad(date.getUTCMilliseconds(), 3)).replace(/(:00)?\.000$/, '');
@@ -1374,14 +1376,16 @@ var hyperform = (function () {
 
     switch (type) {
       case 'url':
-        if (!url_canary) {
-          url_canary = document.createElement('a');
-        }
+        {
+          if (!url_canary) {
+            url_canary = document.createElement('a');
+          }
 
-        var value = trim(element.value);
-        url_canary.href = value;
-        is_valid = url_canary.href === value || url_canary.href === value + '/';
-        break;
+          var value = trim(element.value);
+          url_canary.href = value;
+          is_valid = url_canary.href === value || url_canary.href === value + '/';
+          break;
+        }
 
       case 'email':
         if (element.hasAttribute('multiple')) {
@@ -2147,33 +2151,6 @@ var hyperform = (function () {
   }
 
   /**
-   * remove `property` from element and restore _original_property, if present
-   */
-
-  function uninstall_property (element, property) {
-    try {
-      delete element[property];
-    } catch (e) {
-      /* Safari <= 9 and PhantomJS will end up here :-( Nothing to do except
-       * warning */
-      var wrapper = get_wrapper(element);
-
-      if (wrapper && wrapper.settings.debug) {
-        /* global console */
-        console.log('[hyperform] cannot uninstall custom property ' + property);
-      }
-
-      return false;
-    }
-
-    var original_descriptor = Object.getOwnPropertyDescriptor(element, '_original_' + property);
-
-    if (original_descriptor) {
-      Object.defineProperty(element, property, original_descriptor);
-    }
-  }
-
-  /**
    * add `property` to an element
    *
    * ATTENTION! This function will search for an equally named property on the
@@ -2415,6 +2392,33 @@ var hyperform = (function () {
 
   function willValidate(element) {
     return is_validation_candidate(element);
+  }
+
+  /**
+   * remove `property` from element and restore _original_property, if present
+   */
+
+  function uninstall_property (element, property) {
+    try {
+      delete element[property];
+    } catch (e) {
+      /* Safari <= 9 and PhantomJS will end up here :-( Nothing to do except
+       * warning */
+      var wrapper = get_wrapper(element);
+
+      if (wrapper && wrapper.settings.debug) {
+        /* global console */
+        console.log('[hyperform] cannot uninstall custom property ' + property);
+      }
+
+      return false;
+    }
+
+    var original_descriptor = Object.getOwnPropertyDescriptor(element, '_original_' + property);
+
+    if (original_descriptor) {
+      Object.defineProperty(element, property, original_descriptor);
+    }
   }
 
   var gA = function gA(prop) {

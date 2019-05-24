@@ -3,7 +3,7 @@
 
 import install_property from '../tools/property_installer';
 import uninstall_property from '../tools/property_uninstaller';
-import { call_hook, do_filter } from '../components/hooks';
+import { do_filter } from '../components/hooks';
 
 
 const gA = prop => function() {

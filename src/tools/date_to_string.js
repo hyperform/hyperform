@@ -48,9 +48,10 @@ export default function date_to_string(date, element_type) {
       return sprintf('%s-%s', date.getUTCFullYear(),
                      pad(date.getUTCMonth() + 1));
 
-    case 'week':
+    case 'week': {
       const params = get_week_of_year(date);
       return sprintf.call(null, '%s-W%s', params[0], pad(params[1]));
+    }
 
     case 'time':
       return sprintf('%s:%s:%s.%s',
