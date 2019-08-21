@@ -327,6 +327,58 @@ describe('Issue 85', function() {
 });
 
 
+describe('Issue 86', function() {
+
+  it('should work on arbitrary elements as root', function(done) {
+    var div = document.createElement('div');
+
+    function mkform() {
+      var form = document.createElement('form');
+      var input = document.createElement('input');
+      input.setAttribute('name', 'foo');
+      input.setAttribute('required', 'required');
+      form.appendChild(input);
+      div.appendChild(form);
+      return form;
+    }
+
+    function check(form, label) {
+      var input = form.getElementsByTagName('input')[0];
+      input.className.replace('hf-validated', '');
+      input.reportValidity();
+      if (input.className.search('hf-validated') === -1) {
+        throw Error(label+' form not validated.');
+      }
+    }
+
+    var first_form = mkform();
+    document.body.appendChild(div);
+
+    var hform = hyperform(div);
+
+    check(first_form, 'existing');
+
+    var second_form = mkform();
+    /* mutation observers work asynchronously. We need to delay the test
+     * therefore. */
+    window.requestAnimationFrame(function() {
+      check(second_form, 'added');
+      div.removeChild(second_form);
+      window.requestAnimationFrame(function() {
+        div.appendChild(second_form);
+        window.requestAnimationFrame(function() {
+          check(second_form, 're-attached');
+          hform.destroy();
+          document.body.removeChild(div);
+          done();
+        });
+      });
+    });
+  });
+
+});
+
+
 describe('Issue 87', function() {
 
   it('should not validate elements of a form@novalidate', function() {

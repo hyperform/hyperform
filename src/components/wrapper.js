@@ -28,6 +28,7 @@ export default function Wrapper(form, settings) {
   this.form = form;
   this.settings = settings;
   this.revalidator = this.revalidate.bind(this);
+  this.observer = null;
 
   instances.set(form, this);
 
@@ -49,6 +50,32 @@ export default function Wrapper(form, settings) {
     if (form instanceof window.HTMLFormElement) {
       polyfill(form);
     }
+  } else if (form instanceof window.HTMLElement) {
+    for (let subform of Array.prototype.slice.call(this.form.getElementsByTagName('form'))) {
+      this.install(subform.elements);
+      polyfill(subform);
+    }
+    this.observer = new window.MutationObserver(mutationsList => {
+      for (let mutation of mutationsList) {
+        if (mutation.type === 'childList') {
+          for (let subform of Array.prototype.slice.call(mutation.addedNodes)) {
+            if (subform instanceof window.HTMLFormElement) {
+              this.install(subform.elements);
+              polyfill(subform);
+            }
+          }
+          for (let subform of Array.prototype.slice.call(mutation.removedNodes)) {
+            if (subform instanceof window.HTMLFormElement) {
+              this.uninstall(subform.elements);
+              polyunfill(subform);
+            }
+          }
+        }
+      }
+    });
+    this.observer.observe(form, {subtree: true, childList: true});
+  } else {
+    throw new Error('Hyperform must be used with a node or window.');
   }
 
   if (settings.revalidate === 'oninput' || settings.revalidate === 'hybrid') {
@@ -88,6 +115,12 @@ Wrapper.prototype = {
       this.uninstall(this.form.elements);
       if (this.form instanceof window.HTMLFormElement) {
         polyunfill(this.form);
+      }
+    } else if (this.form instanceof window.HTMLElement) {
+      this.observer.disconnect();
+      for (let subform of Array.prototype.slice.call(this.form.getElementsByTagName('form'))) {
+        this.uninstall(subform.elements);
+        polyunfill(subform);
       }
     }
   },
