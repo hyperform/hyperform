@@ -1,3 +1,4 @@
+/*! hyperform.js.org */
 define(function () { 'use strict';
 
   /* the following code is borrowed from the WebComponents project, licensed
