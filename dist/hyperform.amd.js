@@ -1,3 +1,4 @@
+/*! hyperform.js.org */
 define(function () { 'use strict';
 
   var instances = new WeakMap();
@@ -382,6 +383,8 @@ define(function () { 'use strict';
   }
 
   function _typeof(obj) {
+    "@babel/helpers - typeof";
+
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
       _typeof = function (obj) {
         return typeof obj;
@@ -1036,15 +1039,6 @@ define(function () { 'use strict';
 
       case 'datetime-local':
         result = /^([0-9]{4,})-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(element.value);
-        break;
-
-      case 'tel':
-        /* spec says No! Phone numbers can have all kinds of formats, so this
-         * is expected to be a free-text field. */
-        // TODO we could allow a setting 'phone_regex' to be evaluated here.
-        break;
-
-      case 'email':
         break;
     }
 

@@ -50,7 +50,7 @@ test('valueAsDate setter with wrong type', t => {
   t.throws(() => valueAsDate(get({
     type: 'date',
     value: '',
-  }), '2015-01-01'), window.DOMException);
+  }), '2015-01-01'), { instanceOf: window.DOMException });
 });
 
 test('valueAsDate getter for non-applicable type', t => {
@@ -64,5 +64,5 @@ test('valueAsDate setter for non-applicable type', t => {
   t.throws(() => valueAsDate(get({
     type: 'text',
     value: '',
-  }), new Date(0)), window.DOMException);
+  }), new Date(0)), { instanceOf: window.DOMException });
 });

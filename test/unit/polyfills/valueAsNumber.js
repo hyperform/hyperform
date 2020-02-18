@@ -50,7 +50,7 @@ test('valueAsNumber setter with wrong type', t => {
   t.throws(() => valueAsNumber(get({
     type: 'number',
     value: '',
-  }), '1'), window.DOMException);
+  }), '1'), { instanceOf: window.DOMException });
 });
 
 test('valueAsNumber getter for non-applicable type', t => {
@@ -64,5 +64,5 @@ test('valueAsNumber setter for non-applicable type', t => {
   t.throws(() => valueAsNumber(get({
     type: 'text',
     value: '',
-  }), 1), window.DOMException);
+  }), 1), { instanceOf: window.DOMException });
 });
