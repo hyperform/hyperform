@@ -1,6 +1,4 @@
 // hyperform.js.org
-'use strict';
-
 var instances = new WeakMap();
 /**
  * wrap <form>s, window or document, that get treated with the global
@@ -3104,4 +3102,4 @@ if (document.currentScript && document.currentScript.hasAttribute('data-hf-autol
   hyperform(window);
 }
 
-module.exports = hyperform;
+export default hyperform;

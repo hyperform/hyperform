@@ -1,40 +1,29 @@
 ROLLUP := ./node_modules/.bin/rollup
 ROLLUP_ARGS := -c
 
-UGLIFYJS := node_modules/.bin/uglifyjs
-UGLIFYJS_ARGS := --mangle --compress
-
 JSHINT := node_modules/.bin/jshint
 JSHINT_ARGS :=
-
-BANNER := /*! hyperform.js.org */
 
 all: js
 .PHONY: all
 
 js: dist/hyperform.js dist/hyperform.min.js \
     dist/hyperform.amd.js dist/hyperform.amd.min.js \
-    dist/hyperform.cjs.js dist/hyperform.cjs.min.js
+    dist/hyperform.cjs.js dist/hyperform.cjs.min.js \
+    dist/hyperform.esm.js dist/hyperform.esm.min.js
 .PHONY: js
-
-dist/hyperform.amd.min.js \
-dist/hyperform.cjs.min.js \
-dist/hyperform.min.js: dist/%.min.js : dist/%.js
-	@echo "* build $@"
-	@( \
-		echo '$(BANNER)'; \
-		<"$<" $(UGLIFYJS) $(UGLIFYJS_ARGS) ; \
-	) >"$@"
 
 # see
 # https://stackoverflow.com/a/10609434/113195
-# for this trick to invoke rollup just once for all three files
-dist/hyperform.js: intermediate-build-step
-	@sed -i '1s#^#$(BANNER)\n#' "$@"
-dist/hyperform.amd.js: intermediate-build-step
-	@sed -i '1s#^#$(BANNER)\n#' "$@"
-dist/hyperform.cjs.js: intermediate-build-step
-	@sed -i '1s#^#$(BANNER)\n#' "$@"
+# for this trick to invoke rollup just once for all files
+dist/hyperform.amd.min.js \
+dist/hyperform.cjs.min.js \
+dist/hyperform.esm.min.js \
+dist/hyperform.min.js \
+dist/hyperform.js \
+dist/hyperform.amd.js \
+dist/hyperform.cjs.js \
+dist/hyperform.esm.js: intermediate-build-step
 
 .INTERMEDIATE: intermediate-build-step
 intermediate-build-step: src/hyperform.js src/*.js src/*/*.js

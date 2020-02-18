@@ -1,4 +1,4 @@
-/*! hyperform.js.org */
+// hyperform.js.org
 var hyperform = (function () {
   'use strict';
 

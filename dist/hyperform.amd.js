@@ -1,4 +1,4 @@
-/*! hyperform.js.org */
+// hyperform.js.org
 define(function () { 'use strict';
 
   var instances = new WeakMap();
