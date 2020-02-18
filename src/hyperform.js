@@ -38,7 +38,6 @@ function hyperform(form, {
   if (! classes) {
     classes = {};
   }
-  // TODO: clean up before next non-patch release
   if (extendFieldset === undefined) {
     extendFieldset = ! strict;
   }
