@@ -2,316 +2,84 @@
 var hyperform = (function () {
   'use strict';
 
-  /* the following code is borrowed from the WebComponents project, licensed
-   * under the BSD license. Source:
-   * <https://github.com/webcomponents/webcomponentsjs/blob/5283db1459fa2323e5bfc8b9b5cc1753ed85e3d0/src/WebComponents/dom.js#L53-L78>
-   */
-  // defaultPrevented is broken in IE.
-  // https://connect.microsoft.com/IE/feedback/details/790389/event-defaultprevented-returns-false-after-preventdefault-was-called
-
-  var workingDefaultPrevented = function () {
-    var e = document.createEvent('Event');
-    e.initEvent('foo', true, true);
-    e.preventDefault();
-    return e.defaultPrevented;
-  }();
-
-  if (!workingDefaultPrevented) {
-    var origPreventDefault = window.Event.prototype.preventDefault;
-
-    window.Event.prototype.preventDefault = function () {
-      if (!this.cancelable) {
-        return;
-      }
-
-      origPreventDefault.call(this);
-      Object.defineProperty(this, 'defaultPrevented', {
-        get: function get() {
-          return true;
-        },
-        configurable: true
-      });
-    };
-  }
-  /* end of borrowed code */
-
-
-  function create_event(name) {
-    var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-        _ref$bubbles = _ref.bubbles,
-        bubbles = _ref$bubbles === void 0 ? true : _ref$bubbles,
-        _ref$cancelable = _ref.cancelable,
-        cancelable = _ref$cancelable === void 0 ? false : _ref$cancelable;
-
-    var event = document.createEvent('Event');
-    event.initEvent(name, bubbles, cancelable);
-    return event;
-  }
-  function trigger_event (element, event) {
-    var _ref2 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
-        _ref2$bubbles = _ref2.bubbles,
-        bubbles = _ref2$bubbles === void 0 ? true : _ref2$bubbles,
-        _ref2$cancelable = _ref2.cancelable,
-        cancelable = _ref2$cancelable === void 0 ? false : _ref2$cancelable;
-
-    var payload = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-
-    if (!(event instanceof window.Event)) {
-      event = create_event(event, {
-        bubbles: bubbles,
-        cancelable: cancelable
-      });
-    }
-
-    for (var key in payload) {
-      if (payload.hasOwnProperty(key)) {
-        event[key] = payload[key];
-      }
-    }
-
-    element.dispatchEvent(event);
-    return event;
-  }
-
-  /* shim layer for the Element.matches method */
-
-  var ep = window.Element.prototype;
-  var native_matches = ep.matches || ep.matchesSelector || ep.msMatchesSelector || ep.webkitMatchesSelector;
-  function matches (element, selector) {
-    return native_matches.call(element, selector);
-  }
-
-  function _typeof(obj) {
-    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof = function (obj) {
-        return typeof obj;
-      };
-    } else {
-      _typeof = function (obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-      };
-    }
-
-    return _typeof(obj);
-  }
-
-  function mark (obj) {
-    if (['object', 'function'].indexOf(_typeof(obj)) > -1) {
-      delete obj.__hyperform;
-      Object.defineProperty(obj, '__hyperform', {
-        configurable: true,
-        enumerable: false,
-        value: true
-      });
-    }
-
-    return obj;
-  }
-
+  var instances = new WeakMap();
   /**
-   * the internal storage for messages
+   * wrap <form>s, window or document, that get treated with the global
+   * hyperform()
    */
 
-  var store = new WeakMap();
-  /* jshint -W053 */
+  function Wrapper(form, settings) {
+    /* do not allow more than one instance per form. Otherwise we'd end
+     * up with double event handlers, polyfills re-applied, ... */
+    var existing = instances.get(form);
 
-  /* allow new String() */
+    if (existing) {
+      existing.settings = settings;
+      return existing;
+    }
 
-  /**
-   * handle validation messages
-   *
-   * Falls back to browser-native errors, if any are available. The messages
-   * are String objects so that we can mark() them.
-   */
+    this.form = form;
+    this.settings = settings;
+    this.observer = null;
+    instances.set(form, this);
+  }
+  Wrapper.prototype = {
+    destroy: function destroy() {
+      instances["delete"](this.form);
 
-  var message_store = {
-    set: function set(element, message) {
-      var is_custom = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-
-      if (element instanceof window.HTMLFieldSetElement) {
-        var wrapped_form = get_wrapper(element);
-
-        if (wrapped_form && !wrapped_form.settings.extendFieldset) {
-          /* make this a no-op for <fieldset> in strict mode */
-          return message_store;
-        }
+      if (this._destruct) {
+        this._destruct();
       }
-
-      if (typeof message === 'string') {
-        message = new String(message);
-      }
-
-      if (is_custom) {
-        message.is_custom = true;
-      }
-
-      mark(message);
-      store.set(element, message);
-      /* allow the :invalid selector to match */
-
-      if ('_original_setCustomValidity' in element) {
-        element._original_setCustomValidity(message.toString());
-      }
-
-      return message_store;
-    },
-    get: function get(element) {
-      var message = store.get(element);
-
-      if (message === undefined && '_original_validationMessage' in element) {
-        /* get the browser's validation message, if we have none. Maybe it
-         * knows more than we. */
-        message = new String(element._original_validationMessage);
-      }
-
-      return message ? message : new String('');
-    },
-    "delete": function _delete(element) {
-      var is_custom = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
-      if ('_original_setCustomValidity' in element) {
-        element._original_setCustomValidity('');
-      }
-
-      var message = store.get(element);
-
-      if (message && is_custom && !message.is_custom) {
-        /* do not delete "native" messages, if asked */
-        return false;
-      }
-
-      return store["delete"](element);
     }
   };
-
   /**
-   * counter that will be incremented with every call
+   * try to get the appropriate wrapper for a specific element by looking up
+   * its parent chain
    *
-   * Will enforce uniqueness, as long as no more than 1 hyperform scripts
-   * are loaded. (In that case we still have the "random" part below.)
+   * @return Wrapper | undefined
    */
 
-  var uid = 0;
-  /**
-   * generate a random ID
-   *
-   * @see https://gist.github.com/gordonbrander/2230317
-   */
+  function get_wrapper(element) {
+    var wrapped;
 
-  function generate_id () {
-    var prefix = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'hf_';
-    return prefix + uid++ + Math.random().toString(36).substr(2);
-  }
-
-  /**
-   * get all radio buttons (including `element`) that belong to element's
-   * radio group
-   */
-
-  function get_radiogroup(element) {
     if (element.form) {
-      return Array.prototype.filter.call(element.form.elements, function (radio) {
-        return radio.type === 'radio' && radio.name === element.name;
-      });
+      /* try a shortcut with the element's <form> */
+      wrapped = instances.get(element.form);
+    }
+    /* walk up the parent nodes until document (including) */
+
+
+    while (!wrapped && element) {
+      wrapped = instances.get(element);
+      element = element.parentNode;
     }
 
-    return [element];
+    if (!wrapped) {
+      /* try the global instance, if exists. This may also be undefined. */
+      wrapped = instances.get(window);
+    }
+
+    return wrapped;
   }
 
-  var warningsCache = new WeakMap();
-  var DefaultRenderer = {
-    /**
-     * called when a warning should become visible
-     */
-    attachWarning: function attachWarning(warning, element) {
-      /* should also work, if element is last,
-       * http://stackoverflow.com/a/4793630/113195 */
-      element.parentNode.insertBefore(warning, element.nextSibling);
-    },
+  /**
+   * filter a form's elements for the ones needing validation prior to
+   * a submit
+   *
+   * Returns an array of form elements.
+   */
 
-    /**
-     * called when a warning should vanish
-     */
-    detachWarning: function detachWarning(warning, element) {
-      /* be conservative here, since an overwritten attachWarning() might not
-       * actually have attached the warning. */
-      if (warning.parentNode) {
-        warning.parentNode.removeChild(warning);
-      }
-    },
-
-    /**
-     * called when feedback to an element's state should be handled
-     *
-     * i.e., showing and hiding warnings
-     */
-    showWarning: function showWarning(element) {
-      var whole_form_validated = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
-      /* don't render error messages on subsequent radio buttons of the
-       * same group. This assumes, that element.validity.valueMissing is the only
-       * possible validation failure for radio buttons. */
-      if (whole_form_validated && element.type === 'radio' && get_radiogroup(element)[0] !== element) {
-        return;
+  function get_validated_elements(form) {
+    var wrapped_form = get_wrapper(form);
+    return Array.prototype.filter.call(form.elements, function (element) {
+      /* it must have a name (or validating nameless inputs is allowed) */
+      if (element.getAttribute('name') || wrapped_form && wrapped_form.settings.validateNameless) {
+        return true;
       }
 
-      var msg = message_store.get(element).toString();
-      var warning = warningsCache.get(element);
-
-      if (msg) {
-        if (!warning) {
-          var wrapper = get_wrapper(element);
-          warning = document.createElement('div');
-          warning.className = wrapper && wrapper.settings.classes.warning || 'hf-warning';
-          warning.id = generate_id();
-          warning.setAttribute('aria-live', 'polite');
-          warningsCache.set(element, warning);
-        }
-
-        element.setAttribute('aria-errormessage', warning.id);
-
-        if (!element.hasAttribute('aria-describedby')) {
-          element.setAttribute('aria-describedby', warning.id);
-        }
-
-        Renderer.setMessage(warning, msg, element);
-        Renderer.attachWarning(warning, element);
-      } else if (warning && warning.parentNode) {
-        if (element.getAttribute('aria-describedby') === warning.id) {
-          element.removeAttribute('aria-describedby');
-        }
-
-        element.removeAttribute('aria-errormessage');
-        Renderer.detachWarning(warning, element);
-      }
-    },
-
-    /**
-     * set the warning's content
-     *
-     * Overwrite this method, if you want, e.g., to allow HTML in warnings
-     * or preprocess the content.
-     */
-    setMessage: function setMessage(warning, message, element) {
-      warning.textContent = message;
-    }
-  };
-  var Renderer = {
-    attachWarning: DefaultRenderer.attachWarning,
-    detachWarning: DefaultRenderer.detachWarning,
-    showWarning: DefaultRenderer.showWarning,
-    setMessage: DefaultRenderer.setMessage,
-    set: function set(renderer, action) {
-      if (!action) {
-        action = DefaultRenderer[renderer];
-      }
-
-      Renderer[renderer] = action;
-    },
-    getWarning: function getWarning(element) {
-      return warningsCache.get(element);
-    }
-  };
+      return false;
+    });
+  }
 
   var registry = Object.create(null);
   /**
@@ -393,6 +161,96 @@ var hyperform = (function () {
     }
 
     registry[hook].splice(position, 0, action);
+  }
+
+  /**
+   * return either the data of a hook call or the result of action, if the
+   * former is undefined
+   *
+   * @return function a function wrapper around action
+   */
+
+  function return_hook_or (hook, action) {
+    return function () {
+      var data = call_hook(hook, Array.prototype.slice.call(arguments));
+
+      if (data !== undefined) {
+        return data;
+      }
+
+      return action.apply(this, arguments);
+    };
+  }
+
+  /* the following code is borrowed from the WebComponents project, licensed
+   * under the BSD license. Source:
+   * <https://github.com/webcomponents/webcomponentsjs/blob/5283db1459fa2323e5bfc8b9b5cc1753ed85e3d0/src/WebComponents/dom.js#L53-L78>
+   */
+  // defaultPrevented is broken in IE.
+  // https://connect.microsoft.com/IE/feedback/details/790389/event-defaultprevented-returns-false-after-preventdefault-was-called
+
+  var workingDefaultPrevented = function () {
+    var e = document.createEvent('Event');
+    e.initEvent('foo', true, true);
+    e.preventDefault();
+    return e.defaultPrevented;
+  }();
+
+  if (!workingDefaultPrevented) {
+    var origPreventDefault = window.Event.prototype.preventDefault;
+
+    window.Event.prototype.preventDefault = function () {
+      if (!this.cancelable) {
+        return;
+      }
+
+      origPreventDefault.call(this);
+      Object.defineProperty(this, 'defaultPrevented', {
+        get: function get() {
+          return true;
+        },
+        configurable: true
+      });
+    };
+  }
+  /* end of borrowed code */
+
+
+  function create_event(name) {
+    var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+        _ref$bubbles = _ref.bubbles,
+        bubbles = _ref$bubbles === void 0 ? true : _ref$bubbles,
+        _ref$cancelable = _ref.cancelable,
+        cancelable = _ref$cancelable === void 0 ? false : _ref$cancelable;
+
+    var event = document.createEvent('Event');
+    event.initEvent(name, bubbles, cancelable);
+    return event;
+  }
+  function trigger_event (element, event) {
+    var _ref2 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
+        _ref2$bubbles = _ref2.bubbles,
+        bubbles = _ref2$bubbles === void 0 ? true : _ref2$bubbles,
+        _ref2$cancelable = _ref2.cancelable,
+        cancelable = _ref2$cancelable === void 0 ? false : _ref2$cancelable;
+
+    var payload = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+    if (!(event instanceof window.Event)) {
+      event = create_event(event, {
+        bubbles: bubbles,
+        cancelable: cancelable
+      });
+    }
+
+    for (var key in payload) {
+      if (payload.hasOwnProperty(key)) {
+        event[key] = payload[key];
+      }
+    }
+
+    element.dispatchEvent(event);
+    return event;
   }
 
   /* and datetime-local? Spec says “Nah!” */
@@ -523,6 +381,33 @@ var hyperform = (function () {
 
 
     return false;
+  }
+
+  function _typeof(obj) {
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+      _typeof = function (obj) {
+        return typeof obj;
+      };
+    } else {
+      _typeof = function (obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      };
+    }
+
+    return _typeof(obj);
+  }
+
+  function mark (obj) {
+    if (['object', 'function'].indexOf(_typeof(obj)) > -1) {
+      delete obj.__hyperform;
+      Object.defineProperty(obj, '__hyperform', {
+        configurable: true,
+        enumerable: false,
+        value: true
+      });
+    }
+
+    return obj;
   }
 
   function format_date (date) {
@@ -951,22 +836,22 @@ var hyperform = (function () {
    * internal storage for custom error messages
    */
 
-  var store$1 = new WeakMap();
+  var store = new WeakMap();
   /**
    * register custom error messages per element
    */
 
   var custom_messages = {
     set: function set(element, validator, message) {
-      var messages = store$1.get(element) || {};
+      var messages = store.get(element) || {};
       messages[validator] = message;
-      store$1.set(element, messages);
+      store.set(element, messages);
       return custom_messages;
     },
     get: function get(element, validator) {
       var _default = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
 
-      var messages = store$1.get(element);
+      var messages = store.get(element);
 
       if (messages === undefined || !(validator in messages)) {
         var data_id = 'data-' + validator.replace(/[A-Z]/g, '-$&').toLowerCase();
@@ -989,18 +874,94 @@ var hyperform = (function () {
       var validator = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
       if (!validator) {
-        return store$1["delete"](element);
+        return store["delete"](element);
       }
 
-      var messages = store$1.get(element) || {};
+      var messages = store.get(element) || {};
 
       if (validator in messages) {
         delete messages[validator];
-        store$1.set(element, messages);
+        store.set(element, messages);
         return true;
       }
 
       return false;
+    }
+  };
+
+  /**
+   * the internal storage for messages
+   */
+
+  var store$1 = new WeakMap();
+  /* jshint -W053 */
+
+  /* allow new String() */
+
+  /**
+   * handle validation messages
+   *
+   * Falls back to browser-native errors, if any are available. The messages
+   * are String objects so that we can mark() them.
+   */
+
+  var message_store = {
+    set: function set(element, message) {
+      var is_custom = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+
+      if (element instanceof window.HTMLFieldSetElement) {
+        var wrapped_form = get_wrapper(element);
+
+        if (wrapped_form && !wrapped_form.settings.extendFieldset) {
+          /* make this a no-op for <fieldset> in strict mode */
+          return message_store;
+        }
+      }
+
+      if (typeof message === 'string') {
+        message = new String(message);
+      }
+
+      if (is_custom) {
+        message.is_custom = true;
+      }
+
+      mark(message);
+      store$1.set(element, message);
+      /* allow the :invalid selector to match */
+
+      if ('_original_setCustomValidity' in element) {
+        element._original_setCustomValidity(message.toString());
+      }
+
+      return message_store;
+    },
+    get: function get(element) {
+      var message = store$1.get(element);
+
+      if (message === undefined && '_original_validationMessage' in element) {
+        /* get the browser's validation message, if we have none. Maybe it
+         * knows more than we. */
+        message = new String(element._original_validationMessage);
+      }
+
+      return message ? message : new String('');
+    },
+    "delete": function _delete(element) {
+      var is_custom = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+      if ('_original_setCustomValidity' in element) {
+        element._original_setCustomValidity('');
+      }
+
+      var message = store$1.get(element);
+
+      if (message && is_custom && !message.is_custom) {
+        /* do not delete "native" messages, if asked */
+        return false;
+      }
+
+      return store$1["delete"](element);
     }
   };
 
@@ -1204,6 +1165,21 @@ var hyperform = (function () {
 
   function test_pattern (element) {
     return !element.value || !element.hasAttribute('pattern') || new RegExp('^(?:' + element.getAttribute('pattern') + ')$').test(element.value);
+  }
+
+  /**
+   * get all radio buttons (including `element`) that belong to element's
+   * radio group
+   */
+
+  function get_radiogroup(element) {
+    if (element.form) {
+      return Array.prototype.filter.call(element.form.elements, function (radio) {
+        return radio.type === 'radio' && radio.name === element.name;
+      });
+    }
+
+    return [element];
   }
 
   function has_submittable_option(select) {
@@ -1790,6 +1766,151 @@ var hyperform = (function () {
   mark(ValidityStatePrototype);
 
   /**
+   * check an element's validity with respect to it's form
+   */
+
+  var checkValidity = return_hook_or('checkValidity', function (element) {
+    /* if this is a <form>, check validity of all child inputs */
+    if (element instanceof window.HTMLFormElement) {
+      return get_validated_elements(element).map(checkValidity).every(function (b) {
+        return b;
+      });
+    }
+    /* default is true, also for elements that are no validation candidates */
+
+
+    var valid = ValidityState(element).valid;
+
+    if (valid) {
+      var wrapped_form = get_wrapper(element);
+
+      if (wrapped_form && wrapped_form.settings.validEvent) {
+        trigger_event(element, 'valid');
+      }
+    } else {
+      trigger_event(element, 'invalid', {
+        cancelable: true
+      });
+    }
+
+    return valid;
+  });
+
+  /**
+   * counter that will be incremented with every call
+   *
+   * Will enforce uniqueness, as long as no more than 1 hyperform scripts
+   * are loaded. (In that case we still have the "random" part below.)
+   */
+
+  var uid = 0;
+  /**
+   * generate a random ID
+   *
+   * @see https://gist.github.com/gordonbrander/2230317
+   */
+
+  function generate_id () {
+    var prefix = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'hf_';
+    return prefix + uid++ + Math.random().toString(36).substr(2);
+  }
+
+  var warningsCache = new WeakMap();
+  var DefaultRenderer = {
+    /**
+     * called when a warning should become visible
+     */
+    attachWarning: function attachWarning(warning, element) {
+      /* should also work, if element is last,
+       * http://stackoverflow.com/a/4793630/113195 */
+      element.parentNode.insertBefore(warning, element.nextSibling);
+    },
+
+    /**
+     * called when a warning should vanish
+     */
+    detachWarning: function detachWarning(warning, element) {
+      /* be conservative here, since an overwritten attachWarning() might not
+       * actually have attached the warning. */
+      if (warning.parentNode) {
+        warning.parentNode.removeChild(warning);
+      }
+    },
+
+    /**
+     * called when feedback to an element's state should be handled
+     *
+     * i.e., showing and hiding warnings
+     */
+    showWarning: function showWarning(element) {
+      var whole_form_validated = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+      /* don't render error messages on subsequent radio buttons of the
+       * same group. This assumes, that element.validity.valueMissing is the only
+       * possible validation failure for radio buttons. */
+      if (whole_form_validated && element.type === 'radio' && get_radiogroup(element)[0] !== element) {
+        return;
+      }
+
+      var msg = message_store.get(element).toString();
+      var warning = warningsCache.get(element);
+
+      if (msg) {
+        if (!warning) {
+          var wrapper = get_wrapper(element);
+          warning = document.createElement('div');
+          warning.className = wrapper && wrapper.settings.classes.warning || 'hf-warning';
+          warning.id = generate_id();
+          warning.setAttribute('aria-live', 'polite');
+          warningsCache.set(element, warning);
+        }
+
+        element.setAttribute('aria-errormessage', warning.id);
+
+        if (!element.hasAttribute('aria-describedby')) {
+          element.setAttribute('aria-describedby', warning.id);
+        }
+
+        Renderer.setMessage(warning, msg, element);
+        Renderer.attachWarning(warning, element);
+      } else if (warning && warning.parentNode) {
+        if (element.getAttribute('aria-describedby') === warning.id) {
+          element.removeAttribute('aria-describedby');
+        }
+
+        element.removeAttribute('aria-errormessage');
+        Renderer.detachWarning(warning, element);
+      }
+    },
+
+    /**
+     * set the warning's content
+     *
+     * Overwrite this method, if you want, e.g., to allow HTML in warnings
+     * or preprocess the content.
+     */
+    setMessage: function setMessage(warning, message, element) {
+      warning.textContent = message;
+    }
+  };
+  var Renderer = {
+    attachWarning: DefaultRenderer.attachWarning,
+    detachWarning: DefaultRenderer.detachWarning,
+    showWarning: DefaultRenderer.showWarning,
+    setMessage: DefaultRenderer.setMessage,
+    set: function set(renderer, action) {
+      if (!action) {
+        action = DefaultRenderer[renderer];
+      }
+
+      Renderer[renderer] = action;
+    },
+    getWarning: function getWarning(element) {
+      return warningsCache.get(element);
+    }
+  };
+
+  /**
    * check element's validity and report an error back to the user
    */
 
@@ -1829,6 +1950,195 @@ var hyperform = (function () {
     }
 
     return valid;
+  }
+
+  /**
+   * set a custom validity message or delete it with an empty string
+   */
+
+  function setCustomValidity(element, msg) {
+    if (!msg) {
+      message_store["delete"](element, true);
+    } else {
+      message_store.set(element, msg, true);
+    }
+    /* live-update the warning */
+
+
+    var warning = Renderer.getWarning(element);
+
+    if (warning) {
+      Renderer.setMessage(warning, msg, element);
+    }
+    /* update any classes if the validity state changes */
+
+
+    validity_state_checkers.valid(element);
+  }
+
+  /**
+   * implement the valueAsDate functionality
+   *
+   * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasdate
+   */
+
+  function valueAsDate(element) {
+    var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+    var type = get_type(element);
+
+    if (dates.indexOf(type) > -1) {
+      if (value !== undefined) {
+        /* setter: value must be null or a Date() */
+        if (value === null) {
+          element.value = '';
+        } else if (value instanceof Date) {
+          if (isNaN(value.getTime())) {
+            element.value = '';
+          } else {
+            element.value = date_to_string(value, type);
+          }
+        } else {
+          throw new window.DOMException('valueAsDate setter encountered invalid value', 'TypeError');
+        }
+
+        return;
+      }
+
+      var value_date = string_to_date(element.value, type);
+      return value_date instanceof Date ? value_date : null;
+    } else if (value !== undefined) {
+      /* trying to set a date on a not-date input fails */
+      throw new window.DOMException('valueAsDate setter cannot set date on this element', 'InvalidStateError');
+    }
+
+    return null;
+  }
+
+  /**
+   * implement the valueAsNumber functionality
+   *
+   * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasnumber
+   */
+
+  function valueAsNumber(element) {
+    var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+    var type = get_type(element);
+
+    if (numbers.indexOf(type) > -1) {
+      if (type === 'range' && element.hasAttribute('multiple')) {
+        /* @see https://html.spec.whatwg.org/multipage/forms.html#do-not-apply */
+        return NaN;
+      }
+
+      if (value !== undefined) {
+        /* setter: value must be NaN or a finite number */
+        if (isNaN(value)) {
+          element.value = '';
+        } else if (typeof value === 'number' && window.isFinite(value)) {
+          try {
+            /* try setting as a date, but... */
+            valueAsDate(element, new Date(value));
+          } catch (e) {
+            /* ... when valueAsDate is not responsible, ... */
+            if (!(e instanceof window.DOMException)) {
+              throw e;
+            }
+            /* ... set it via Number.toString(). */
+
+
+            element.value = value.toString();
+          }
+        } else {
+          throw new window.DOMException('valueAsNumber setter encountered invalid value', 'TypeError');
+        }
+
+        return;
+      }
+
+      return string_to_number(element.value, type);
+    } else if (value !== undefined) {
+      /* trying to set a number on a not-number input fails */
+      throw new window.DOMException('valueAsNumber setter cannot set number on this element', 'InvalidStateError');
+    }
+
+    return NaN;
+  }
+
+  /**
+   *
+   */
+
+  function stepDown(element) {
+    var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+
+    if (numbers.indexOf(get_type(element)) === -1) {
+      throw new window.DOMException('stepDown encountered invalid type', 'InvalidStateError');
+    }
+
+    if ((element.getAttribute('step') || '').toLowerCase() === 'any') {
+      throw new window.DOMException('stepDown encountered step "any"', 'InvalidStateError');
+    }
+
+    var prev = get_next_valid(element, n)[0];
+
+    if (prev !== null) {
+      valueAsNumber(element, prev);
+    }
+  }
+
+  /**
+   *
+   */
+
+  function stepUp(element) {
+    var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+
+    if (numbers.indexOf(get_type(element)) === -1) {
+      throw new window.DOMException('stepUp encountered invalid type', 'InvalidStateError');
+    }
+
+    if ((element.getAttribute('step') || '').toLowerCase() === 'any') {
+      throw new window.DOMException('stepUp encountered step "any"', 'InvalidStateError');
+    }
+
+    var next = get_next_valid(element, n)[1];
+
+    if (next !== null) {
+      valueAsNumber(element, next);
+    }
+  }
+
+  /**
+   * get the validation message for an element, empty string, if the element
+   * satisfies all constraints.
+   */
+
+  function validationMessage(element) {
+    var msg = message_store.get(element);
+
+    if (!msg) {
+      return '';
+    }
+    /* make it a primitive again, since message_store returns String(). */
+
+
+    return msg.toString();
+  }
+
+  /**
+   * check, if an element will be subject to HTML5 validation at all
+   */
+
+  function willValidate(element) {
+    return is_validation_candidate(element);
+  }
+
+  /* shim layer for the Element.matches method */
+
+  var ep = window.Element.prototype;
+  var native_matches = ep.matches || ep.matchesSelector || ep.msMatchesSelector || ep.webkitMatchesSelector;
+  function matches (element, selector) {
+    return native_matches.call(element, selector);
   }
 
   /**
@@ -2214,187 +2524,6 @@ var hyperform = (function () {
   }
 
   /**
-   * set a custom validity message or delete it with an empty string
-   */
-
-  function setCustomValidity(element, msg) {
-    if (!msg) {
-      message_store["delete"](element, true);
-    } else {
-      message_store.set(element, msg, true);
-    }
-    /* live-update the warning */
-
-
-    var warning = Renderer.getWarning(element);
-
-    if (warning) {
-      Renderer.setMessage(warning, msg, element);
-    }
-    /* update any classes if the validity state changes */
-
-
-    validity_state_checkers.valid(element);
-  }
-
-  /**
-   * implement the valueAsDate functionality
-   *
-   * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasdate
-   */
-
-  function valueAsDate(element) {
-    var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
-    var type = get_type(element);
-
-    if (dates.indexOf(type) > -1) {
-      if (value !== undefined) {
-        /* setter: value must be null or a Date() */
-        if (value === null) {
-          element.value = '';
-        } else if (value instanceof Date) {
-          if (isNaN(value.getTime())) {
-            element.value = '';
-          } else {
-            element.value = date_to_string(value, type);
-          }
-        } else {
-          throw new window.DOMException('valueAsDate setter encountered invalid value', 'TypeError');
-        }
-
-        return;
-      }
-
-      var value_date = string_to_date(element.value, type);
-      return value_date instanceof Date ? value_date : null;
-    } else if (value !== undefined) {
-      /* trying to set a date on a not-date input fails */
-      throw new window.DOMException('valueAsDate setter cannot set date on this element', 'InvalidStateError');
-    }
-
-    return null;
-  }
-
-  /**
-   * implement the valueAsNumber functionality
-   *
-   * @see https://html.spec.whatwg.org/multipage/forms.html#dom-input-valueasnumber
-   */
-
-  function valueAsNumber(element) {
-    var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
-    var type = get_type(element);
-
-    if (numbers.indexOf(type) > -1) {
-      if (type === 'range' && element.hasAttribute('multiple')) {
-        /* @see https://html.spec.whatwg.org/multipage/forms.html#do-not-apply */
-        return NaN;
-      }
-
-      if (value !== undefined) {
-        /* setter: value must be NaN or a finite number */
-        if (isNaN(value)) {
-          element.value = '';
-        } else if (typeof value === 'number' && window.isFinite(value)) {
-          try {
-            /* try setting as a date, but... */
-            valueAsDate(element, new Date(value));
-          } catch (e) {
-            /* ... when valueAsDate is not responsible, ... */
-            if (!(e instanceof window.DOMException)) {
-              throw e;
-            }
-            /* ... set it via Number.toString(). */
-
-
-            element.value = value.toString();
-          }
-        } else {
-          throw new window.DOMException('valueAsNumber setter encountered invalid value', 'TypeError');
-        }
-
-        return;
-      }
-
-      return string_to_number(element.value, type);
-    } else if (value !== undefined) {
-      /* trying to set a number on a not-number input fails */
-      throw new window.DOMException('valueAsNumber setter cannot set number on this element', 'InvalidStateError');
-    }
-
-    return NaN;
-  }
-
-  /**
-   *
-   */
-
-  function stepDown(element) {
-    var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
-
-    if (numbers.indexOf(get_type(element)) === -1) {
-      throw new window.DOMException('stepDown encountered invalid type', 'InvalidStateError');
-    }
-
-    if ((element.getAttribute('step') || '').toLowerCase() === 'any') {
-      throw new window.DOMException('stepDown encountered step "any"', 'InvalidStateError');
-    }
-
-    var prev = get_next_valid(element, n)[0];
-
-    if (prev !== null) {
-      valueAsNumber(element, prev);
-    }
-  }
-
-  /**
-   *
-   */
-
-  function stepUp(element) {
-    var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
-
-    if (numbers.indexOf(get_type(element)) === -1) {
-      throw new window.DOMException('stepUp encountered invalid type', 'InvalidStateError');
-    }
-
-    if ((element.getAttribute('step') || '').toLowerCase() === 'any') {
-      throw new window.DOMException('stepUp encountered step "any"', 'InvalidStateError');
-    }
-
-    var next = get_next_valid(element, n)[1];
-
-    if (next !== null) {
-      valueAsNumber(element, next);
-    }
-  }
-
-  /**
-   * get the validation message for an element, empty string, if the element
-   * satisfies all constraints.
-   */
-
-  function validationMessage(element) {
-    var msg = message_store.get(element);
-
-    if (!msg) {
-      return '';
-    }
-    /* make it a primitive again, since message_store returns String(). */
-
-
-    return msg.toString();
-  }
-
-  /**
-   * check, if an element will be subject to HTML5 validation at all
-   */
-
-  function willValidate(element) {
-    return is_validation_candidate(element);
-  }
-
-  /**
    * remove `property` from element and restore _original_property, if present
    */
 
@@ -2590,223 +2719,14 @@ var hyperform = (function () {
     }
   }
 
-  var instances = new WeakMap();
+  var element_prototypes = [window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype];
   /**
-   * wrap <form>s, window or document, that get treated with the global
-   * hyperform()
+   * get the appropriate function to revalidate form elements
    */
 
-  function Wrapper(form, settings) {
-    var _this = this;
-
-    /* do not allow more than one instance per form. Otherwise we'd end
-     * up with double event handlers, polyfills re-applied, ... */
-    var existing = instances.get(form);
-
-    if (existing) {
-      existing.settings = settings;
-      return existing;
-    }
-
-    this.form = form;
-    this.settings = settings;
-    this.revalidator = this.revalidate.bind(this);
-    this.observer = null;
-    instances.set(form, this);
-    catch_submit(form, settings.revalidate === 'never');
-
-    if (form === window || form.nodeType === 9) {
-      /* install on the prototypes, when called for the whole document */
-      this.install([window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype]);
-      polyfill(window.HTMLFormElement);
-    } else if (form instanceof window.HTMLFormElement || form instanceof window.HTMLFieldSetElement) {
-      this.install(form.elements);
-
-      if (form instanceof window.HTMLFormElement) {
-        polyfill(form);
-      }
-    } else if (form instanceof window.HTMLElement) {
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = Array.prototype.slice.call(this.form.getElementsByTagName('form'))[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var subform = _step.value;
-          this.install(subform.elements);
-          polyfill(subform);
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-            _iterator["return"]();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
-
-      this.observer = new window.MutationObserver(function (mutationsList) {
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
-
-        try {
-          for (var _iterator2 = mutationsList[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var mutation = _step2.value;
-
-            if (mutation.type === 'childList') {
-              var _iteratorNormalCompletion3 = true;
-              var _didIteratorError3 = false;
-              var _iteratorError3 = undefined;
-
-              try {
-                for (var _iterator3 = Array.prototype.slice.call(mutation.addedNodes)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                  var subform = _step3.value;
-
-                  if (subform instanceof window.HTMLFormElement) {
-                    _this.install(subform.elements);
-
-                    polyfill(subform);
-                  }
-                }
-              } catch (err) {
-                _didIteratorError3 = true;
-                _iteratorError3 = err;
-              } finally {
-                try {
-                  if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
-                    _iterator3["return"]();
-                  }
-                } finally {
-                  if (_didIteratorError3) {
-                    throw _iteratorError3;
-                  }
-                }
-              }
-
-              var _iteratorNormalCompletion4 = true;
-              var _didIteratorError4 = false;
-              var _iteratorError4 = undefined;
-
-              try {
-                for (var _iterator4 = Array.prototype.slice.call(mutation.removedNodes)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-                  var _subform = _step4.value;
-
-                  if (_subform instanceof window.HTMLFormElement) {
-                    _this.uninstall(_subform.elements);
-
-                    polyunfill(_subform);
-                  }
-                }
-              } catch (err) {
-                _didIteratorError4 = true;
-                _iteratorError4 = err;
-              } finally {
-                try {
-                  if (!_iteratorNormalCompletion4 && _iterator4["return"] != null) {
-                    _iterator4["return"]();
-                  }
-                } finally {
-                  if (_didIteratorError4) {
-                    throw _iteratorError4;
-                  }
-                }
-              }
-            }
-          }
-        } catch (err) {
-          _didIteratorError2 = true;
-          _iteratorError2 = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
-              _iterator2["return"]();
-            }
-          } finally {
-            if (_didIteratorError2) {
-              throw _iteratorError2;
-            }
-          }
-        }
-      });
-      this.observer.observe(form, {
-        subtree: true,
-        childList: true
-      });
-    } else {
-      throw new Error('Hyperform must be used with a node or window.');
-    }
-
-    if (settings.revalidate === 'oninput' || settings.revalidate === 'hybrid') {
-      /* in a perfect world we'd just bind to "input", but support here is
-       * abysmal: http://caniuse.com/#feat=input-event */
-      form.addEventListener('keyup', this.revalidator);
-      form.addEventListener('change', this.revalidator);
-    }
-
-    if (settings.revalidate === 'onblur' || settings.revalidate === 'hybrid') {
-      /* useCapture=true, because `blur` doesn't bubble. See
-       * https://developer.mozilla.org/en-US/docs/Web/Events/blur#Event_delegation
-       * for a discussion */
-      form.addEventListener('blur', this.revalidator, true);
-    }
-  }
-  Wrapper.prototype = {
-    destroy: function destroy() {
-      uncatch_submit(this.form);
-      instances["delete"](this.form);
-      this.form.removeEventListener('keyup', this.revalidator);
-      this.form.removeEventListener('change', this.revalidator);
-      this.form.removeEventListener('blur', this.revalidator, true);
-
-      if (this.form === window || this.form.nodeType === 9) {
-        this.uninstall([window.HTMLButtonElement.prototype, window.HTMLInputElement.prototype, window.HTMLSelectElement.prototype, window.HTMLTextAreaElement.prototype, window.HTMLFieldSetElement.prototype]);
-        polyunfill(window.HTMLFormElement);
-      } else if (this.form instanceof window.HTMLFormElement || this.form instanceof window.HTMLFieldSetElement) {
-        this.uninstall(this.form.elements);
-
-        if (this.form instanceof window.HTMLFormElement) {
-          polyunfill(this.form);
-        }
-      } else if (this.form instanceof window.HTMLElement) {
-        this.observer.disconnect();
-        var _iteratorNormalCompletion5 = true;
-        var _didIteratorError5 = false;
-        var _iteratorError5 = undefined;
-
-        try {
-          for (var _iterator5 = Array.prototype.slice.call(this.form.getElementsByTagName('form'))[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-            var subform = _step5.value;
-            this.uninstall(subform.elements);
-            polyunfill(subform);
-          }
-        } catch (err) {
-          _didIteratorError5 = true;
-          _iteratorError5 = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion5 && _iterator5["return"] != null) {
-              _iterator5["return"]();
-            }
-          } finally {
-            if (_didIteratorError5) {
-              throw _iteratorError5;
-            }
-          }
-        }
-      }
-    },
-
-    /**
-     * revalidate an input element
-     */
-    revalidate: function revalidate(event) {
+  function get_revalidator() {
+    var method = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'hybrid';
+    return function (event) {
       if (event.target instanceof window.HTMLButtonElement || event.target instanceof window.HTMLTextAreaElement || event.target instanceof window.HTMLSelectElement || event.target instanceof window.HTMLInputElement) {
         if (event.target.form && event.target.form.hasAttribute('novalidate')) {
           /* do nothing, if the form forbids it. This still allows manual
@@ -2815,7 +2735,7 @@ var hyperform = (function () {
           return;
         }
 
-        if (this.settings.revalidate === 'hybrid') {
+        if (method === 'hybrid') {
           /* "hybrid" somewhat simulates what browsers do. See for example
            * Firefox's :-moz-ui-invalid pseudo-class:
            * https://developer.mozilla.org/en-US/docs/Web/CSS/:-moz-ui-invalid */
@@ -2837,141 +2757,239 @@ var hyperform = (function () {
           reportValidity(event.target);
         }
       }
-    },
-
-    /**
-     * install the polyfills on each given element
-     *
-     * If you add elements dynamically, you have to call install() on them
-     * yourself:
-     *
-     * js> var form = hyperform(document.forms[0]);
-     * js> document.forms[0].appendChild(input);
-     * js> form.install(input);
-     *
-     * You can skip this, if you called hyperform on window or document.
-     */
-    install: function install(els) {
-      if (els instanceof window.Element) {
-        els = [els];
-      }
-
-      var els_length = els.length;
-
-      for (var i = 0; i < els_length; i++) {
-        polyfill(els[i]);
-      }
-    },
-    uninstall: function uninstall(els) {
-      if (els instanceof window.Element) {
-        els = [els];
-      }
-
-      var els_length = els.length;
-
-      for (var i = 0; i < els_length; i++) {
-        polyunfill(els[i]);
-      }
-    }
-  };
-  /**
-   * try to get the appropriate wrapper for a specific element by looking up
-   * its parent chain
-   *
-   * @return Wrapper | undefined
-   */
-
-  function get_wrapper(element) {
-    var wrapped;
-
-    if (element.form) {
-      /* try a shortcut with the element's <form> */
-      wrapped = instances.get(element.form);
-    }
-    /* walk up the parent nodes until document (including) */
-
-
-    while (!wrapped && element) {
-      wrapped = instances.get(element);
-      element = element.parentNode;
-    }
-
-    if (!wrapped) {
-      /* try the global instance, if exists. This may also be undefined. */
-      wrapped = instances.get(window);
-    }
-
-    return wrapped;
-  }
-
-  /**
-   * filter a form's elements for the ones needing validation prior to
-   * a submit
-   *
-   * Returns an array of form elements.
-   */
-
-  function get_validated_elements(form) {
-    var wrapped_form = get_wrapper(form);
-    return Array.prototype.filter.call(form.elements, function (element) {
-      /* it must have a name (or validating nameless inputs is allowed) */
-      if (element.getAttribute('name') || wrapped_form && wrapped_form.settings.validateNameless) {
-        return true;
-      }
-
-      return false;
-    });
-  }
-
-  /**
-   * return either the data of a hook call or the result of action, if the
-   * former is undefined
-   *
-   * @return function a function wrapper around action
-   */
-
-  function return_hook_or (hook, action) {
-    return function () {
-      var data = call_hook(hook, Array.prototype.slice.call(arguments));
-
-      if (data !== undefined) {
-        return data;
-      }
-
-      return action.apply(this, arguments);
     };
   }
-
   /**
-   * check an element's validity with respect to it's form
+   * run a function on all found elements
    */
 
-  var checkValidity = return_hook_or('checkValidity', function (element) {
-    /* if this is a <form>, check validity of all child inputs */
-    if (element instanceof window.HTMLFormElement) {
-      return get_validated_elements(element).map(checkValidity).every(function (b) {
-        return b;
-      });
+
+  function execute_on_elements(fn, elements) {
+    if (elements instanceof window.Element) {
+      elements = [elements];
     }
-    /* default is true, also for elements that are no validation candidates */
+
+    var elements_length = elements.length;
+
+    for (var i = 0; i < elements_length; i++) {
+      fn(elements[i]);
+    }
+  }
+  /**
+   * get a function, that removes hyperform behavior again
+   */
 
 
-    var valid = ValidityState(element).valid;
+  function get_destructor(hform) {
+    var form = hform.form;
+    return function () {
+      uncatch_submit(form);
+      form.removeEventListener('keyup', hform.revalidator);
+      form.removeEventListener('change', hform.revalidator);
+      form.removeEventListener('blur', hform.revalidator, true);
 
-    if (valid) {
-      var wrapped_form = get_wrapper(element);
+      if (form === window || form.nodeType === 9) {
+        hform.uninstall(element_prototypes);
+        polyunfill(window.HTMLFormElement);
+      } else if (form instanceof window.HTMLFormElement || form instanceof window.HTMLFieldSetElement) {
+        hform.uninstall(form.elements);
 
-      if (wrapped_form && wrapped_form.settings.validEvent) {
-        trigger_event(element, 'valid');
+        if (form instanceof window.HTMLFormElement) {
+          polyunfill(form);
+        }
+      } else if (form instanceof window.HTMLElement) {
+        hform.observer.disconnect();
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+          for (var _iterator = Array.prototype.slice.call(form.getElementsByTagName('form'))[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var subform = _step.value;
+            hform.uninstall(subform.elements);
+            polyunfill(subform);
+          }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+              _iterator["return"]();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
+        }
       }
-    } else {
-      trigger_event(element, 'invalid', {
-        cancelable: true
+    };
+  }
+  /**
+   * add hyperform behavior to a freshly initialized wrapper
+   */
+
+
+  function add_behavior(hform) {
+    var form = hform.form;
+    var settings = hform.settings;
+    hform.revalidator = get_revalidator(settings.revalidate);
+    hform.observer = {
+      disconnect: function disconnect() {}
+    };
+
+    hform.install = function (elements) {
+      return execute_on_elements(polyfill, elements);
+    };
+
+    hform.uninstall = function (elements) {
+      return execute_on_elements(polyunfill, elements);
+    };
+
+    hform._destruct = get_destructor(hform);
+    catch_submit(form, settings.revalidate === 'never');
+
+    if (form === window || form.nodeType === 9) {
+      /* install on the prototypes, when called for the whole document */
+      hform.install(element_prototypes);
+      polyfill(window.HTMLFormElement);
+    } else if (form instanceof window.HTMLFormElement || form instanceof window.HTMLFieldSetElement) {
+      hform.install(form.elements);
+
+      if (form instanceof window.HTMLFormElement) {
+        polyfill(form);
+      }
+    } else if (form instanceof window.HTMLElement) {
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = Array.prototype.slice.call(hform.form.getElementsByTagName('form'))[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var subform = _step2.value;
+          hform.install(subform.elements);
+          polyfill(subform);
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
+            _iterator2["return"]();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
+      hform.observer = new window.MutationObserver(function (mutationsList) {
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
+
+        try {
+          for (var _iterator3 = mutationsList[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var mutation = _step3.value;
+
+            if (mutation.type === 'childList') {
+              var _iteratorNormalCompletion4 = true;
+              var _didIteratorError4 = false;
+              var _iteratorError4 = undefined;
+
+              try {
+                for (var _iterator4 = Array.prototype.slice.call(mutation.addedNodes)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                  var subform = _step4.value;
+
+                  if (subform instanceof window.HTMLFormElement) {
+                    hform.install(subform.elements);
+                    polyfill(subform);
+                  }
+                }
+              } catch (err) {
+                _didIteratorError4 = true;
+                _iteratorError4 = err;
+              } finally {
+                try {
+                  if (!_iteratorNormalCompletion4 && _iterator4["return"] != null) {
+                    _iterator4["return"]();
+                  }
+                } finally {
+                  if (_didIteratorError4) {
+                    throw _iteratorError4;
+                  }
+                }
+              }
+
+              var _iteratorNormalCompletion5 = true;
+              var _didIteratorError5 = false;
+              var _iteratorError5 = undefined;
+
+              try {
+                for (var _iterator5 = Array.prototype.slice.call(mutation.removedNodes)[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                  var _subform = _step5.value;
+
+                  if (_subform instanceof window.HTMLFormElement) {
+                    hform.uninstall(_subform.elements);
+                    polyunfill(_subform);
+                  }
+                }
+              } catch (err) {
+                _didIteratorError5 = true;
+                _iteratorError5 = err;
+              } finally {
+                try {
+                  if (!_iteratorNormalCompletion5 && _iterator5["return"] != null) {
+                    _iterator5["return"]();
+                  }
+                } finally {
+                  if (_didIteratorError5) {
+                    throw _iteratorError5;
+                  }
+                }
+              }
+            }
+          }
+        } catch (err) {
+          _didIteratorError3 = true;
+          _iteratorError3 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
+              _iterator3["return"]();
+            }
+          } finally {
+            if (_didIteratorError3) {
+              throw _iteratorError3;
+            }
+          }
+        }
       });
+      hform.observer.observe(form, {
+        subtree: true,
+        childList: true
+      });
+    } else {
+      throw new Error('Hyperform must be used with a node or window.');
     }
 
-    return valid;
-  });
+    if (settings.revalidate === 'oninput' || settings.revalidate === 'hybrid') {
+      /* in a perfect world we'd just bind to "input", but support here is
+       * abysmal: http://caniuse.com/#feat=input-event */
+      form.addEventListener('keyup', hform.revalidator);
+      form.addEventListener('change', hform.revalidator);
+    }
+
+    if (settings.revalidate === 'onblur' || settings.revalidate === 'hybrid') {
+      /* useCapture=true, because `blur` doesn't bubble. See
+       * https://developer.mozilla.org/en-US/docs/Web/Events/blur#Event_delegation
+       * for a discussion */
+      form.addEventListener('blur', hform.revalidator, true);
+    }
+  }
 
   var version = '0.11.0';
 
@@ -2997,8 +3015,7 @@ var hyperform = (function () {
 
     if (!classes) {
       classes = {};
-    } // TODO: clean up before next non-patch release
-
+    }
 
     if (extendFieldset === undefined) {
       extendFieldset = !strict;
@@ -3039,7 +3056,9 @@ var hyperform = (function () {
       });
     }
 
-    return new Wrapper(form, settings);
+    var wrapper = new Wrapper(form, settings);
+    add_behavior(wrapper);
+    return wrapper;
   }
 
   hyperform.version = version;

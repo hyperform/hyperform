@@ -17,6 +17,7 @@ import { set_language, add_translation } from './components/localization';
 import CustomValidatorRegistry from './components/registry';
 import Renderer from './components/renderer';
 import Wrapper from './components/wrapper';
+import { add_behavior } from './components/setup';
 import version from './version';
 
 
@@ -67,7 +68,9 @@ function hyperform(form, {
                                     element => hyperform(element, settings));
   }
 
-  return new Wrapper(form, settings);
+  const wrapper = new Wrapper(form, settings);
+  add_behavior(wrapper);
+  return wrapper;
 }
 
 hyperform.version = version;

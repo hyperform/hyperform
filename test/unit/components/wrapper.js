@@ -2,6 +2,7 @@
 
 import test from 'ava';
 import Wrapper from '../../../src/components/wrapper';
+import { add_behavior } from '../../../src/components/setup';
 
 test('wrapper', t => {
   var form = document.createElement('form');
@@ -12,6 +13,7 @@ test('wrapper', t => {
   var wr = new Wrapper(form, {
     revalidate: 'oninput',
   });
+  add_behavior(wr);
 
   t.is(wr.settings.revalidate, 'oninput');
   t.is(wr.form, form);
