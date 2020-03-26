@@ -67,7 +67,7 @@ cmpsize:
 	  while read x; do git show "$$x:dist/hyperform.min.js" | wc -c ; done; \
 	  cat dist/hyperform.min.js | wc -c \
 	) | \
-	gnuplot -p -e "set ylabel 'bytes'; plot '< cat' using 1 title 'size of dist/hyperform.min.js' with $(GNUPLOT_STYLE)"
+	gnuplot -p -e "set ylabel 'bytes'; set key outside; set key above; plot '< cat' using 1 title 'size of dist/hyperform.min.js' with $(GNUPLOT_STYLE)"
 .PHONY: cmpsize
 
 translate.po: src/*.js src/*/*.js
