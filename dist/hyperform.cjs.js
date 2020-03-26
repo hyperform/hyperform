@@ -1726,11 +1726,13 @@ ValidityState.cache = new WeakMap();
 /* small wrapper around the actual validator to check if the validator
  * should actually be called. `this` refers to the ValidityState object. */
 
-var checker_getter = function checker_getter(func) {
+var checker_getter = function checker_getter(prop, func) {
   return function () {
     if (!is_validation_candidate(this.element)) {
-      /* not being validated == valid by default */
-      return true;
+      /* not being validated == valid by default
+       * return value == false for all props except "valid", because we test
+       * problems like badInput here */
+      return prop === 'valid';
     }
 
     return func(this.element);
@@ -1746,7 +1748,7 @@ for (var prop in validity_state_checkers) {
   Object.defineProperty(ValidityStatePrototype, prop, {
     configurable: true,
     enumerable: true,
-    get: checker_getter(validity_state_checkers[prop]),
+    get: checker_getter(prop, validity_state_checkers[prop]),
     set: undefined
   });
 }
