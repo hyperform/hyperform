@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+* fix return values for ValidityState properties on non-input elements
+
 ## v0.11.0
 
 * switch build tool to rollup

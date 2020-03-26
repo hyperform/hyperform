@@ -65,3 +65,11 @@ test('ValidityState valid', t => {
   t.true(input.classList.contains('hf-validated'));
   t.true(input.hasAttribute('aria-invalid'));
 });
+
+test('ValidityState on non-input', t => {
+  var div = document.createElement('div');
+
+  t.true(ValidityState(div).valid);
+  t.false(ValidityState(div).badInput);
+  t.false(ValidityState(div).patternMismatch);
+});
