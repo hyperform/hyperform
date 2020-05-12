@@ -55,7 +55,9 @@
     "css",
     "dist",
     "src",
-    "test"
+    "test",
+    "index.d.ts",
+    "rollup.config.js"
   ],
   "jshintConfig": {
     "esversion": 6,

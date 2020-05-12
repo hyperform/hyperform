@@ -6,6 +6,7 @@
 * add ES module build
 * fix dependency cycle. Rollup runs now w/o warnings
 * add support for calling Hyperform on arbitrary DOM nodes
+* add index.d.ts to npm package
 
 ## v0.11.0
 
