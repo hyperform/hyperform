@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+## v0.12.0
+
 * fix return values for ValidityState properties on non-input elements
 * add ES module build
 * fix dependency cycle. Rollup runs now w/o warnings
