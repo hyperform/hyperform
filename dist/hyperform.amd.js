@@ -959,14 +959,36 @@ define(function () { 'use strict';
   };
 
   /**
+   * get all radio buttons (including `element`) that belong to element's
+   * radio group
+   */
+
+  function get_radiogroup(element) {
+    if (element.form) {
+      return Array.prototype.filter.call(element.form.elements, function (radio) {
+        return radio.type === 'radio' && radio.name === element.name;
+      });
+    }
+
+    return [element];
+  }
+
+  /**
    * the internal storage for messages
    */
 
   var store$1 = new WeakMap();
-  /* jshint -W053 */
+  /**
+   * radio buttons store the combined message on the first element
+   */
 
-  /* allow new String() */
+  function get_message_element(element) {
+    if (element.type === 'radio') {
+      return get_radiogroup(element)[0];
+    }
 
+    return element;
+  }
   /**
    * handle validation messages
    *
@@ -974,9 +996,11 @@ define(function () { 'use strict';
    * are String objects so that we can mark() them.
    */
 
+
   var message_store = {
     set: function set(element, message) {
       var is_custom = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+      element = get_message_element(element);
 
       if (element instanceof window.HTMLFieldSetElement) {
         var wrapped_form = get_wrapper(element);
@@ -988,6 +1012,9 @@ define(function () { 'use strict';
       }
 
       if (typeof message === 'string') {
+        /* jshint -W053 */
+
+        /* allow new String() */
         message = new String(message);
       }
 
@@ -1006,18 +1033,28 @@ define(function () { 'use strict';
       return message_store;
     },
     get: function get(element) {
+      element = get_message_element(element);
       var message = store$1.get(element);
 
       if (message === undefined && '_original_validationMessage' in element) {
         /* get the browser's validation message, if we have none. Maybe it
          * knows more than we. */
+
+        /* jshint -W053 */
+
+        /* allow new String() */
         message = new String(element._original_validationMessage);
       }
+      /* jshint -W053 */
+
+      /* allow new String() */
+
 
       return message ? message : new String('');
     },
     "delete": function _delete(element) {
       var is_custom = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+      element = get_message_element(element);
 
       if ('_original_setCustomValidity' in element) {
         element._original_setCustomValidity('');
@@ -1225,21 +1262,6 @@ define(function () { 'use strict';
 
   function test_pattern (element) {
     return !element.value || !element.hasAttribute('pattern') || new RegExp('^(?:' + element.getAttribute('pattern') + ')$').test(element.value);
-  }
-
-  /**
-   * get all radio buttons (including `element`) that belong to element's
-   * radio group
-   */
-
-  function get_radiogroup(element) {
-    if (element.form) {
-      return Array.prototype.filter.call(element.form.elements, function (radio) {
-        return radio.type === 'radio' && radio.name === element.name;
-      });
-    }
-
-    return [element];
   }
 
   function has_submittable_option(select) {
@@ -1906,42 +1928,59 @@ define(function () { 'use strict';
      */
     showWarning: function showWarning(element) {
       var whole_form_validated = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+      var warning;
+      var warning_element = element;
+      var referring_elements = [element];
 
-      /* don't render error messages on subsequent radio buttons of the
-       * same group. This assumes, that element.validity.valueMissing is the only
-       * possible validation failure for radio buttons. */
-      if (whole_form_validated && element.type === 'radio' && get_radiogroup(element)[0] !== element) {
-        return;
+      if (element.type === 'radio') {
+        var radiogroup = get_radiogroup(element);
+
+        if (whole_form_validated && radiogroup[0] !== element) {
+          /* don't render error messages on subsequent radio buttons of the
+           * same group. This assumes, that element.validity.valueMissing is the only
+           * possible validation failure for radio buttons, i.e., that there are
+           * no individual validation problems on a single input. */
+          return;
+        } else {
+          /* an existing warning should be removed. We need to look it up in
+           * the cache with the right element, that is, with the first element
+           * from the current radiogroup. */
+          warning_element = radiogroup[0];
+          referring_elements = radiogroup;
+        }
       }
 
-      var msg = message_store.get(element).toString();
-      var warning = warningsCache.get(element);
+      warning = warningsCache.get(warning_element);
+      var msg = message_store.get(warning_element).toString();
 
       if (msg) {
         if (!warning) {
-          var wrapper = get_wrapper(element);
+          var wrapper = get_wrapper(warning_element);
           warning = document.createElement('div');
           warning.className = wrapper && wrapper.settings.classes.warning || 'hf-warning';
           warning.id = generate_id();
           warning.setAttribute('aria-live', 'polite');
-          warningsCache.set(element, warning);
+          warningsCache.set(warning_element, warning);
         }
 
-        element.setAttribute('aria-errormessage', warning.id);
+        referring_elements.forEach(function (el) {
+          el.setAttribute('aria-errormessage', warning.id);
 
-        if (!element.hasAttribute('aria-describedby')) {
-          element.setAttribute('aria-describedby', warning.id);
-        }
-
-        Renderer.setMessage(warning, msg, element);
-        Renderer.attachWarning(warning, element);
+          if (!el.hasAttribute('aria-describedby')) {
+            el.setAttribute('aria-describedby', warning.id);
+          }
+        });
+        Renderer.setMessage(warning, msg, warning_element);
+        Renderer.attachWarning(warning, warning_element);
       } else if (warning && warning.parentNode) {
-        if (element.getAttribute('aria-describedby') === warning.id) {
-          element.removeAttribute('aria-describedby');
-        }
+        referring_elements.forEach(function (el) {
+          if (el.getAttribute('aria-describedby') === warning.id) {
+            el.removeAttribute('aria-describedby');
+          }
 
-        element.removeAttribute('aria-errormessage');
-        Renderer.detachWarning(warning, element);
+          el.removeAttribute('aria-errormessage');
+        });
+        Renderer.detachWarning(warning, warning_element);
       }
     },
 
