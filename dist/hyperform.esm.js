@@ -3041,7 +3041,7 @@ function add_behavior(hform) {
   }
 }
 
-var version = '0.12.0';
+var version = '0.12.1';
 
 /**
  * public hyperform interface:

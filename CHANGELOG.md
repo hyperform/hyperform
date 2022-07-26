@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+## v0.12.1
+
 * fix error message handling for radio buttons
 
 ## v0.12.0
