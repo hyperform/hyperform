@@ -38,40 +38,57 @@ const DefaultRenderer = {
    * i.e., showing and hiding warnings
    */
   showWarning: function(element, whole_form_validated=false) {
-    /* don't render error messages on subsequent radio buttons of the
-     * same group. This assumes, that element.validity.valueMissing is the only
-     * possible validation failure for radio buttons. */
-    if (whole_form_validated && element.type === 'radio' &&
-        get_radiogroup(element)[0] !== element) {
-      return;
-    }
+    let warning;
+    let warning_element = element;
+    let referring_elements = [element];
 
-    const msg = message_store.get(element).toString();
-    var warning = warningsCache.get(element);
+    if (element.type === 'radio') {
+      const radiogroup = get_radiogroup(element);
+      if (whole_form_validated && radiogroup[0] !== element) {
+        /* don't render error messages on subsequent radio buttons of the
+         * same group. This assumes, that element.validity.valueMissing is the only
+         * possible validation failure for radio buttons, i.e., that there are
+         * no individual validation problems on a single input. */
+        return;
+      } else {
+        /* an existing warning should be removed. We need to look it up in
+         * the cache with the right element, that is, with the first element
+         * from the current radiogroup. */
+        warning_element = radiogroup[0];
+        referring_elements = radiogroup;
+      }
+    }
+    warning = warningsCache.get(warning_element);
+
+    const msg = message_store.get(warning_element).toString();
 
     if (msg) {
       if (! warning) {
-        const wrapper = get_wrapper(element);
+        const wrapper = get_wrapper(warning_element);
         warning = document.createElement('div');
         warning.className = wrapper && wrapper.settings.classes.warning || 'hf-warning';
         warning.id = generate_id();
         warning.setAttribute('aria-live', 'polite');
-        warningsCache.set(element, warning);
+        warningsCache.set(warning_element, warning);
       }
 
-      element.setAttribute('aria-errormessage', warning.id);
-      if (!element.hasAttribute('aria-describedby')) {
-        element.setAttribute('aria-describedby', warning.id);
-      }
-      Renderer.setMessage(warning, msg, element);
-      Renderer.attachWarning(warning, element);
+      referring_elements.forEach(el => {
+        el.setAttribute('aria-errormessage', warning.id);
+        if (!el.hasAttribute('aria-describedby')) {
+          el.setAttribute('aria-describedby', warning.id);
+        }
+      });
+      Renderer.setMessage(warning, msg, warning_element);
+      Renderer.attachWarning(warning, warning_element);
 
     } else if (warning && warning.parentNode) {
-      if (element.getAttribute('aria-describedby') === warning.id) {
-        element.removeAttribute('aria-describedby');
-      }
-      element.removeAttribute('aria-errormessage');
-      Renderer.detachWarning(warning, element);
+      referring_elements.forEach(el => {
+        if (el.getAttribute('aria-describedby') === warning.id) {
+          el.removeAttribute('aria-describedby');
+        }
+        el.removeAttribute('aria-errormessage');
+      });
+      Renderer.detachWarning(warning, warning_element);
 
     }
   },
