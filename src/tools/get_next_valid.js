@@ -67,9 +67,9 @@ export default function(element, n=1) {
   const scale = step_scale_factor[type] || 1;
 
   var prev = step_base +
-    Math.floor((value - step_base) / (step * scale)) * (step * scale) * n;
+    (Math.floor((value - step_base) / (step * scale)) - n) * (step * scale);
   var next = step_base +
-    (Math.floor((value - step_base) / (step * scale)) + 1) * (step * scale) * n;
+    (Math.floor((value - step_base) / (step * scale)) + n) * (step * scale);
 
   if (prev < min) {
     prev = null;

@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+* fix stepUp/stepDown for numeric inputs (#118)
+
 ## v0.12.1
 
 * fix error message handling for radio buttons
