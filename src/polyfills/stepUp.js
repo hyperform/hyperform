@@ -3,7 +3,7 @@
 
 import get_next_valid from '../tools/get_next_valid';
 import get_type from '../tools/get_type';
-import { numbers } from '../components/types';
+import { numbers, dates } from '../components/types';
 import valueAsNumber from './valueAsNumber';
 
 
@@ -23,6 +23,10 @@ export default function stepUp(element, n=1) {
   const next = get_next_valid(element, n)[1];
 
   if (next !== null) {
-    valueAsNumber(element, next);
+    if (dates.indexOf(get_type(element)) > -1) {
+      element.value = next;
+    } else {
+      valueAsNumber(element, next);
+    }
   }
 }

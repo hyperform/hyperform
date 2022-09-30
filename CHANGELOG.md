@@ -2,7 +2,7 @@
 
 ## UNRELEASED
 
-* fix stepUp/stepDown for numeric inputs (#118)
+* fix stepUp/stepDown for numeric inputs and type=time (#118)
 * fix valueAsNumber for type=time
 
 ## v0.12.1
