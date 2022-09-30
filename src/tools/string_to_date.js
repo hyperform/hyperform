@@ -41,7 +41,7 @@ export default function(string, element_type) {
       if (! /^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/.test(string)) {
         return null;
       }
-      date = new Date('1970-01-01T'+string+'z');
+      date = new Date('1970-01-01T'+string+'Z');
       return date;
   }
 
