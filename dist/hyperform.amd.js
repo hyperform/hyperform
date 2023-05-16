@@ -685,7 +685,7 @@ define(function () { 'use strict';
           return null;
         }
 
-        date = new Date('1970-01-01T' + string + 'z');
+        date = new Date('1970-01-01T' + string + 'Z');
         return date;
     }
 
@@ -864,8 +864,8 @@ define(function () { 'use strict';
 
     var step_base = !isNaN(min) ? min : !isNaN(default_value) ? default_value : default_step_base[type] || 0;
     var scale = step_scale_factor[type] || 1;
-    var prev = step_base + Math.floor((value - step_base) / (step * scale)) * (step * scale) * n;
-    var next = step_base + (Math.floor((value - step_base) / (step * scale)) + 1) * (step * scale) * n;
+    var prev = step_base + (Math.floor((value - step_base) / (step * scale)) - n) * (step * scale);
+    var next = step_base + (Math.floor((value - step_base) / (step * scale)) + n) * (step * scale);
 
     if (prev < min) {
       prev = null;
@@ -1256,12 +1256,26 @@ define(function () { 'use strict';
     return unicode_string_length(element.value) >= minlength;
   }
 
+  var canUnicode = true;
+
+  try {
+    /* for old IEs downgrade to non-Unicode supporting regexps. This trades a
+     * correct solution importing huge solutions like regexpu for wrong patterns
+     * in a small number of cases for old, outdated browsers. */
+    new RegExp('a', 'u');
+  } catch (e) {
+    canUnicode = false;
+  }
   /**
    * test the pattern attribute
+   *
+   * According to the spec, the "u" flag has to be set and regular expressions
+   * are anchored (i.e. prepended with `^` and appended an `$`).
    */
 
+
   function test_pattern (element) {
-    return !element.value || !element.hasAttribute('pattern') || new RegExp('^(?:' + element.getAttribute('pattern') + ')$').test(element.value);
+    return !element.value || !element.hasAttribute('pattern') || (new RegExp('^(?:' + element.getAttribute('pattern') + ')$'), canUnicode ? 'u' : undefined).test(element.value);
   }
 
   function has_submittable_option(select) {
@@ -2183,7 +2197,11 @@ define(function () { 'use strict';
     var prev = get_next_valid(element, n)[0];
 
     if (prev !== null) {
-      valueAsNumber(element, prev);
+      if (dates.indexOf(get_type(element)) > -1) {
+        element.value = prev;
+      } else {
+        valueAsNumber(element, prev);
+      }
     }
   }
 
@@ -2205,7 +2223,11 @@ define(function () { 'use strict';
     var next = get_next_valid(element, n)[1];
 
     if (next !== null) {
-      valueAsNumber(element, next);
+      if (dates.indexOf(get_type(element)) > -1) {
+        element.value = next;
+      } else {
+        valueAsNumber(element, next);
+      }
     }
   }
 
