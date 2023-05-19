@@ -23,6 +23,6 @@ export default function(element) {
       ||
       ! element.hasAttribute('pattern')
       ||
-      (new RegExp('^(?:'+ element.getAttribute('pattern') +')$'), canUnicode? 'u' : undefined).test(element.value)
+      (new RegExp('^(?:'+ element.getAttribute('pattern') +')$', canUnicode? 'u' : undefined)).test(element.value)
     );
 }
